@@ -1,0 +1,69 @@
+{
+    "formatVersion": 1,
+    "id": "test-02",
+    "displayName": "Unique Walls",
+    "width": 9,
+    "height": 7,
+    "startWorld": 0,
+    "sharedRows": [
+        "#########",
+        "# #     #",
+        "# P # . #",
+        "#       #",
+        "#   #   #",
+        "#   #   #",
+        "#########"
+    ],
+    "worlds": [
+        {
+            "name": "World 1",
+            "wallRows": [
+                "         ",
+                "         ",
+                "         ",
+                "    x    ",
+                "         ",
+                "         ",
+                "         "
+            ]
+        },
+        {
+            "name": "World 2",
+            "wallRows": [
+                "         ",
+                "    x    ",
+                "         ",
+                "         ",
+                "      x  ",
+                "         ",
+                "         "
+            ]
+        }
+    ],
+    "player": {
+        "x": 2,
+        "y": 1,
+        "facing": 0
+    },
+    "mappedBoxes": [
+        {
+            "x": 3,
+            "y": 3
+        }
+    ],
+    "portalPairs": [
+        {
+            "id": 0,
+            "worldA": 0,
+            "worldB": 1
+        }
+    ],
+    "portalBoxes": [
+        {
+            "pair": 0,
+            "world": 0,
+            "x": 2,
+            "y": 4
+        }
+    ]
+}
