@@ -96,7 +96,7 @@ namespace Worldyssey.Tests
         [Test]
         public void TryMove_DoesNotModifyInputState()
         {
-            LevelRules rules = TestLevels.RulesFromXsb(Direction.Down,
+            LevelRules rules = TestLevels.RulesFromXsb(Direction.Right,
                 "######",
                 "#@$  #",
                 "######");

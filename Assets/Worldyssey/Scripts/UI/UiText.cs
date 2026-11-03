@@ -46,5 +46,48 @@ namespace Worldyssey.UI
         public const string NewBest = "New best!";
         public const string NextLevel = "Next Level";
         public const string Replay = "Replay";
+
+        // 关卡编辑器
+        public const string LevelEditor = "Level Editor";
+        public const string BackToEditor = "Back to Editor";
+        public const string ToolsHeader = "Tools";
+        public const string PairsHeader = "Portal Pairs";
+        public const string IssuesHeader = "Issues";
+        public const string NamePlaceholder = "Level name";
+        public const string SizeFormat = "{0} x {1}";
+        public const string WorldTabFormat = "World {0}";
+        public const string StartWorldMark = " *";
+        public const string TargetWorldFormat = "Target: {0}";
+        public const string AddPair = "Add Pair";
+        public const string RemovePair = "Remove Pair";
+        public const string PairTitleFormat = "Pair {0}";
+        public const string PairDetailFormat = "{0} <-> {1}";
+        public const string NewLevel = "New";
+        public const string OpenLevel = "Open";
+        public const string SaveLevel = "Save";
+        public const string TestPlay = "Test Play";
+        public const string OpenLevelTitle = "Open Level";
+        public const string Cancel = "Cancel";
+        public const string NoIssues = "No issues";
+        public const string ErrorPrefix = "E: ";
+        public const string WarningPrefix = "W: ";
+        public const string MoreIssuesFormat = "... and {0} more";
+        public const string StatusSavedFormat = "Saved: {0}";
+        public const string StatusSaveFailed = "Save failed, see console";
+        public const string StatusFixErrors = "Fix errors first";
+        public const string StatusSelectPair = "Select a pair first";
+        public const string StatusPortalRejected = "This world is not in the pair, or the cell is taken";
+        public const string StatusPairRejected = "Need two different worlds";
+        public const string StatusOpenFailed = "Could not open level, see console";
+        public const string StatusNothingToUndo = "Nothing to undo";
+        public const string StatusNewLevel = "New level";
+        public const string StatusOpenedFormat = "Opened: {0}";
+        public const string StatusNoCustomLevels = "No custom levels to open";
+
+        // 编辑器画笔，顺序与 EditorTool 枚举一致
+        public static readonly string[] EditorToolNames =
+        {
+            "Floor", "Wall", "Pedestal", "Goal", "Unique Wall", "Box", "Player", "Portal", "Eraser",
+        };
     }
 }

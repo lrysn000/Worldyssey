@@ -24,5 +24,8 @@ namespace Worldyssey.Core
 
         /// <summary>目标世界的这个底座上停着别的传送箱子。</summary>
         PedestalOccupied = 6,
+
+        /// <summary>前方是箱子但玩家没有面朝它：这一下只转向，下一下才推。</summary>
+        TurnedToFaceBox = 7,
     }
 }

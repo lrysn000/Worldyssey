@@ -8,7 +8,7 @@ using Worldyssey.UI;
 namespace Worldyssey.Gameplay
 {
     /// <summary>
-    /// 界面流程状态机：主菜单 → 选关 → 游戏中 ⇄ 暂停 → 结算。负责切换面板、开关游戏输入、读写存档。
+    /// 界面流程状态机：主菜单 → 选关 → 游戏中 ⇄ 暂停 → 结算；以及主菜单 → 关卡编辑器 ⇄ 试玩。负责切换面板、开关游戏输入、读写存档。
     /// 关卡规则和对局状态不在这里，分别在 Core 和 <see cref="LevelSession"/>。
     /// </summary>
     public class GameFlow : MonoBehaviour
@@ -29,6 +29,9 @@ namespace Worldyssey.Gameplay
         [SerializeField] private PausePanel _pausePanel;
         [SerializeField] private ResultPanel _resultPanel;
 
+        [Tooltip("可选：没有关卡编辑器的场景留空，主菜单不显示编辑器入口")]
+        [SerializeField] private LevelEditorPanel _levelEditorPanel;
+
         private readonly List<LevelSelectItem> _builtInItems = new List<LevelSelectItem>();
         private readonly List<LevelSelectItem> _customItems = new List<LevelSelectItem>();
         private readonly List<string> _catalogIds = new List<string>();
@@ -40,6 +43,7 @@ namespace Worldyssey.Gameplay
         private LevelData _currentLevel;
         private string _currentRecordKey;
         private int _currentCatalogIndex = NoCatalogIndex;
+        private bool _isTestPlay;
         private bool _hasReferences;
 
         public GameFlowState State => _state;
@@ -68,6 +72,10 @@ namespace Worldyssey.Gameplay
             }
 
             _progress = new ProgressTracker(saveData);
+            if (_levelEditorPanel != null)
+            {
+                _levelEditorPanel.Initialize(_saveService);
+            }
         }
 
         private void OnEnable()
@@ -91,6 +99,12 @@ namespace Worldyssey.Gameplay
             _resultPanel.LevelSelectRequested += HandleBackToLevelSelect;
             _inputReader.PauseRequested += HandlePauseToggle;
             _levelSession.LevelCompleted += HandleLevelCompleted;
+            _mainMenuPanel.LevelEditorRequested += HandleLevelEditorRequested;
+            if (_levelEditorPanel != null)
+            {
+                _levelEditorPanel.TestPlayRequested += HandleTestPlayRequested;
+                _levelEditorPanel.BackRequested += HandleEditorBack;
+            }
         }
 
         private void Start()
@@ -119,12 +133,26 @@ namespace Worldyssey.Gameplay
             _resultPanel.LevelSelectRequested -= HandleBackToLevelSelect;
             _inputReader.PauseRequested -= HandlePauseToggle;
             _levelSession.LevelCompleted -= HandleLevelCompleted;
+            _mainMenuPanel.LevelEditorRequested -= HandleLevelEditorRequested;
+            if (_levelEditorPanel != null)
+            {
+                _levelEditorPanel.TestPlayRequested -= HandleTestPlayRequested;
+                _levelEditorPanel.BackRequested -= HandleEditorBack;
+            }
         }
 
         private void ShowMainMenu()
         {
             _levelSession.EndLevel();
+            _mainMenuPanel.SetLevelEditorAvailable(_levelEditorPanel != null);
             SetPanels(GameFlowState.MainMenu);
+        }
+
+        private void ShowLevelEditor()
+        {
+            _levelSession.EndLevel();
+            _isTestPlay = false;
+            SetPanels(GameFlowState.LevelEditor);
         }
 
         private void ShowLevelSelect()
@@ -193,21 +221,33 @@ namespace Worldyssey.Gameplay
             }
 
             LevelData level = _catalog.Levels[catalogIndex].Level;
-            PlayLevel(level, ProgressTracker.BuiltInKey(level.Id), catalogIndex);
+            PlayLevel(level, ProgressTracker.BuiltInKey(level.Id), catalogIndex, false);
         }
 
-        private void PlayLevel(LevelData level, string recordKey, int catalogIndex)
+        private void PlayLevel(LevelData level, string recordKey, int catalogIndex, bool isTestPlay)
         {
             if (!_levelSession.StartLevel(level))
             {
-                // 具体原因已由 LevelSession 列出，这里留在选关界面
-                ShowLevelSelect();
+                // 具体原因已由 LevelSession 列出，这里回到来源界面
+                if (isTestPlay)
+                {
+                    ShowLevelEditor();
+                }
+                else
+                {
+                    ShowLevelSelect();
+                }
+
                 return;
             }
 
             _currentLevel = level;
             _currentRecordKey = recordKey;
             _currentCatalogIndex = catalogIndex;
+            _isTestPlay = isTestPlay;
+            string exitLabel = isTestPlay ? UiText.BackToEditor : UiText.LevelSelect;
+            _pausePanel.SetExitLabel(exitLabel);
+            _resultPanel.SetExitLabel(exitLabel);
             SetPanels(GameFlowState.Playing);
         }
 
@@ -220,6 +260,11 @@ namespace Worldyssey.Gameplay
             _hudPanel.SetVisible(isInLevel);
             _pausePanel.SetVisible(state == GameFlowState.Paused);
             _resultPanel.SetVisible(state == GameFlowState.Result);
+            if (_levelEditorPanel != null)
+            {
+                _levelEditorPanel.SetVisible(state == GameFlowState.LevelEditor);
+            }
+
             _levelSession.SetInputEnabled(state == GameFlowState.Playing);
         }
 
@@ -268,7 +313,7 @@ namespace Worldyssey.Gameplay
             }
 
             LevelData level = _customLevels[customIndex].Level;
-            PlayLevel(level, ProgressTracker.CustomKey(level.Id), NoCatalogIndex);
+            PlayLevel(level, ProgressTracker.CustomKey(level.Id), NoCatalogIndex, false);
         }
 
         private void HandleLevelSelectBack()
@@ -304,7 +349,32 @@ namespace Worldyssey.Gameplay
 
         private void HandleBackToLevelSelect()
         {
-            ShowLevelSelect();
+            if (_isTestPlay)
+            {
+                ShowLevelEditor();
+            }
+            else
+            {
+                ShowLevelSelect();
+            }
+        }
+
+        private void HandleLevelEditorRequested()
+        {
+            if (_levelEditorPanel != null)
+            {
+                ShowLevelEditor();
+            }
+        }
+
+        private void HandleTestPlayRequested(LevelData level)
+        {
+            PlayLevel(level, null, NoCatalogIndex, true);
+        }
+
+        private void HandleEditorBack()
+        {
+            ShowMainMenu();
         }
 
         private void HandleLevelCompleted(int steps)
@@ -314,11 +384,17 @@ namespace Worldyssey.Gameplay
                 return;
             }
 
+            SetPanels(GameFlowState.Result);
+            if (_isTestPlay)
+            {
+                // 试玩不记录成绩
+                _resultPanel.ShowResult(steps, -1, false, false);
+                return;
+            }
+
             bool isNewBest = _progress.RecordCompletion(_currentRecordKey, steps);
             SaveProgress();
             _progress.TryGetBestSteps(_currentRecordKey, out int bestSteps);
-
-            SetPanels(GameFlowState.Result);
             _resultPanel.ShowResult(steps, bestSteps, isNewBest, HasNextBuiltInLevel());
         }
 

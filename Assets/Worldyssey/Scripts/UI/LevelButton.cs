@@ -10,6 +10,9 @@ namespace Worldyssey.UI
     /// </summary>
     public class LevelButton : MonoBehaviour
     {
+        private static readonly Color NormalColor = new Color(0.22f, 0.24f, 0.30f, 1f);
+        private static readonly Color HighlightedColor = new Color(0.30f, 0.50f, 0.85f, 1f);
+
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _nameText;
         [SerializeField] private TMP_Text _detailText;
@@ -66,6 +69,40 @@ namespace Worldyssey.UI
             if (_button != null)
             {
                 _button.interactable = !item.IsLocked;
+            }
+        }
+
+        /// <summary>
+        /// 直接指定标题和说明，用于选关以外的列表（编辑器的配对列表、打开关卡列表）。
+        /// </summary>
+        public void Setup(string title, string detail, int index, Action<int> onClicked)
+        {
+            _index = index;
+            _onClicked = onClicked;
+            if (_nameText != null)
+            {
+                _nameText.text = title;
+            }
+
+            if (_detailText != null)
+            {
+                _detailText.text = detail;
+            }
+
+            if (_button != null)
+            {
+                _button.interactable = true;
+            }
+        }
+
+        /// <summary>
+        /// 高亮表示当前选中项。
+        /// </summary>
+        public void SetHighlighted(bool isHighlighted)
+        {
+            if (_button != null && _button.image != null)
+            {
+                _button.image.color = isHighlighted ? HighlightedColor : NormalColor;
             }
         }
 

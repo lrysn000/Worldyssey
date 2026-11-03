@@ -125,5 +125,45 @@ namespace Worldyssey.Tests
             StringAssert.Contains("a_broken.json", problems[0]);
             StringAssert.Contains("c_invalid.json", problems[1]);
         }
+
+        [Test]
+        public void SaveCustomLevel_ThenLoadCustomLevels_FindsIt()
+        {
+            LevelData level = new LevelDataBuilder { Id = "custom-1", DisplayName = "Mine" }.Build();
+
+            string path = _service.SaveCustomLevel(level);
+            var problems = new List<string>();
+            List<CustomLevelEntry> entries = _service.LoadCustomLevels(problems);
+
+            Assert.IsTrue(File.Exists(path));
+            Assert.AreEqual(0, problems.Count);
+            Assert.AreEqual(1, entries.Count);
+            LevelDataAssert.AreEqual(level, entries[0].Level);
+        }
+
+        [Test]
+        public void SaveCustomLevel_SameIdOverwrites()
+        {
+            _service.SaveCustomLevel(new LevelDataBuilder { Id = "same", DisplayName = "First" }.Build());
+            _service.SaveCustomLevel(new LevelDataBuilder { Id = "same", DisplayName = "Second" }.Build());
+
+            List<CustomLevelEntry> entries = _service.LoadCustomLevels(new List<string>());
+
+            Assert.AreEqual(1, entries.Count);
+            Assert.AreEqual("Second", entries[0].Level.DisplayName);
+        }
+
+        [Test]
+        public void ToFileName_ReplacesInvalidCharacters()
+        {
+            Assert.AreEqual("a_b", SaveService.ToFileName("a/b"));
+            Assert.AreEqual("unnamed", SaveService.ToFileName(" "));
+        }
+
+        [Test]
+        public void GenerateCustomLevelId_ContainsTimestamp()
+        {
+            Assert.AreEqual("custom-20261103-221500", SaveService.GenerateCustomLevelId(new System.DateTime(2026, 11, 3, 22, 15, 0)));
+        }
     }
 }

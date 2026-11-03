@@ -4,6 +4,7 @@ namespace Worldyssey.Core
 {
     /// <summary>
     /// 关卡合法性检查（需求文档 6.3 节）。一次返回全部问题，不抛异常，供关卡编辑器、导入工具和加载流程使用。
+    /// 提示文字为英文，因为游戏内编辑器会直接显示它们，而当前 UI 字体只支持英文。
     /// </summary>
     /// <remarks>
     /// 不依赖 <see cref="LevelMap"/>：LevelMap 遇到第一个结构问题就抛出，而这里要尽量继续检查，把问题列全。
@@ -16,7 +17,7 @@ namespace Worldyssey.Core
             var issues = new List<LevelIssue>();
             if (data == null)
             {
-                issues.Add(Error("关卡数据为空"));
+                issues.Add(Error("Level data is missing"));
                 return new LevelValidationReport(issues);
             }
 
@@ -69,8 +70,14 @@ namespace Worldyssey.Core
                 CheckHeader();
                 if (_width <= 0 || _height <= 0)
                 {
-                    _issues.Add(Error($"尺寸非法：{_width}x{_height}"));
+                    _issues.Add(Error($"Invalid size {_width}x{_height}"));
                     return;
+                }
+
+                if (!LevelLimits.IsValidSize(_width, _height))
+                {
+                    // 超出范围不影响其余检查，继续往下查，把问题列全
+                    _issues.Add(Error($"Size {_width}x{_height} is outside the allowed range {LevelLimits.MinWidth}x{LevelLimits.MinHeight} to {LevelLimits.MaxWidth}x{LevelLimits.MaxHeight}"));
                 }
 
                 CheckWorlds();
@@ -87,21 +94,21 @@ namespace Worldyssey.Core
             {
                 if (string.IsNullOrWhiteSpace(_data.Id))
                 {
-                    _issues.Add(Error("关卡 id 为空"));
+                    _issues.Add(Error("Level id is empty"));
                 }
 
                 if (string.IsNullOrWhiteSpace(_data.DisplayName))
                 {
-                    _issues.Add(Warning("显示名称为空"));
+                    _issues.Add(Warning("Display name is empty"));
                 }
 
                 if (_data.FormatVersion > LevelData.CurrentFormatVersion)
                 {
-                    _issues.Add(Error($"关卡格式版本 {_data.FormatVersion} 高于当前支持的 {LevelData.CurrentFormatVersion}"));
+                    _issues.Add(Error($"Format version {_data.FormatVersion} is newer than supported version {LevelData.CurrentFormatVersion}"));
                 }
                 else if (_data.FormatVersion < 1)
                 {
-                    _issues.Add(Error($"关卡格式版本 {_data.FormatVersion} 非法"));
+                    _issues.Add(Error($"Invalid format version {_data.FormatVersion}"));
                 }
             }
 
@@ -109,12 +116,12 @@ namespace Worldyssey.Core
             {
                 if (!LevelLimits.IsValidWorldCount(_worldCount))
                 {
-                    _issues.Add(Error($"世界数量 {_worldCount} 不在 {LevelLimits.MinWorldCount} 到 {LevelLimits.MaxWorldCount} 之间"));
+                    _issues.Add(Error($"World count {_worldCount} must be between {LevelLimits.MinWorldCount} and {LevelLimits.MaxWorldCount}"));
                 }
 
                 if (_data.StartWorld < 0 || _data.StartWorld >= _worldCount)
                 {
-                    _issues.Add(Error($"起始世界 {_data.StartWorld} 不存在"));
+                    _issues.Add(Error($"Start world {WorldLabel(_data.StartWorld)} does not exist"));
                 }
 
                 for (int world = 0; world < _worldCount; world++)
@@ -122,11 +129,11 @@ namespace Worldyssey.Core
                     WorldData worldData = _data.Worlds[world];
                     if (worldData == null)
                     {
-                        _issues.Add(Error($"世界 {world} 为空", null, world));
+                        _issues.Add(Error($"{WorldLabel(world)} is missing", null, world));
                     }
                     else if (string.IsNullOrWhiteSpace(worldData.Name))
                     {
-                        _issues.Add(Warning($"世界 {world} 没有名称", null, world));
+                        _issues.Add(Warning($"{WorldLabel(world)} has no name", null, world));
                     }
                 }
             }
@@ -136,7 +143,7 @@ namespace Worldyssey.Core
                 IReadOnlyList<string> rows = _data.SharedRows;
                 if (rows.Count != _height)
                 {
-                    _issues.Add(Error($"共享层行数 {rows.Count} 与高度 {_height} 不一致"));
+                    _issues.Add(Error($"Shared layer row count {rows.Count} does not match height {_height}"));
                     return;
                 }
 
@@ -148,7 +155,7 @@ namespace Worldyssey.Core
                     string row = rows[rowIndex] ?? string.Empty;
                     if (row.Length != _width)
                     {
-                        _issues.Add(Error($"共享层第 {rowIndex} 行长度 {row.Length} 与宽度 {_width} 不一致"));
+                        _issues.Add(Error($"Shared layer row {rowIndex} length {row.Length} does not match width {_width}"));
                         isValid = false;
                         continue;
                     }
@@ -170,7 +177,7 @@ namespace Worldyssey.Core
                             case LevelMap.EmptyChar:
                                 break;
                             default:
-                                _issues.Add(Error($"共享层有未知字符 '{row[x]}'", pos));
+                                _issues.Add(Error($"Unknown character '{row[x]}' in shared layer", pos));
                                 isValid = false;
                                 break;
                         }
@@ -207,7 +214,7 @@ namespace Worldyssey.Core
 
                     if (rows.Count != _height)
                     {
-                        _issues.Add(Error($"世界 {world} 独有层行数 {rows.Count} 与高度 {_height} 不一致", null, world));
+                        _issues.Add(Error($"{WorldLabel(world)} unique layer row count {rows.Count} does not match height {_height}", null, world));
                         continue;
                     }
 
@@ -217,7 +224,7 @@ namespace Worldyssey.Core
                         string row = rows[rowIndex] ?? string.Empty;
                         if (row.Length != _width)
                         {
-                            _issues.Add(Error($"世界 {world} 独有层第 {rowIndex} 行长度 {row.Length} 与宽度 {_width} 不一致", null, world));
+                            _issues.Add(Error($"{WorldLabel(world)} unique layer row {rowIndex} length {row.Length} does not match width {_width}", null, world));
                             isValid = false;
                             continue;
                         }
@@ -231,7 +238,7 @@ namespace Worldyssey.Core
                             }
                             else if (row[x] != LevelMap.EmptyChar)
                             {
-                                _issues.Add(Error($"世界 {world} 独有层有未知字符 '{row[x]}'", pos, world));
+                                _issues.Add(Error($"Unknown character '{row[x]}' in {WorldLabel(world)} unique layer", pos, world));
                                 isValid = false;
                             }
                         }
@@ -254,12 +261,12 @@ namespace Worldyssey.Core
                 int boxCount = _data.MappedBoxes.Count;
                 if (_goalCount == 0)
                 {
-                    _issues.Add(Error("关卡没有终点"));
+                    _issues.Add(Error("Level has no goal"));
                 }
 
                 if (boxCount != _goalCount)
                 {
-                    _issues.Add(Error($"目标箱子数量 {boxCount} 与终点数量 {_goalCount} 不一致"));
+                    _issues.Add(Error($"Box count {boxCount} does not match goal count {_goalCount}"));
                 }
             }
 
@@ -282,7 +289,7 @@ namespace Worldyssey.Core
                     {
                         if (walls[i] && _pedestals[i])
                         {
-                            _issues.Add(Error($"世界 {world} 的独有墙压在底座上", FromIndex(i), world));
+                            _issues.Add(Error($"{WorldLabel(world)} has a unique wall on a pedestal", FromIndex(i), world));
                         }
                     }
                 }
@@ -300,13 +307,13 @@ namespace Worldyssey.Core
                     PortalPairData pair = pairs[i];
                     if (pair == null)
                     {
-                        _issues.Add(Error($"配对 {i} 为空"));
+                        _issues.Add(Error($"Pair {i} is missing"));
                         continue;
                     }
 
                     if (_pairIndexById.ContainsKey(pair.Id))
                     {
-                        _issues.Add(Error($"配对编号 {pair.Id} 重复"));
+                        _issues.Add(Error($"Pair id {pair.Id} is duplicated"));
                         continue;
                     }
 
@@ -314,13 +321,13 @@ namespace Worldyssey.Core
                     bool isWorldBValid = IsWorldIndex(pair.WorldB);
                     if (!isWorldAValid || !isWorldBValid)
                     {
-                        _issues.Add(Error($"配对 {pair.Id} 引用了不存在的世界"));
+                        _issues.Add(Error($"Pair {pair.Id} refers to a world that does not exist"));
                         continue;
                     }
 
                     if (pair.WorldA == pair.WorldB)
                     {
-                        _issues.Add(Error($"配对 {pair.Id} 两侧是同一个世界 {pair.WorldA}"));
+                        _issues.Add(Error($"Pair {pair.Id} connects {WorldLabel(pair.WorldA)} to itself"));
                         continue;
                     }
 
@@ -339,13 +346,13 @@ namespace Worldyssey.Core
                     PortalBoxData box = boxes[i];
                     if (box == null)
                     {
-                        _issues.Add(Error($"传送箱子 {i} 为空"));
+                        _issues.Add(Error($"Portal box {i} is missing"));
                         continue;
                     }
 
                     if (!_pairIndexById.TryGetValue(box.Pair, out int pairIndex))
                     {
-                        _issues.Add(Error($"传送箱子 {i} 引用了不存在或无效的配对 {box.Pair}", box.Position));
+                        _issues.Add(Error($"Portal box {i} refers to missing or invalid pair {box.Pair}", box.Position));
                         continue;
                     }
 
@@ -360,19 +367,19 @@ namespace Worldyssey.Core
                     }
                     else
                     {
-                        _issues.Add(Error($"传送箱子 {i} 所在世界 {box.World} 不属于配对 {box.Pair}", box.Position));
+                        _issues.Add(Error($"Portal box {i} is in {WorldLabel(box.World)}, which is not part of pair {box.Pair}", box.Position));
                         continue;
                     }
 
                     if (!placedSides.Add(side))
                     {
-                        _issues.Add(Error($"配对 {box.Pair} 在世界 {box.World} 的一侧出现了不止一次", box.Position, box.World));
+                        _issues.Add(Error($"Pair {box.Pair} has more than one box in {WorldLabel(box.World)}", box.Position, box.World));
                         continue;
                     }
 
                     if (!IsInBounds(box.Position))
                     {
-                        _issues.Add(Error($"传送箱子 {i} 坐标 {box.Position} 越界", null, box.World));
+                        _issues.Add(Error($"Portal box {i} at {box.Position} is out of bounds", null, box.World));
                         continue;
                     }
 
@@ -391,22 +398,22 @@ namespace Worldyssey.Core
                 GridPos player = _data.Player.Position;
                 if (!IsInBounds(player))
                 {
-                    _issues.Add(Error($"玩家坐标 {player} 越界"));
+                    _issues.Add(Error($"Player at {player} is out of bounds"));
                 }
                 else if (canCheckStartWorld)
                 {
-                    CheckNotOnWall(player, startWorld, "玩家");
-                    startWorldOccupants[player] = "玩家";
+                    CheckNotOnWall(player, startWorld, "Player");
+                    startWorldOccupants[player] = "Player";
                 }
 
                 IReadOnlyList<GridPos> mappedBoxes = _data.MappedBoxes;
                 for (int i = 0; i < mappedBoxes.Count; i++)
                 {
                     GridPos pos = mappedBoxes[i];
-                    string label = $"目标箱子 {i}";
+                    string label = $"Box {i}";
                     if (!IsInBounds(pos))
                     {
-                        _issues.Add(Error($"{label} 坐标 {pos} 越界"));
+                        _issues.Add(Error($"{label} at {pos} is out of bounds"));
                         continue;
                     }
 
@@ -434,7 +441,7 @@ namespace Worldyssey.Core
                         continue;
                     }
 
-                    string label = $"世界 {portal.World} 的传送箱子";
+                    string label = $"Portal box in {WorldLabel(portal.World)}";
                     CheckNotOnWall(portal.Position, portal.World, label);
 
                     if (portal.World == startWorld)
@@ -446,7 +453,7 @@ namespace Worldyssey.Core
                     }
                     else if (!otherWorldOccupants.Add((portal.World, portal.Position)))
                     {
-                        _issues.Add(Error($"{label} 与同世界的另一个传送箱子重叠", portal.Position, portal.World));
+                        _issues.Add(Error($"{label} overlaps another portal box", portal.Position, portal.World));
                     }
                 }
             }
@@ -465,14 +472,14 @@ namespace Worldyssey.Core
 
                     if (_uniqueWalls[world][ToIndex(pos)])
                     {
-                        _issues.Add(Warning($"{label} 压着世界 {world} 的独有墙，该世界初始处于冲突", pos, world));
+                        _issues.Add(Warning($"{label} sits on a unique wall of {WorldLabel(world)}, so that world starts in conflict", pos, world));
                     }
 
                     for (int i = 0; i < _portals.Count; i++)
                     {
                         if (_portals[i].World == world && _portals[i].Position == pos)
                         {
-                            _issues.Add(Warning($"{label} 压着世界 {world} 的传送箱子，该世界初始处于冲突", pos, world));
+                            _issues.Add(Warning($"{label} sits on a portal box of {WorldLabel(world)}, so that world starts in conflict", pos, world));
                         }
                     }
                 }
@@ -482,11 +489,11 @@ namespace Worldyssey.Core
             {
                 if (_sharedWalls[ToIndex(pos)])
                 {
-                    _issues.Add(Error($"{label} 在共享墙上", pos, world));
+                    _issues.Add(Error($"{label} is on a shared wall", pos, world));
                 }
                 else if (_uniqueWalls[world][ToIndex(pos)])
                 {
-                    _issues.Add(Error($"{label} 在世界 {world} 的独有墙上", pos, world));
+                    _issues.Add(Error($"{label} is on a unique wall of {WorldLabel(world)}", pos, world));
                 }
             }
 
@@ -494,11 +501,19 @@ namespace Worldyssey.Core
             {
                 if (occupants.TryGetValue(pos, out string existing))
                 {
-                    _issues.Add(Error($"{label} 与{existing}重叠", pos, world));
+                    _issues.Add(Error($"{label} overlaps {existing}", pos, world));
                     return;
                 }
 
                 occupants.Add(pos, label);
+            }
+
+            /// <summary>
+            /// 提示中的世界编号从 1 开始，与默认世界名称 World 1、World 2 一致。
+            /// </summary>
+            private static string WorldLabel(int world)
+            {
+                return $"World {world + 1}";
             }
 
             private bool IsWorldIndex(int world)

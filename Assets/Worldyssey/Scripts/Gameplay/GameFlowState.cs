@@ -10,5 +10,6 @@ namespace Worldyssey.Gameplay
         Playing = 2,
         Paused = 3,
         Result = 4,
+        LevelEditor = 5,
     }
 }

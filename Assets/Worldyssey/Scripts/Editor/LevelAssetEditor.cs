@@ -78,7 +78,7 @@ namespace Worldyssey.EditorTools
                 return;
             }
 
-            EditorGUILayout.LabelField($"校验结果：{_report.ErrorCount} 个错误，{_report.WarningCount} 个警告（世界编号从 0 开始）", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"校验结果：{_report.ErrorCount} 个错误，{_report.WarningCount} 个警告", EditorStyles.boldLabel);
             IReadOnlyList<LevelIssue> issues = _report.Issues;
             for (int i = 0; i < issues.Count; i++)
             {

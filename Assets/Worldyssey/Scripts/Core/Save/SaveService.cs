@@ -95,9 +95,16 @@ namespace Worldyssey.Core
             }
 
             Directory.CreateDirectory(RootDirectory);
-            string path = SaveFilePath;
+            WriteAtomically(SaveFilePath, JsonUtility.ToJson(data, true));
+        }
+
+        /// <summary>
+        /// 先写临时文件再替换目标文件，避免写到一半中断导致文件损坏。
+        /// </summary>
+        private static void WriteAtomically(string path, string content)
+        {
             string tempPath = path + TempSuffix;
-            File.WriteAllText(tempPath, JsonUtility.ToJson(data, true), FileEncoding);
+            File.WriteAllText(tempPath, content, FileEncoding);
 
             if (File.Exists(path))
             {
@@ -107,6 +114,54 @@ namespace Worldyssey.Core
             {
                 File.Move(tempPath, path);
             }
+        }
+
+        /// <summary>
+        /// 生成新的自建关卡 id，包含创建时间，基本不会重复。
+        /// </summary>
+        public static string GenerateCustomLevelId(DateTime now)
+        {
+            return "custom-" + now.ToString("yyyyMMdd-HHmmss");
+        }
+
+        /// <summary>
+        /// 把关卡 id 转为可用作文件名的字符串。
+        /// </summary>
+        public static string ToFileName(string levelId)
+        {
+            if (string.IsNullOrWhiteSpace(levelId))
+            {
+                return "unnamed";
+            }
+
+            char[] invalid = Path.GetInvalidFileNameChars();
+            char[] chars = levelId.ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (Array.IndexOf(invalid, chars[i]) >= 0)
+                {
+                    chars[i] = '_';
+                }
+            }
+
+            return new string(chars);
+        }
+
+        /// <summary>
+        /// 保存自建关卡到自建关卡目录，文件名由 id 决定，同 id 覆盖。调用方应先确认校验无错误。
+        /// IO 失败时抛出异常，由调用方记录。返回写入的文件路径。
+        /// </summary>
+        public string SaveCustomLevel(LevelData level)
+        {
+            if (level == null)
+            {
+                throw new ArgumentNullException(nameof(level));
+            }
+
+            Directory.CreateDirectory(CustomLevelDirectory);
+            string path = Path.Combine(CustomLevelDirectory, ToFileName(level.Id) + CustomLevelExtension);
+            WriteAtomically(path, LevelJsonSerializer.ToJson(level));
+            return path;
         }
 
         /// <summary>

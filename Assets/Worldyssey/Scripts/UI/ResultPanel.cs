@@ -77,7 +77,10 @@ namespace Worldyssey.UI
 
             if (_bestText != null)
             {
-                _bestText.text = isNewBest ? UiText.NewBest : string.Format(UiText.ResultBestFormat, bestSteps);
+                // 编辑器试玩不记录成绩，传入负数表示不显示最佳步数
+                _bestText.text = isNewBest ? UiText.NewBest
+                    : bestSteps < 0 ? string.Empty
+                    : string.Format(UiText.ResultBestFormat, bestSteps);
             }
 
             if (_nextButton != null)
@@ -86,6 +89,23 @@ namespace Worldyssey.UI
             }
 
             SetVisible(true);
+        }
+
+        /// <summary>
+        /// 修改“返回”按钮的文字：正常游戏为返回选关，编辑器试玩时为返回编辑器。
+        /// </summary>
+        public void SetExitLabel(string label)
+        {
+            if (_levelSelectButton == null)
+            {
+                return;
+            }
+
+            TMP_Text text = _levelSelectButton.GetComponentInChildren<TMP_Text>(true);
+            if (text != null)
+            {
+                text.text = label;
+            }
         }
 
         private void HandleNextClicked()

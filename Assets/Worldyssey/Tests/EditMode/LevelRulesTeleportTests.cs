@@ -139,9 +139,9 @@ namespace Worldyssey.Tests
             Assert.AreEqual(StepFailure.WorldConflicted, blocked.Failure);
             Assert.AreEqual(start, blocked.State);
 
-            // 在世界 0 把箱子推开，再绕到底座下方面朝上
+            // 在世界 0 把箱子推开（先转向对准箱子再推），再绕到底座下方面朝上
             LevelState resolved = TestLevels.Walk(rules, start,
-                Direction.Down, Direction.Right, Direction.Right, Direction.Up, Direction.Right,
+                Direction.Down, Direction.Right, Direction.Right, Direction.Up, Direction.Right, Direction.Right,
                 Direction.Down, Direction.Left, Direction.Left, Direction.Up);
             Assert.AreEqual(new GridPos(5, 2), resolved.MappedBoxes[0]);
             Assert.AreEqual(new GridPos(2, 1), resolved.PlayerPosition);
@@ -347,6 +347,46 @@ namespace Worldyssey.Tests
             session.TryMove(Direction.Left);
 
             Assert.IsFalse(session.TryTeleport());
+        }
+
+        [Test]
+        public void PortalBoxOnPedestal_SideApproach_TurnsThenTeleportsFromThatSide()
+        {
+            // 底座在玩家上方、玩家朝右：按上只转向，不会把传送箱子推走，随后可以从下方进入
+            LevelRules rules = TestLevels.RulesMultiWorld(
+                new[] { "#######", "#  P  #", "#  @  #", "#######" },
+                new[] { new[] { "       ", "   a   ", "       ", "       " }, null },
+                OnePair01,
+                Direction.Right);
+
+            StepResult turn = rules.TryMove(rules.CreateInitialState(), Direction.Up);
+
+            Assert.IsFalse(turn.IsStepTaken);
+            Assert.AreEqual(StepFailure.TurnedToFaceBox, turn.Failure);
+            Assert.AreEqual(new GridPos(3, 2), turn.State.PortalBoxes[0].Position, "传送箱子没有被推走");
+
+            StepResult teleport = rules.TryTeleport(turn.State);
+
+            Assert.IsTrue(teleport.IsStepTaken);
+            Assert.AreEqual(1, teleport.State.PlayerWorld);
+            Assert.AreEqual(new GridPos(3, 1), teleport.State.PlayerPosition);
+        }
+
+        [Test]
+        public void PortalBoxOffPedestal_AlsoNeedsFacingBeforePush()
+        {
+            LevelRules rules = TestLevels.RulesMultiWorld(
+                new[] { "#######", "#@    #", "#######" },
+                new[] { new[] { "       ", "  a    ", "       " }, null },
+                OnePair01,
+                Direction.Down);
+
+            StepResult first = rules.TryMove(rules.CreateInitialState(), Direction.Right);
+            StepResult second = rules.TryMove(first.State, Direction.Right);
+
+            Assert.AreEqual(StepFailure.TurnedToFaceBox, first.Failure);
+            Assert.IsTrue(second.IsStepTaken);
+            Assert.AreEqual(new GridPos(3, 1), second.State.PortalBoxes[0].Position);
         }
     }
 }

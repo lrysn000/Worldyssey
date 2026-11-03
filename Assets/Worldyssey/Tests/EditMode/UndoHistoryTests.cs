@@ -40,6 +40,7 @@ namespace Worldyssey.Tests
         {
             Step(Direction.Right);
             Step(Direction.Up); // 撞墙，只转向
+            Step(Direction.Right); // 前方是箱子但没面朝它，只转向
             Step(Direction.Right);
 
             Assert.AreEqual(2, _history.Count);

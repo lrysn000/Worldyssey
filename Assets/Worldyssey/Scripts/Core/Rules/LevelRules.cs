@@ -69,6 +69,12 @@ namespace Worldyssey.Core
             int portalIndex = state.FindPortalBoxAt(world, target);
             if (mappedIndex >= 0 || portalIndex >= 0)
             {
+                // 推箱前必须已经面朝它：没面朝时这一下只转向，给玩家先对准方向的机会（例如正对底座上的传送箱子再按传送）
+                if (state.PlayerFacing != direction)
+                {
+                    return StepResult.Failed(next, StepFailure.TurnedToFaceBox, events);
+                }
+
                 if (IsBlocked(state, world, boxTarget))
                 {
                     return StepResult.Failed(next, StepFailure.BoxBlocked, events);

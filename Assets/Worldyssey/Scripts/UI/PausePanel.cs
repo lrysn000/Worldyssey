@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,6 +37,23 @@ namespace Worldyssey.UI
             RemoveListener(_resumeButton, HandleResumeClicked);
             RemoveListener(_restartButton, HandleRestartClicked);
             RemoveListener(_levelSelectButton, HandleLevelSelectClicked);
+        }
+
+        /// <summary>
+        /// 修改“返回”按钮的文字：正常游戏为返回选关，编辑器试玩时为返回编辑器。
+        /// </summary>
+        public void SetExitLabel(string label)
+        {
+            if (_levelSelectButton == null)
+            {
+                return;
+            }
+
+            TMP_Text text = _levelSelectButton.GetComponentInChildren<TMP_Text>(true);
+            if (text != null)
+            {
+                text.text = label;
+            }
         }
 
         private static void AddListener(Button button, UnityEngine.Events.UnityAction action)

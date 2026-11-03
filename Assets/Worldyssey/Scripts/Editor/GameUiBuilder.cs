@@ -25,17 +25,17 @@ namespace Worldyssey.EditorTools
         private const string PreferredCatalogName = "LevelCatalog_Tests";
 
         private static readonly Vector2 ReferenceResolution = new Vector2(1920f, 1080f);
-        private static readonly Vector2 Center = new Vector2(0.5f, 0.5f);
-        private static readonly Vector2 TopLeft = new Vector2(0f, 1f);
+        internal static readonly Vector2 Center = new Vector2(0.5f, 0.5f);
+        internal static readonly Vector2 TopLeft = new Vector2(0f, 1f);
         private static readonly Vector2 TopRight = new Vector2(1f, 1f);
         private static readonly Vector2 TopCenter = new Vector2(0.5f, 1f);
         private static readonly Vector2 BottomCenter = new Vector2(0.5f, 0f);
-        private static readonly Vector2 MenuButtonSize = new Vector2(380f, 84f);
+        internal static readonly Vector2 MenuButtonSize = new Vector2(380f, 84f);
         private static readonly Vector2 HudButtonSize = new Vector2(260f, 68f);
 
-        private static readonly Color MenuBackground = new Color(0.08f, 0.09f, 0.12f, 1f);
-        private static readonly Color DimBackground = new Color(0f, 0f, 0f, 0.65f);
-        private static readonly Color ButtonColor = new Color(0.22f, 0.24f, 0.30f, 1f);
+        internal static readonly Color MenuBackground = new Color(0.08f, 0.09f, 0.12f, 1f);
+        internal static readonly Color DimBackground = new Color(0f, 0f, 0f, 0.65f);
+        internal static readonly Color ButtonColor = new Color(0.22f, 0.24f, 0.30f, 1f);
         private static readonly Color TextColor = Color.white;
         private static readonly Color ConflictTextColor = new Color(1f, 0.6f, 0.3f, 1f);
 
@@ -264,7 +264,7 @@ namespace Worldyssey.EditorTools
             return panel;
         }
 
-        private static LevelButton GetOrCreateLevelButtonPrefab()
+        internal static LevelButton GetOrCreateLevelButtonPrefab()
         {
             var existing = AssetDatabase.LoadAssetAtPath<LevelButton>(LevelButtonPrefabPath);
             if (existing != null)
@@ -294,7 +294,7 @@ namespace Worldyssey.EditorTools
             return prefab.GetComponent<LevelButton>();
         }
 
-        private static Transform CreateGrid(Transform parent, string name, Vector2 position)
+        internal static Transform CreateGrid(Transform parent, string name, Vector2 position)
         {
             RectTransform rect = CreateRect(name, parent);
             Place(rect, Center, position, new Vector2(1440f, 240f));
@@ -307,7 +307,7 @@ namespace Worldyssey.EditorTools
             return rect;
         }
 
-        private static RectTransform CreateFullscreen(string name, Transform parent, Color color, bool blocksRaycasts)
+        internal static RectTransform CreateFullscreen(string name, Transform parent, Color color, bool blocksRaycasts)
         {
             RectTransform rect = CreateRect(name, parent);
             Stretch(rect);
@@ -317,7 +317,7 @@ namespace Worldyssey.EditorTools
             return rect;
         }
 
-        private static TMP_Text CreateText(Transform parent, string name, string content, float fontSize, TextAlignmentOptions alignment, Vector2 anchor, Vector2 position, Vector2 size)
+        internal static TMP_Text CreateText(Transform parent, string name, string content, float fontSize, TextAlignmentOptions alignment, Vector2 anchor, Vector2 position, Vector2 size)
         {
             RectTransform rect = CreateRect(name, parent);
             Place(rect, anchor, position, size);
@@ -330,7 +330,7 @@ namespace Worldyssey.EditorTools
             return text;
         }
 
-        private static Button CreateButton(Transform parent, string name, string label, Vector2 anchor, Vector2 position, Vector2 size)
+        internal static Button CreateButton(Transform parent, string name, string label, Vector2 anchor, Vector2 position, Vector2 size)
         {
             RectTransform rect = CreateRect(name, parent);
             Place(rect, anchor, position, size);
@@ -350,14 +350,14 @@ namespace Worldyssey.EditorTools
             return button;
         }
 
-        private static RectTransform CreateRect(string name, Transform parent)
+        internal static RectTransform CreateRect(string name, Transform parent)
         {
             var go = new GameObject(name, typeof(RectTransform));
             go.transform.SetParent(parent, false);
             return (RectTransform)go.transform;
         }
 
-        private static void Stretch(RectTransform rect)
+        internal static void Stretch(RectTransform rect)
         {
             rect.anchorMin = Vector2.zero;
             rect.anchorMax = Vector2.one;
@@ -368,7 +368,7 @@ namespace Worldyssey.EditorTools
         /// <summary>
         /// 以 <paramref name="anchor"/> 同时作为锚点和轴心放置，靠边的元素位置值就是到边缘的距离。
         /// </summary>
-        private static void Place(RectTransform rect, Vector2 anchor, Vector2 position, Vector2 size)
+        internal static void Place(RectTransform rect, Vector2 anchor, Vector2 position, Vector2 size)
         {
             rect.anchorMin = anchor;
             rect.anchorMax = anchor;
@@ -377,7 +377,7 @@ namespace Worldyssey.EditorTools
             rect.sizeDelta = size;
         }
 
-        private static void SetReference(Object target, string propertyName, Object value)
+        internal static void SetReference(Object target, string propertyName, Object value)
         {
             var serialized = new SerializedObject(target);
             SerializedProperty property = serialized.FindProperty(propertyName);

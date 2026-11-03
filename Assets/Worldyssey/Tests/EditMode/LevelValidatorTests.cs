@@ -46,13 +46,28 @@ namespace Worldyssey.Tests
         [Test]
         public void NewerFormatVersion_IsError()
         {
-            AssertSingleError(new LevelDataBuilder { FormatVersion = LevelData.CurrentFormatVersion + 1 }, "版本");
+            AssertSingleError(new LevelDataBuilder { FormatVersion = LevelData.CurrentFormatVersion + 1 }, "version");
         }
 
         [Test]
         public void NonPositiveSize_IsError()
         {
             Assert.IsTrue(LevelValidator.Validate(new LevelDataBuilder { Width = 0 }.Build()).HasErrors);
+        }
+
+        [Test]
+        public void SizeBeyondLimit_IsError()
+        {
+            var builder = new LevelDataBuilder { Width = LevelLimits.MaxWidth + 1 };
+            builder.SharedRows = new[]
+            {
+                new string('#', builder.Width),
+                "# P" + new string(' ', builder.Width - 4) + "#",
+                "#" + new string(' ', builder.Width - 3) + ".#",
+                new string('#', builder.Width),
+            };
+
+            AssertSingleError(builder, "outside the allowed range");
         }
 
         [Test]
@@ -64,25 +79,25 @@ namespace Worldyssey.Tests
                 builder.Worlds.Add(new WorldData($"Extra {i}", System.Array.Empty<string>()));
             }
 
-            AssertSingleError(builder, "世界数量");
+            AssertSingleError(builder, "World count");
         }
 
         [Test]
         public void StartWorldOutOfRange_IsError()
         {
-            AssertSingleError(new LevelDataBuilder { StartWorld = 2 }, "起始世界");
+            AssertSingleError(new LevelDataBuilder { StartWorld = 2 }, "Start world");
         }
 
         [Test]
         public void SharedRowCountMismatch_IsError()
         {
-            AssertHasError(new LevelDataBuilder { SharedRows = new[] { "#######", "#    .#", "#######" } }, "行数");
+            AssertHasError(new LevelDataBuilder { SharedRows = new[] { "#######", "#    .#", "#######" } }, "row count");
         }
 
         [Test]
         public void SharedRowLengthMismatch_IsError()
         {
-            AssertHasError(new LevelDataBuilder { SharedRows = new[] { "#######", "# P   #", "#   .#", "#######" } }, "长度");
+            AssertHasError(new LevelDataBuilder { SharedRows = new[] { "#######", "# P   #", "#   .#", "#######" } }, "length");
         }
 
         [Test]
@@ -92,20 +107,20 @@ namespace Worldyssey.Tests
                 new LevelDataBuilder { SharedRows = new[] { "#######", "# P ? #", "#    .#", "#######" } }.Build());
 
             LevelIssue issue = report.Issues.Single(i => i.IsError);
-            StringAssert.Contains("未知字符", issue.Message);
+            StringAssert.Contains("Unknown character", issue.Message);
             Assert.AreEqual(new GridPos(4, 2), issue.Position);
         }
 
         [Test]
         public void UniqueWallRowMismatch_IsError()
         {
-            AssertSingleError(new LevelDataBuilder().WithWallRows(1, "       ", "       "), "独有层行数");
+            AssertSingleError(new LevelDataBuilder().WithWallRows(1, "       ", "       "), "unique layer row count");
         }
 
         [Test]
         public void UnknownUniqueWallCharacter_IsError()
         {
-            AssertSingleError(new LevelDataBuilder().WithWallRows(1, "       ", "       ", "    #  ", "       "), "未知字符");
+            AssertSingleError(new LevelDataBuilder().WithWallRows(1, "       ", "       ", "    #  ", "       "), "Unknown character");
         }
 
         [Test]
@@ -114,7 +129,7 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder { SharedRows = new[] { "#######", "# P   #", "#     #", "#######" } };
             builder.MappedBoxes.Clear();
 
-            AssertHasError(builder, "没有终点");
+            AssertHasError(builder, "no goal");
         }
 
         [Test]
@@ -123,13 +138,13 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder();
             builder.MappedBoxes.Add(new GridPos(4, 2));
 
-            AssertSingleError(builder, "数量");
+            AssertSingleError(builder, "count");
         }
 
         [Test]
         public void UniqueWallOnPedestal_IsError()
         {
-            AssertHasError(new LevelDataBuilder().WithWallRows(1, "       ", "  x    ", "       ", "       "), "底座");
+            AssertHasError(new LevelDataBuilder().WithWallRows(1, "       ", "  x    ", "       ", "       "), "pedestal");
         }
 
         [Test]
@@ -138,7 +153,7 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder();
             builder.Pairs[0] = new PortalPairData(0, 1, 1);
 
-            AssertHasError(builder, "同一个世界");
+            AssertHasError(builder, "to itself");
         }
 
         [Test]
@@ -147,7 +162,7 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder();
             builder.Pairs[0] = new PortalPairData(0, 0, 3);
 
-            AssertHasError(builder, "不存在的世界");
+            AssertHasError(builder, "does not exist");
         }
 
         [Test]
@@ -156,7 +171,7 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder();
             builder.Pairs.Add(new PortalPairData(0, 1, 0));
 
-            AssertSingleError(builder, "重复");
+            AssertSingleError(builder, "duplicated");
         }
 
         [Test]
@@ -166,7 +181,7 @@ namespace Worldyssey.Tests
             builder.Worlds.Add(new WorldData("World 2", System.Array.Empty<string>()));
             builder.PortalBoxes[0] = new PortalBoxData(0, 2, 2, 2);
 
-            AssertSingleError(builder, "不属于配对");
+            AssertSingleError(builder, "not part of pair");
         }
 
         [Test]
@@ -175,7 +190,7 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder();
             builder.PortalBoxes.Add(new PortalBoxData(0, 0, 4, 2));
 
-            AssertSingleError(builder, "不止一次");
+            AssertSingleError(builder, "more than one");
         }
 
         [Test]
@@ -184,31 +199,31 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder();
             builder.PortalBoxes.Add(new PortalBoxData(9, 1, 4, 2));
 
-            AssertSingleError(builder, "配对 9");
+            AssertSingleError(builder, "pair 9");
         }
 
         [Test]
         public void PlayerOnWall_IsError()
         {
-            AssertSingleError(new LevelDataBuilder { Player = new PlayerSpawnData(0, 1, Direction.Right) }, "玩家");
+            AssertSingleError(new LevelDataBuilder { Player = new PlayerSpawnData(0, 1, Direction.Right) }, "Player");
         }
 
         [Test]
         public void PlayerOutOfBounds_IsError()
         {
-            AssertSingleError(new LevelDataBuilder { Player = new PlayerSpawnData(9, 1, Direction.Right) }, "越界");
+            AssertSingleError(new LevelDataBuilder { Player = new PlayerSpawnData(9, 1, Direction.Right) }, "out of bounds");
         }
 
         [Test]
         public void MappedBoxOnStartWorldUniqueWall_IsError()
         {
-            AssertSingleError(new LevelDataBuilder().WithWallRows(0, "       ", "       ", "   x   ", "       "), "独有墙上");
+            AssertSingleError(new LevelDataBuilder().WithWallRows(0, "       ", "       ", "   x   ", "       "), "unique wall of");
         }
 
         [Test]
         public void PlayerOverlappingMappedBox_IsError()
         {
-            AssertSingleError(new LevelDataBuilder { Player = new PlayerSpawnData(3, 1, Direction.Right) }, "重叠");
+            AssertSingleError(new LevelDataBuilder { Player = new PlayerSpawnData(3, 1, Direction.Right) }, "overlaps");
         }
 
         [Test]
@@ -217,7 +232,7 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder { SharedRows = new[] { "#######", "# P  .#", "#    .#", "#######" } };
             builder.MappedBoxes.Add(new GridPos(3, 1));
 
-            AssertSingleError(builder, "重叠");
+            AssertSingleError(builder, "overlaps");
         }
 
         [Test]
@@ -226,7 +241,7 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder();
             builder.PortalBoxes[0] = new PortalBoxData(0, 0, 3, 1);
 
-            AssertSingleError(builder, "重叠");
+            AssertSingleError(builder, "overlaps");
         }
 
         [Test]
@@ -235,7 +250,7 @@ namespace Worldyssey.Tests
             var builder = new LevelDataBuilder().WithWallRows(1, "       ", "       ", "    x  ", "       ");
             builder.PortalBoxes.Add(new PortalBoxData(0, 1, 4, 1));
 
-            AssertSingleError(builder, "独有墙上");
+            AssertSingleError(builder, "unique wall of");
         }
 
         [Test]
@@ -246,7 +261,7 @@ namespace Worldyssey.Tests
             builder.PortalBoxes.Add(new PortalBoxData(0, 1, 4, 1));
             builder.PortalBoxes.Add(new PortalBoxData(1, 1, 4, 1));
 
-            AssertSingleError(builder, "重叠");
+            AssertSingleError(builder, "overlaps");
         }
 
         [Test]
