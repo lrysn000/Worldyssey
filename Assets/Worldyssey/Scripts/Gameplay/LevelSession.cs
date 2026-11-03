@@ -23,12 +23,16 @@ namespace Worldyssey.Gameplay
         [SerializeField] private LevelView _levelView;
         [SerializeField] private StepPlayer _stepPlayer;
 
+        [Tooltip("可选：负责取景和旋转视角的相机。为空时不取景、不能旋转，方向键按网格方向走")]
+        [SerializeField] private CameraRig _cameraRig;
+
         private InputCommandScheduler _commandScheduler;
         private PlaySession _session;
         private LevelData _currentLevel;
         private bool _isInputEnabled;
         private bool _isCompletionPending;
         private bool _hasReferences;
+        private bool _isRepeatCommand;
 
         /// <summary>当前对局，没有加载关卡时为 null。</summary>
         public PlaySession Session => _session;
@@ -76,6 +80,7 @@ namespace Worldyssey.Gameplay
             _inputReader.TeleportRequested += HandleTeleportRequested;
             _inputReader.UndoRequested += HandleUndoRequested;
             _inputReader.RestartRequested += HandleRestartRequested;
+            _inputReader.RotateViewRequested += HandleRotateViewRequested;
             SubscribeSession();
         }
 
@@ -112,18 +117,22 @@ namespace Worldyssey.Gameplay
             }
 
             // 按住连续移动依赖时间，必须每帧询问；这里只做几次比较，不分配内存
-            if (!_commandScheduler.TryGetNextCommand(Time.time, _stepPlayer.IsPlaying, out InputCommand command))
+            // 旋转视角期间和动画期间一样算“忙”，新命令进缓存，转完再执行
+            if (!_commandScheduler.TryGetNextCommand(Time.time, IsBusy(), out InputCommand command))
             {
                 return;
             }
 
+            _isRepeatCommand = _commandScheduler.LastCommandWasRepeat;
             if (command.Type == InputCommandType.Teleport)
             {
                 _session.TryTeleport();
             }
             else
             {
-                _session.TryMove(command.Direction);
+                // 玩家按的是屏幕方向，执行时按当前视角换算成网格方向
+                int turns = _cameraRig != null ? _cameraRig.CameraQuarterTurns : 0;
+                _session.TryMove(ViewRotation.ScreenToGrid(command.Direction, turns));
             }
         }
 
@@ -139,6 +148,7 @@ namespace Worldyssey.Gameplay
             _inputReader.TeleportRequested -= HandleTeleportRequested;
             _inputReader.UndoRequested -= HandleUndoRequested;
             _inputReader.RestartRequested -= HandleRestartRequested;
+            _inputReader.RotateViewRequested -= HandleRotateViewRequested;
             UnsubscribeSession();
 
             // 退订后收不到松开事件，清空按键状态以免重新启用时方向键“卡住”
@@ -183,6 +193,13 @@ namespace Worldyssey.Gameplay
             SubscribeSession();
             _levelView.Build(_session.Rules.Map, _session.State);
             _levelView.UpdateFaceHints(_session.Rules, _session.State);
+            if (_cameraRig != null)
+            {
+                // 进入新关卡回到默认视角；撤销、重开、传送都保持当前视角
+                _cameraRig.ResetRotation();
+                _cameraRig.Frame(_levelView.LevelBounds);
+            }
+
             _isInputEnabled = true;
             StateChanged?.Invoke();
             return true;
@@ -224,7 +241,7 @@ namespace Worldyssey.Gameplay
         /// <summary>撤销一步，打断正在播放的动画。通关后或输入关闭时无效。供 HUD 按钮和按键调用。</summary>
         public void RequestUndo()
         {
-            if (!CanAcceptCommands())
+            if (!CanAcceptCommands() || IsRotatingView())
             {
                 return;
             }
@@ -240,7 +257,7 @@ namespace Worldyssey.Gameplay
         /// </remarks>
         public void RequestRestart()
         {
-            if (_session == null || !_isInputEnabled)
+            if (_session == null || !_isInputEnabled || IsRotatingView())
             {
                 return;
             }
@@ -267,6 +284,16 @@ namespace Worldyssey.Gameplay
         public bool IsWorldConflicted(int world)
         {
             return _session != null && _session.Rules.IsWorldConflicted(_session.State, world);
+        }
+
+        private bool IsRotatingView()
+        {
+            return _cameraRig != null && _cameraRig.IsRotating;
+        }
+
+        private bool IsBusy()
+        {
+            return _stepPlayer.IsPlaying || IsRotatingView();
         }
 
         private bool CanAcceptCommands()
@@ -326,6 +353,17 @@ namespace Worldyssey.Gameplay
             }
         }
 
+        private void HandleRotateViewRequested(bool sceneClockwise)
+        {
+            // 旋转只在空闲时进行：动画或旋转进行中按 Q/E 直接忽略
+            if (_cameraRig == null || !CanAcceptCommands() || IsBusy())
+            {
+                return;
+            }
+
+            _cameraRig.TryRotate(sceneClockwise);
+        }
+
         private void HandleUndoRequested()
         {
             RequestUndo();
@@ -338,7 +376,9 @@ namespace Worldyssey.Gameplay
 
         private void HandleStepApplied(StepResult result)
         {
-            _stepPlayer.Play(result, _session.Rules);
+            // 按住方向键顶着墙时不反复回弹，只有真正按下的那一次回弹
+            _stepPlayer.Play(result, _session.Rules, !_isRepeatCommand);
+            _isRepeatCommand = false;
 
             if (IsTeleportRejection(result.Failure))
             {

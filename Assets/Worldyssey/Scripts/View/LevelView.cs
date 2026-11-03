@@ -31,6 +31,12 @@ namespace Worldyssey.View
         /// <summary>目标箱子数量。</summary>
         public int MappedBoxViewCount => _mappedBoxViews.Count;
 
+        /// <summary>一格的边长（世界单位），未配置时为 1。</summary>
+        public float CellSize => _visualConfig != null ? _visualConfig.CellSize : 1f;
+
+        /// <summary>当前关卡在世界空间中的范围（含一格高度），供相机取景。未生成关卡时大小为零。</summary>
+        public Bounds LevelBounds { get; private set; }
+
         private void Awake()
         {
             if (_visualConfig == null)
@@ -53,6 +59,35 @@ namespace Worldyssey.View
         public PortalBoxView GetPortalBoxView(int portalIndex)
         {
             return _portalBoxViews[portalIndex];
+        }
+
+        /// <summary>
+        /// 网格方向在实体根节点下对应的单位向量，用于回弹、挤压等效果。
+        /// </summary>
+        public Vector3 DirectionToLocal(Direction direction)
+        {
+            return _visualConfig.GridToLocal(direction.ToOffset()) - _visualConfig.GridToLocal(new GridPos(0, 0));
+        }
+
+        /// <summary>
+        /// 立即停止所有实体的表现效果并复原。
+        /// </summary>
+        public void StopAllEffects()
+        {
+            if (_playerView != null)
+            {
+                _playerView.StopEffects();
+            }
+
+            for (int i = 0; i < _mappedBoxViews.Count; i++)
+            {
+                _mappedBoxViews[i].StopEffects();
+            }
+
+            for (int i = 0; i < _portalBoxViews.Count; i++)
+            {
+                _portalBoxViews[i].StopEffects();
+            }
         }
 
         /// <summary>
@@ -88,6 +123,10 @@ namespace Worldyssey.View
 
             BuildTiles(map);
             BuildEntities(map, state);
+
+            // 关卡居中在本物体原点；高度取一格，让墙和箱子的顶部也在取景范围内
+            var size = new Vector3(map.Width * cellSize, cellSize, map.Height * cellSize);
+            LevelBounds = new Bounds(transform.position + Vector3.up * (cellSize * 0.5f), size);
             Sync(state);
         }
 
@@ -254,6 +293,7 @@ namespace Worldyssey.View
             _portalBoxViews.Clear();
             _playerView = null;
             _shownWorld = -1;
+            LevelBounds = default;
 
             for (int i = 0; i < _worldTileRoots.Count; i++)
             {

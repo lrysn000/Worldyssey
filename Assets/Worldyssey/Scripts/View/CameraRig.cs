@@ -1,0 +1,189 @@
+using System.Collections;
+using UnityEngine;
+using Worldyssey.Core;
+using Worldyssey.Data;
+
+namespace Worldyssey.View
+{
+    /// <summary>
+    /// 关卡相机：围绕关卡中心保持固定俯角，自动推拉到恰好完整看到整个关卡；支持每次 90° 旋转视角。
+    /// 旋转只影响画面，规则不知道它的存在；输入换算见 <see cref="ViewRotation"/>。
+    /// </summary>
+    public class CameraRig : MonoBehaviour
+    {
+        // 包围盒 8 个角的符号组合，用于逐角计算所需距离
+        private static readonly Vector3[] CornerSigns =
+        {
+            new Vector3(-1f, -1f, -1f), new Vector3(1f, -1f, -1f), new Vector3(-1f, 1f, -1f), new Vector3(1f, 1f, -1f),
+            new Vector3(-1f, -1f, 1f), new Vector3(1f, -1f, 1f), new Vector3(-1f, 1f, 1f), new Vector3(1f, 1f, 1f),
+        };
+
+        [SerializeField] private Camera _camera;
+        [SerializeField] private GameplayConfig _gameplayConfig;
+
+        [Tooltip("没有关卡时使用的取景范围，避免菜单界面背后的相机位置随意")]
+        [SerializeField] private Vector3 _defaultFocusSize = new Vector3(9f, 1f, 7f);
+
+        private Bounds _focus;
+        private float _yaw;
+        private float _lastAspect;
+        private Coroutine _rotateRoutine;
+
+        /// <summary>相机从默认朝向起顺时针（俯视）转过的 90° 次数，0~3。旋转动画期间已是目标值。</summary>
+        public int CameraQuarterTurns { get; private set; }
+
+        public bool IsRotating => _rotateRoutine != null;
+
+        private void Awake()
+        {
+            if (_camera == null)
+            {
+                Debug.LogError($"[{nameof(CameraRig)}] {name} 缺少引用：{nameof(_camera)}", this);
+            }
+
+            if (_gameplayConfig == null)
+            {
+                Debug.LogError($"[{nameof(CameraRig)}] {name} 缺少引用：{nameof(_gameplayConfig)}", this);
+            }
+
+            _focus = new Bounds(Vector3.zero, _defaultFocusSize);
+        }
+
+        private void LateUpdate()
+        {
+            // 窗口比例变化（拖动窗口、切全屏）时重新取景；只比较一个浮点数，不分配内存
+            if (_camera != null && !Mathf.Approximately(_camera.aspect, _lastAspect))
+            {
+                ApplyPose();
+            }
+        }
+
+        private void OnDisable()
+        {
+            CompleteRotation();
+        }
+
+        /// <summary>
+        /// 对准新的关卡范围并立即取景。
+        /// </summary>
+        public void Frame(Bounds levelBounds)
+        {
+            _focus = levelBounds;
+            ApplyPose();
+        }
+
+        /// <summary>
+        /// 立即回到默认朝向，用于进入新关卡。
+        /// </summary>
+        public void ResetRotation()
+        {
+            CompleteRotation();
+            CameraQuarterTurns = 0;
+            _yaw = 0f;
+            ApplyPose();
+        }
+
+        /// <summary>
+        /// 旋转视角。<paramref name="sceneClockwise"/> 为 true 时画面中的场景顺时针转（相机逆时针转）。
+        /// 正在旋转时忽略并返回 false。
+        /// </summary>
+        public bool TryRotate(bool sceneClockwise)
+        {
+            if (IsRotating || _gameplayConfig == null)
+            {
+                return false;
+            }
+
+            int cameraDelta = sceneClockwise ? -1 : 1;
+            CameraQuarterTurns = ViewRotation.Normalize(CameraQuarterTurns + cameraDelta);
+            float targetYaw = _yaw + cameraDelta * 90f;
+            float duration = _gameplayConfig.ViewRotateDuration;
+            if (duration <= 0f || !isActiveAndEnabled)
+            {
+                _yaw = targetYaw;
+                ApplyPose();
+                return true;
+            }
+
+            _rotateRoutine = StartCoroutine(RotateRoutine(targetYaw, duration));
+            return true;
+        }
+
+        private void CompleteRotation()
+        {
+            if (_rotateRoutine == null)
+            {
+                return;
+            }
+
+            StopCoroutine(_rotateRoutine);
+            _rotateRoutine = null;
+            _yaw = CameraQuarterTurns * 90f;
+            ApplyPose();
+        }
+
+        private IEnumerator RotateRoutine(float targetYaw, float duration)
+        {
+            float startYaw = _yaw;
+            AnimationCurve curve = _gameplayConfig.MoveCurve;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float progress = Mathf.Clamp01(elapsed / duration);
+                _yaw = Mathf.LerpUnclamped(startYaw, targetYaw, curve != null ? curve.Evaluate(progress) : progress);
+                ApplyPose();
+                yield return null;
+            }
+
+            // 收尾时把角度规整到 0~360 内的整 90°，避免长时间旋转后角度累积
+            _yaw = CameraQuarterTurns * 90f;
+            ApplyPose();
+            _rotateRoutine = null;
+        }
+
+        private void ApplyPose()
+        {
+            if (_camera == null || _gameplayConfig == null)
+            {
+                return;
+            }
+
+            _lastAspect = _camera.aspect;
+            Quaternion rotation = Quaternion.Euler(_gameplayConfig.CameraPitch, _yaw, 0f);
+            Vector3 forward = rotation * Vector3.forward;
+            float distance = CalculateFitDistance(rotation);
+            Transform cameraTransform = _camera.transform;
+            cameraTransform.SetPositionAndRotation(_focus.center - forward * distance, rotation);
+        }
+
+        /// <summary>
+        /// 计算让包围盒（含边距）的 8 个角都落在视锥内所需的最小距离。
+        /// 对每个角：横向偏移 / tan(半水平视角) 与纵向偏移 / tan(半垂直视角) 取大者，再减去该角在视线方向上的深度。
+        /// </summary>
+        private float CalculateFitDistance(Quaternion rotation)
+        {
+            Vector3 right = rotation * Vector3.right;
+            Vector3 up = rotation * Vector3.up;
+            Vector3 forward = rotation * Vector3.forward;
+            float tanHalfVertical = Mathf.Tan(_camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            float tanHalfHorizontal = tanHalfVertical * _camera.aspect;
+
+            float margin = _gameplayConfig.CameraMargin;
+            Vector3 extents = _focus.extents + new Vector3(margin, 0f, margin);
+            float required = 0f;
+            for (int i = 0; i < CornerSigns.Length; i++)
+            {
+                Vector3 offset = Vector3.Scale(CornerSigns[i], extents);
+                float x = Mathf.Abs(Vector3.Dot(offset, right));
+                float y = Mathf.Abs(Vector3.Dot(offset, up));
+                float depth = Vector3.Dot(offset, forward);
+                float needed = Mathf.Max(x / tanHalfHorizontal, y / tanHalfVertical) - depth;
+                required = Mathf.Max(required, needed);
+            }
+
+            // 不能贴近到近裁剪面以内
+            return Mathf.Max(required, _camera.nearClipPlane + extents.magnitude);
+        }
+    }
+}

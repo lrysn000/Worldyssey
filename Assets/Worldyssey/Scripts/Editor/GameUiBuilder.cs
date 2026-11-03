@@ -103,7 +103,7 @@ namespace Worldyssey.EditorTools
             Debug.Log($"[{nameof(GameUiBuilder)}] 已生成游戏物体和 UI，关卡目录：{catalog.name}。记得保存场景并调整相机");
         }
 
-        private static T FindAsset<T>(string preferredName) where T : Object
+        internal static T FindAsset<T>(string preferredName) where T : Object
         {
             string[] guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
             T first = null;

@@ -194,5 +194,20 @@ namespace Worldyssey.Tests
             Assert.IsTrue(_scheduler.TryGetNextCommand(0.6f, false, out InputCommand second));
             Assert.AreEqual(InputCommand.Move(Direction.Right), second);
         }
+
+        [Test]
+        public void LastCommandWasRepeat_DistinguishesPressFromHold()
+        {
+            _scheduler.Press(Direction.Up, 0f);
+            _scheduler.TryGetNextCommand(0f, false, out _);
+            Assert.IsFalse(_scheduler.LastCommandWasRepeat, "按下产生的命令");
+
+            _scheduler.TryGetNextCommand(0.5f, false, out _);
+            Assert.IsTrue(_scheduler.LastCommandWasRepeat, "按住产生的命令");
+
+            _scheduler.PressTeleport();
+            _scheduler.TryGetNextCommand(0.6f, false, out _);
+            Assert.IsFalse(_scheduler.LastCommandWasRepeat);
+        }
     }
 }

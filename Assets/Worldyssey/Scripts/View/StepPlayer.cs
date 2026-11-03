@@ -8,7 +8,8 @@ namespace Worldyssey.View
 {
     /// <summary>
     /// 播放一步的结果，播完前 <see cref="IsPlaying"/> 为 true。
-    /// 普通步：转向、移动、推箱同时补间。传送步：淡出 → 切换世界并放好伙伴 → 淡入。
+    /// 普通步：转向、移动、推箱同时补间，推动的箱子挤压，到达终点的箱子弹起，撞墙时回弹。
+    /// 传送步：淡出 → 切换世界并放好伙伴 → 淡入。通关步：移动播完后所有箱子依次弹起庆祝。
     /// 面提示也由这里刷新，保证提示变化与画面变化同时发生。
     /// </summary>
     public class StepPlayer : MonoBehaviour
@@ -18,11 +19,12 @@ namespace Worldyssey.View
         [SerializeField] private GameplayConfig _gameplayConfig;
 
         private readonly List<EntityView> _animatingViews = new List<EntityView>(4);
+        private readonly List<EntityView> _pendingPops = new List<EntityView>(2);
         private Coroutine _playRoutine;
         private LevelRules _pendingRules;
         private LevelState _pendingTeleportState;
 
-        /// <summary>是否正在播放。播放期间新的命令会被缓存。</summary>
+        /// <summary>是否正在播放。播放期间新的命令会被缓存。撞墙回弹不算在内，不会挡住下一个输入。</summary>
         public bool IsPlaying => _playRoutine != null;
 
         private void Awake()
@@ -39,8 +41,9 @@ namespace Worldyssey.View
 
         /// <summary>
         /// 播放一步。若上一步还没播完，先让它直接落到终点。
+        /// <paramref name="allowBump"/> 为 false 时不播撞墙回弹（按住方向键连续尝试时）。
         /// </summary>
-        public void Play(StepResult result, LevelRules rules)
+        public void Play(StepResult result, LevelRules rules, bool allowBump)
         {
             CompleteImmediately();
             if (_levelView == null || _gameplayConfig == null || _levelView.PlayerView == null)
@@ -56,12 +59,20 @@ namespace Worldyssey.View
                 return;
             }
 
-            PlayMovement(result);
+            PlayMovement(result, rules);
+            if (allowBump && (result.Failure == StepFailure.Blocked || result.Failure == StepFailure.BoxBlocked))
+            {
+                _levelView.PlayerView.PlayBump(
+                    _levelView.DirectionToLocal(result.State.PlayerFacing),
+                    _gameplayConfig.BumpDistance * _levelView.CellSize,
+                    _gameplayConfig.BumpDuration);
+            }
+
             _levelView.UpdateFaceHints(rules, result.State);
         }
 
         /// <summary>
-        /// 让正在播放的一步立即结束，所有相关实体落到终点。用于撤销、重开等需要打断动画的操作。
+        /// 让正在播放的一步立即结束：实体落到终点，表现效果全部复原。用于撤销、重开等需要打断动画的操作。
         /// </summary>
         public void CompleteImmediately()
         {
@@ -81,15 +92,12 @@ namespace Worldyssey.View
                 _worldTransition.SetClear();
             }
 
-            for (int i = 0; i < _animatingViews.Count; i++)
+            FinishTweens();
+            _pendingPops.Clear();
+            if (_levelView != null)
             {
-                if (_animatingViews[i] != null)
-                {
-                    _animatingViews[i].CompleteTween();
-                }
+                _levelView.StopAllEffects();
             }
-
-            _animatingViews.Clear();
         }
 
         private static bool ContainsTeleport(StepResult result)
@@ -106,7 +114,7 @@ namespace Worldyssey.View
             return false;
         }
 
-        private void PlayMovement(StepResult result)
+        private void PlayMovement(StepResult result, LevelRules rules)
         {
             bool hasMoved = false;
             bool hasTurned = false;
@@ -127,11 +135,17 @@ namespace Worldyssey.View
                         hasTurned = true;
                         break;
                     case MappedBoxPushedEvent pushed:
-                        StartTween(_levelView.GetMappedBoxView(pushed.BoxIndex), pushed.To, moveDuration, curve);
+                        EntityView boxView = _levelView.GetMappedBoxView(pushed.BoxIndex);
+                        PushBox(boxView, pushed.To, result.State.PlayerFacing, moveDuration, curve);
+                        if (rules.Map.IsGoal(pushed.To))
+                        {
+                            _pendingPops.Add(boxView);
+                        }
+
                         duration = Mathf.Max(duration, moveDuration);
                         break;
                     case PortalBoxPushedEvent pushed:
-                        StartTween(_levelView.GetPortalBoxView(pushed.PortalIndex), pushed.To, moveDuration, curve);
+                        PushBox(_levelView.GetPortalBoxView(pushed.PortalIndex), pushed.To, result.State.PlayerFacing, moveDuration, curve);
                         duration = Mathf.Max(duration, moveDuration);
                         break;
                 }
@@ -151,19 +165,52 @@ namespace Worldyssey.View
                 duration = Mathf.Max(duration, playerDuration);
             }
 
-            if (duration > 0f)
+            if (duration > 0f || result.IsLevelSolved)
             {
-                _playRoutine = StartCoroutine(WaitRoutine(duration));
+                _playRoutine = StartCoroutine(MovementRoutine(duration, result.IsLevelSolved));
             }
         }
 
-        private void StartTween(EntityView view, GridPos to, float duration, AnimationCurve curve)
+        private void PushBox(EntityView view, GridPos to, Direction pushDirection, float duration, AnimationCurve curve)
         {
             view.TweenTo(_levelView.GridToLocal(to), Quaternion.identity, duration, curve);
+            view.PlaySquash(_levelView.DirectionToLocal(pushDirection), _gameplayConfig.PushSquashAmount, duration);
             _animatingViews.Add(view);
         }
 
-        private IEnumerator WaitRoutine(float duration)
+        private IEnumerator MovementRoutine(float moveDuration, bool isLevelSolved)
+        {
+            yield return Wait(moveDuration);
+
+            // 各实体的补间与这里按同样的 deltaTime 推进，这里再统一落点一次，确保状态与表现一致
+            FinishTweens();
+
+            float popDuration = _gameplayConfig.PopDuration;
+            float popHeight = _gameplayConfig.PopHeight * _levelView.CellSize;
+            for (int i = 0; i < _pendingPops.Count; i++)
+            {
+                _pendingPops[i].PlayPop(popHeight, popDuration);
+            }
+
+            _pendingPops.Clear();
+
+            if (isLevelSolved)
+            {
+                // 庆祝期间仍算播放中，LevelSession 会等它播完才弹结算
+                int boxCount = _levelView.MappedBoxViewCount;
+                for (int i = 0; i < boxCount; i++)
+                {
+                    _levelView.GetMappedBoxView(i).PlayPop(popHeight, popDuration);
+                    yield return Wait(_gameplayConfig.CelebrationStagger);
+                }
+
+                yield return Wait(popDuration);
+            }
+
+            _playRoutine = null;
+        }
+
+        private static IEnumerator Wait(float duration)
         {
             float elapsed = 0f;
             while (elapsed < duration)
@@ -171,10 +218,6 @@ namespace Worldyssey.View
                 elapsed += Time.deltaTime;
                 yield return null;
             }
-
-            // 各实体的补间与这里按同样的 deltaTime 推进，这里再统一落点一次，确保状态与表现一致
-            _playRoutine = null;
-            CompleteImmediately();
         }
 
         private IEnumerator TeleportRoutine()
@@ -193,6 +236,19 @@ namespace Worldyssey.View
             }
 
             _playRoutine = null;
+        }
+
+        private void FinishTweens()
+        {
+            for (int i = 0; i < _animatingViews.Count; i++)
+            {
+                if (_animatingViews[i] != null)
+                {
+                    _animatingViews[i].CompleteTween();
+                }
+            }
+
+            _animatingViews.Clear();
         }
 
         private void ApplyTeleportedState()

@@ -76,6 +76,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "RotateViewLeft",
+                    "type": "Button",
+                    "id": "b69906c2-f6dc-4a01-8fc8-f9cd6c0c18a3",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "RotateViewRight",
+                    "type": "Button",
+                    "id": "af54c3af-bda7-40ed-932e-de2e32e3cb0b",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -170,7 +188,7 @@
                 {
                     "name": "",
                     "id": "35895147-4780-446d-ab90-0b2ca5b7e6a6",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -208,6 +226,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Pause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "6e78bb4d-932b-42de-aacd-4f937d2d9188",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RotateViewLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f51bfe19-dae5-41c6-8bd1-15d7448ca75b",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "RotateViewRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

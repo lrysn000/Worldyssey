@@ -32,6 +32,12 @@ namespace Worldyssey.Core
         public float HoldRepeatDelay { get; }
 
         /// <summary>
+        /// 最近一次 <see cref="TryGetNextCommand"/> 返回的命令是否来自按住连续移动（而不是一次按下）。
+        /// 表现层据此只在真正按下时播放撞墙回弹，避免顶着墙按住时不停回弹。
+        /// </summary>
+        public bool LastCommandWasRepeat { get; private set; }
+
+        /// <summary>
         /// 方向键按下。
         /// </summary>
         public void Press(Direction direction, float time)
@@ -89,6 +95,7 @@ namespace Worldyssey.Core
             {
                 command = _bufferedCommand.Value;
                 _bufferedCommand = null;
+                LastCommandWasRepeat = false;
                 return true;
             }
 
@@ -104,6 +111,7 @@ namespace Worldyssey.Core
             }
 
             command = InputCommand.Move(current.Direction);
+            LastCommandWasRepeat = true;
             return true;
         }
 

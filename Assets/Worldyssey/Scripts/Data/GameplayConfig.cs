@@ -34,6 +34,44 @@ namespace Worldyssey.Data
         [Min(0f)]
         [SerializeField] private float _hintDuration = 1.5f;
 
+        [Header("手感反馈")]
+        [Tooltip("撞墙回弹时向前顶出的距离（格）")]
+        [Range(0f, 0.5f)]
+        [SerializeField] private float _bumpDistance = 0.15f;
+
+        [Tooltip("撞墙回弹的时长（秒）")]
+        [Min(0f)]
+        [SerializeField] private float _bumpDuration = 0.12f;
+
+        [Tooltip("箱子被推时沿推动方向压扁的比例")]
+        [Range(0f, 0.5f)]
+        [SerializeField] private float _pushSquashAmount = 0.12f;
+
+        [Tooltip("箱子到达终点、通关庆祝时弹起的高度（格）")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _popHeight = 0.25f;
+
+        [Tooltip("弹起一次的时长（秒）")]
+        [Min(0f)]
+        [SerializeField] private float _popDuration = 0.2f;
+
+        [Tooltip("通关庆祝时相邻两个箱子开始弹起的间隔（秒）")]
+        [Min(0f)]
+        [SerializeField] private float _celebrationStagger = 0.08f;
+
+        [Header("相机")]
+        [Tooltip("相机俯角（度），90 为正上方俯视")]
+        [Range(20f, 90f)]
+        [SerializeField] private float _cameraPitch = 55f;
+
+        [Tooltip("关卡四周在画面里留出的边距（格）")]
+        [Min(0f)]
+        [SerializeField] private float _cameraMargin = 1f;
+
+        [Tooltip("旋转视角 90° 的时长（秒），期间不能操作")]
+        [Min(0f)]
+        [SerializeField] private float _viewRotateDuration = 0.25f;
+
         [Header("输入")]
         [Tooltip("按住方向键多久后开始连续移动（秒）")]
         [Min(0f)]
@@ -46,5 +84,14 @@ namespace Worldyssey.Data
         public float TeleportFadeOutDuration => _teleportFadeOutDuration;
         public float TeleportFadeInDuration => _teleportFadeInDuration;
         public float HintDuration => _hintDuration;
+        public float BumpDistance => _bumpDistance;
+        public float BumpDuration => _bumpDuration;
+        public float PushSquashAmount => _pushSquashAmount;
+        public float PopHeight => _popHeight;
+        public float PopDuration => _popDuration;
+        public float CelebrationStagger => _celebrationStagger;
+        public float CameraPitch => _cameraPitch;
+        public float CameraMargin => _cameraMargin;
+        public float ViewRotateDuration => _viewRotateDuration;
     }
 }

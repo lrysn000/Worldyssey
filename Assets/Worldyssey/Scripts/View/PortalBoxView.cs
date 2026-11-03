@@ -19,8 +19,9 @@ namespace Worldyssey.View
 
         public PortalFaceHint FaceHint => _faceHint;
 
-        private void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             if (_bodyRenderer == null)
             {
                 Debug.LogError($"[{nameof(PortalBoxView)}] {name} 缺少引用：{nameof(_bodyRenderer)}", this);
