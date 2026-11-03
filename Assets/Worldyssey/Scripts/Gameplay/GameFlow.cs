@@ -1,0 +1,355 @@
+using System.Collections.Generic;
+using System.IO;
+using UnityEngine;
+using Worldyssey.Core;
+using Worldyssey.Data;
+using Worldyssey.UI;
+
+namespace Worldyssey.Gameplay
+{
+    /// <summary>
+    /// 界面流程状态机：主菜单 → 选关 → 游戏中 ⇄ 暂停 → 结算。负责切换面板、开关游戏输入、读写存档。
+    /// 关卡规则和对局状态不在这里，分别在 Core 和 <see cref="LevelSession"/>。
+    /// </summary>
+    public class GameFlow : MonoBehaviour
+    {
+        private const int NoCatalogIndex = -1;
+
+        [Header("数据")]
+        [SerializeField] private LevelCatalog _catalog;
+
+        [Header("游戏")]
+        [SerializeField] private LevelSession _levelSession;
+        [SerializeField] private PlayerInputReader _inputReader;
+
+        [Header("界面")]
+        [SerializeField] private MainMenuPanel _mainMenuPanel;
+        [SerializeField] private LevelSelectPanel _levelSelectPanel;
+        [SerializeField] private HudPanel _hudPanel;
+        [SerializeField] private PausePanel _pausePanel;
+        [SerializeField] private ResultPanel _resultPanel;
+
+        private readonly List<LevelSelectItem> _builtInItems = new List<LevelSelectItem>();
+        private readonly List<LevelSelectItem> _customItems = new List<LevelSelectItem>();
+        private readonly List<string> _catalogIds = new List<string>();
+        private List<CustomLevelEntry> _customLevels = new List<CustomLevelEntry>();
+
+        private SaveService _saveService;
+        private ProgressTracker _progress;
+        private GameFlowState _state;
+        private LevelData _currentLevel;
+        private string _currentRecordKey;
+        private int _currentCatalogIndex = NoCatalogIndex;
+        private bool _hasReferences;
+
+        public GameFlowState State => _state;
+
+        private void Awake()
+        {
+            _hasReferences = CheckReference(_catalog, nameof(_catalog))
+                & CheckReference(_levelSession, nameof(_levelSession))
+                & CheckReference(_inputReader, nameof(_inputReader))
+                & CheckReference(_mainMenuPanel, nameof(_mainMenuPanel))
+                & CheckReference(_levelSelectPanel, nameof(_levelSelectPanel))
+                & CheckReference(_hudPanel, nameof(_hudPanel))
+                & CheckReference(_pausePanel, nameof(_pausePanel))
+                & CheckReference(_resultPanel, nameof(_resultPanel));
+            if (!_hasReferences)
+            {
+                enabled = false;
+                return;
+            }
+
+            _saveService = new SaveService(Application.persistentDataPath);
+            SaveData saveData = _saveService.LoadOrCreate(out string error);
+            if (!string.IsNullOrEmpty(error))
+            {
+                Debug.LogError($"[{nameof(GameFlow)}] {error}（{_saveService.SaveFilePath}）", this);
+            }
+
+            _progress = new ProgressTracker(saveData);
+        }
+
+        private void OnEnable()
+        {
+            if (!_hasReferences)
+            {
+                return;
+            }
+
+            _mainMenuPanel.StartRequested += HandleStartRequested;
+            _mainMenuPanel.QuitRequested += HandleQuitRequested;
+            _levelSelectPanel.BuiltInLevelChosen += HandleBuiltInLevelChosen;
+            _levelSelectPanel.CustomLevelChosen += HandleCustomLevelChosen;
+            _levelSelectPanel.BackRequested += HandleLevelSelectBack;
+            _hudPanel.PauseRequested += HandlePauseToggle;
+            _pausePanel.ResumeRequested += HandleResumeRequested;
+            _pausePanel.RestartRequested += HandleRestartFromPause;
+            _pausePanel.LevelSelectRequested += HandleBackToLevelSelect;
+            _resultPanel.NextRequested += HandleNextRequested;
+            _resultPanel.ReplayRequested += HandleReplayRequested;
+            _resultPanel.LevelSelectRequested += HandleBackToLevelSelect;
+            _inputReader.PauseRequested += HandlePauseToggle;
+            _levelSession.LevelCompleted += HandleLevelCompleted;
+        }
+
+        private void Start()
+        {
+            ShowMainMenu();
+        }
+
+        private void OnDisable()
+        {
+            if (!_hasReferences)
+            {
+                return;
+            }
+
+            _mainMenuPanel.StartRequested -= HandleStartRequested;
+            _mainMenuPanel.QuitRequested -= HandleQuitRequested;
+            _levelSelectPanel.BuiltInLevelChosen -= HandleBuiltInLevelChosen;
+            _levelSelectPanel.CustomLevelChosen -= HandleCustomLevelChosen;
+            _levelSelectPanel.BackRequested -= HandleLevelSelectBack;
+            _hudPanel.PauseRequested -= HandlePauseToggle;
+            _pausePanel.ResumeRequested -= HandleResumeRequested;
+            _pausePanel.RestartRequested -= HandleRestartFromPause;
+            _pausePanel.LevelSelectRequested -= HandleBackToLevelSelect;
+            _resultPanel.NextRequested -= HandleNextRequested;
+            _resultPanel.ReplayRequested -= HandleReplayRequested;
+            _resultPanel.LevelSelectRequested -= HandleBackToLevelSelect;
+            _inputReader.PauseRequested -= HandlePauseToggle;
+            _levelSession.LevelCompleted -= HandleLevelCompleted;
+        }
+
+        private void ShowMainMenu()
+        {
+            _levelSession.EndLevel();
+            SetPanels(GameFlowState.MainMenu);
+        }
+
+        private void ShowLevelSelect()
+        {
+            _levelSession.EndLevel();
+            RefreshLevelSelect();
+            SetPanels(GameFlowState.LevelSelect);
+        }
+
+        private void RefreshLevelSelect()
+        {
+            RefreshCatalogIds();
+            _builtInItems.Clear();
+            IReadOnlyList<LevelAsset> levels = _catalog.Levels;
+            for (int i = 0; i < levels.Count; i++)
+            {
+                if (levels[i] == null)
+                {
+                    continue;
+                }
+
+                LevelData level = levels[i].Level;
+                bool isLocked = !_progress.IsUnlocked(_catalogIds, i);
+                _builtInItems.Add(new LevelSelectItem(level.DisplayName, isLocked, GetBestSteps(ProgressTracker.BuiltInKey(level.Id))));
+            }
+
+            var problems = new List<string>();
+            _customLevels = _saveService.LoadCustomLevels(problems);
+            for (int i = 0; i < problems.Count; i++)
+            {
+                Debug.LogWarning($"[{nameof(GameFlow)}] 自建关卡已跳过：{problems[i]}", this);
+            }
+
+            _customItems.Clear();
+            for (int i = 0; i < _customLevels.Count; i++)
+            {
+                LevelData level = _customLevels[i].Level;
+                _customItems.Add(new LevelSelectItem(level.DisplayName, false, GetBestSteps(ProgressTracker.CustomKey(level.Id))));
+            }
+
+            _levelSelectPanel.Populate(_builtInItems, _customItems);
+        }
+
+        private void RefreshCatalogIds()
+        {
+            // 目录中的空项也占一个位置，保证下标与目录一致
+            _catalogIds.Clear();
+            IReadOnlyList<LevelAsset> levels = _catalog.Levels;
+            for (int i = 0; i < levels.Count; i++)
+            {
+                _catalogIds.Add(levels[i] != null ? levels[i].Level.Id : string.Empty);
+            }
+        }
+
+        private int GetBestSteps(string recordKey)
+        {
+            return _progress.TryGetBestSteps(recordKey, out int best) ? best : LevelSelectItem.NoBestSteps;
+        }
+
+        private void PlayBuiltInLevel(int catalogIndex)
+        {
+            RefreshCatalogIds();
+            if (!_progress.IsUnlocked(_catalogIds, catalogIndex) || _catalog.Levels[catalogIndex] == null)
+            {
+                return;
+            }
+
+            LevelData level = _catalog.Levels[catalogIndex].Level;
+            PlayLevel(level, ProgressTracker.BuiltInKey(level.Id), catalogIndex);
+        }
+
+        private void PlayLevel(LevelData level, string recordKey, int catalogIndex)
+        {
+            if (!_levelSession.StartLevel(level))
+            {
+                // 具体原因已由 LevelSession 列出，这里留在选关界面
+                ShowLevelSelect();
+                return;
+            }
+
+            _currentLevel = level;
+            _currentRecordKey = recordKey;
+            _currentCatalogIndex = catalogIndex;
+            SetPanels(GameFlowState.Playing);
+        }
+
+        private void SetPanels(GameFlowState state)
+        {
+            _state = state;
+            bool isInLevel = state == GameFlowState.Playing || state == GameFlowState.Paused || state == GameFlowState.Result;
+            _mainMenuPanel.SetVisible(state == GameFlowState.MainMenu);
+            _levelSelectPanel.SetVisible(state == GameFlowState.LevelSelect);
+            _hudPanel.SetVisible(isInLevel);
+            _pausePanel.SetVisible(state == GameFlowState.Paused);
+            _resultPanel.SetVisible(state == GameFlowState.Result);
+            _levelSession.SetInputEnabled(state == GameFlowState.Playing);
+        }
+
+        private bool HasNextBuiltInLevel()
+        {
+            return _currentCatalogIndex != NoCatalogIndex && _currentCatalogIndex + 1 < _catalog.Count;
+        }
+
+        private void SaveProgress()
+        {
+            try
+            {
+                _saveService.Save(_progress.Data);
+            }
+            catch (IOException exception)
+            {
+                // 写盘失败不影响继续游戏，但必须报告，否则玩家的进度会悄悄丢失
+                Debug.LogError($"[{nameof(GameFlow)}] 保存存档失败：{exception.Message}（{_saveService.SaveFilePath}）", this);
+            }
+        }
+
+        private void HandleStartRequested()
+        {
+            ShowLevelSelect();
+        }
+
+        private void HandleQuitRequested()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
+
+        private void HandleBuiltInLevelChosen(int catalogIndex)
+        {
+            PlayBuiltInLevel(catalogIndex);
+        }
+
+        private void HandleCustomLevelChosen(int customIndex)
+        {
+            if (customIndex < 0 || customIndex >= _customLevels.Count)
+            {
+                return;
+            }
+
+            LevelData level = _customLevels[customIndex].Level;
+            PlayLevel(level, ProgressTracker.CustomKey(level.Id), NoCatalogIndex);
+        }
+
+        private void HandleLevelSelectBack()
+        {
+            ShowMainMenu();
+        }
+
+        private void HandlePauseToggle()
+        {
+            if (_state == GameFlowState.Playing)
+            {
+                SetPanels(GameFlowState.Paused);
+            }
+            else if (_state == GameFlowState.Paused)
+            {
+                SetPanels(GameFlowState.Playing);
+            }
+        }
+
+        private void HandleResumeRequested()
+        {
+            if (_state == GameFlowState.Paused)
+            {
+                SetPanels(GameFlowState.Playing);
+            }
+        }
+
+        private void HandleRestartFromPause()
+        {
+            _levelSession.RestartLevel();
+            SetPanels(GameFlowState.Playing);
+        }
+
+        private void HandleBackToLevelSelect()
+        {
+            ShowLevelSelect();
+        }
+
+        private void HandleLevelCompleted(int steps)
+        {
+            if (_state != GameFlowState.Playing && _state != GameFlowState.Paused)
+            {
+                return;
+            }
+
+            bool isNewBest = _progress.RecordCompletion(_currentRecordKey, steps);
+            SaveProgress();
+            _progress.TryGetBestSteps(_currentRecordKey, out int bestSteps);
+
+            SetPanels(GameFlowState.Result);
+            _resultPanel.ShowResult(steps, bestSteps, isNewBest, HasNextBuiltInLevel());
+        }
+
+        private void HandleNextRequested()
+        {
+            if (HasNextBuiltInLevel())
+            {
+                PlayBuiltInLevel(_currentCatalogIndex + 1);
+            }
+        }
+
+        private void HandleReplayRequested()
+        {
+            if (_currentLevel == null)
+            {
+                return;
+            }
+
+            _levelSession.RestartLevel();
+            SetPanels(GameFlowState.Playing);
+        }
+
+        private bool CheckReference(Object reference, string fieldName)
+        {
+            if (reference != null)
+            {
+                return true;
+            }
+
+            Debug.LogError($"[{nameof(GameFlow)}] {name} 缺少引用：{fieldName}", this);
+            return false;
+        }
+    }
+}

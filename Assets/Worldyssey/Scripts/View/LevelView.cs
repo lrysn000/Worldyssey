@@ -245,7 +245,10 @@ namespace Worldyssey.View
             return root;
         }
 
-        private void Clear()
+        /// <summary>
+        /// 销毁当前关卡的全部模型。退出关卡回到菜单时调用。
+        /// </summary>
+        public void Clear()
         {
             _mappedBoxViews.Clear();
             _portalBoxViews.Clear();

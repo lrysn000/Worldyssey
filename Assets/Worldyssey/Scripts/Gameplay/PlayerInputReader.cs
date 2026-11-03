@@ -20,6 +20,7 @@ namespace Worldyssey.Gameplay
         private const string TeleportActionName = "Teleport";
         private const string UndoActionName = "Undo";
         private const string RestartActionName = "Restart";
+        private const string PauseActionName = "Pause";
 
         [Tooltip("包含 Gameplay 动作表的输入资源")]
         [SerializeField] private InputActionAsset _inputActions;
@@ -29,6 +30,7 @@ namespace Worldyssey.Gameplay
         private InputAction _teleportAction;
         private InputAction _undoAction;
         private InputAction _restartAction;
+        private InputAction _pauseAction;
         private bool _isReady;
 
         public event Action<Direction> DirectionPressed;
@@ -36,6 +38,7 @@ namespace Worldyssey.Gameplay
         public event Action TeleportRequested;
         public event Action UndoRequested;
         public event Action RestartRequested;
+        public event Action PauseRequested;
 
         private void Awake()
         {
@@ -59,7 +62,8 @@ namespace Worldyssey.Gameplay
             _teleportAction = FindAction(TeleportActionName);
             _undoAction = FindAction(UndoActionName);
             _restartAction = FindAction(RestartActionName);
-            _isReady = hasAllActions && _teleportAction != null && _undoAction != null && _restartAction != null;
+            _pauseAction = FindAction(PauseActionName);
+            _isReady = hasAllActions && _teleportAction != null && _undoAction != null && _restartAction != null && _pauseAction != null;
         }
 
         private void OnEnable()
@@ -78,6 +82,7 @@ namespace Worldyssey.Gameplay
             _teleportAction.performed += HandleTeleportPerformed;
             _undoAction.performed += HandleUndoPerformed;
             _restartAction.performed += HandleRestartPerformed;
+            _pauseAction.performed += HandlePausePerformed;
             _gameplayMap.Enable();
         }
 
@@ -99,6 +104,7 @@ namespace Worldyssey.Gameplay
             _teleportAction.performed -= HandleTeleportPerformed;
             _undoAction.performed -= HandleUndoPerformed;
             _restartAction.performed -= HandleRestartPerformed;
+            _pauseAction.performed -= HandlePausePerformed;
         }
 
         private bool TryAddDirection(string actionName, Direction direction)
@@ -153,6 +159,11 @@ namespace Worldyssey.Gameplay
         private void HandleRestartPerformed(InputAction.CallbackContext context)
         {
             RestartRequested?.Invoke();
+        }
+
+        private void HandlePausePerformed(InputAction.CallbackContext context)
+        {
+            PauseRequested?.Invoke();
         }
     }
 }

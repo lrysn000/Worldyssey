@@ -1,7 +1,9 @@
+using System;
 using System.Collections;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Worldyssey.Core;
 using Worldyssey.Data;
@@ -10,21 +12,10 @@ using Worldyssey.Gameplay;
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 游戏内 HUD：步数、关卡名、当前世界、冲突中的世界、通关和传送失败提示，以及撤销和重开按钮。
+    /// 游戏内 HUD：步数、关卡名、当前世界、冲突中的世界、通关和传送失败提示，以及撤销、重开、暂停按钮。
     /// </summary>
-    /// <remarks>
-    /// 文案暂用英文：TextMeshPro 默认字体没有中文字形，中文字体资源在 M6 做 UI 时统一处理。
-    /// </remarks>
-    public class HudPanel : MonoBehaviour
+    public class HudPanel : UiPanel
     {
-        private const string StepCountFormat = "Steps: {0}";
-        private const string SolvedText = "Solved!";
-        private const string ConflictPrefix = "Conflict: ";
-        private const string ConflictSeparator = ", ";
-        private const string WorldConflictedHint = "Target world is in conflict";
-        private const string ExitBlockedHint = "Exit is blocked on this side";
-        private const string PedestalOccupiedHint = "Target pedestal is occupied";
-
         [SerializeField] private LevelSession _levelSession;
         [SerializeField] private GameplayConfig _gameplayConfig;
 
@@ -40,8 +31,14 @@ namespace Worldyssey.UI
         [SerializeField] private Button _undoButton;
         [SerializeField] private Button _restartButton;
 
+        [Tooltip("可选：没有暂停流程的开发场景可以不设置")]
+        [SerializeField] private Button _pauseButton;
+
         private readonly StringBuilder _conflictBuilder = new StringBuilder(64);
         private Coroutine _hintRoutine;
+
+        /// <summary>点击了暂停按钮。</summary>
+        public event Action PauseRequested;
 
         private void Awake()
         {
@@ -65,19 +62,11 @@ namespace Worldyssey.UI
                 _levelSession.TeleportFailed += HandleTeleportFailed;
             }
 
-            if (_undoButton != null)
-            {
-                _undoButton.onClick.AddListener(HandleUndoClicked);
-            }
+            AddListener(_undoButton, HandleUndoClicked);
+            AddListener(_restartButton, HandleRestartClicked);
+            AddListener(_pauseButton, HandlePauseClicked);
 
-            if (_restartButton != null)
-            {
-                _restartButton.onClick.AddListener(HandleRestartClicked);
-            }
-        }
-
-        private void Start()
-        {
+            // 面板可能在关卡加载之后才显示，显示时补一次刷新
             SetHint(string.Empty);
             Refresh();
         }
@@ -90,23 +79,40 @@ namespace Worldyssey.UI
                 _levelSession.TeleportFailed -= HandleTeleportFailed;
             }
 
-            if (_undoButton != null)
-            {
-                _undoButton.onClick.RemoveListener(HandleUndoClicked);
-            }
-
-            if (_restartButton != null)
-            {
-                _restartButton.onClick.RemoveListener(HandleRestartClicked);
-            }
+            RemoveListener(_undoButton, HandleUndoClicked);
+            RemoveListener(_restartButton, HandleRestartClicked);
+            RemoveListener(_pauseButton, HandlePauseClicked);
 
             if (_hintRoutine != null)
             {
                 StopCoroutine(_hintRoutine);
                 _hintRoutine = null;
             }
+        }
 
-            SetHint(string.Empty);
+        private static void AddListener(Button button, UnityEngine.Events.UnityAction action)
+        {
+            if (button != null)
+            {
+                button.onClick.AddListener(action);
+            }
+        }
+
+        private static void RemoveListener(Button button, UnityEngine.Events.UnityAction action)
+        {
+            if (button != null)
+            {
+                button.onClick.RemoveListener(action);
+            }
+        }
+
+        private static void ClearUiSelection()
+        {
+            // 点击后按钮会保持选中，之后按空格或回车会再次触发它；游戏中用键盘操作，清掉选中避免误触
+            if (EventSystem.current != null)
+            {
+                EventSystem.current.SetSelectedGameObject(null);
+            }
         }
 
         private void HandleStateChanged()
@@ -126,12 +132,20 @@ namespace Worldyssey.UI
 
         private void HandleUndoClicked()
         {
+            ClearUiSelection();
             _levelSession.RequestUndo();
         }
 
         private void HandleRestartClicked()
         {
+            ClearUiSelection();
             _levelSession.RequestRestart();
+        }
+
+        private void HandlePauseClicked()
+        {
+            ClearUiSelection();
+            PauseRequested?.Invoke();
         }
 
         private IEnumerator ShowHintRoutine(string message)
@@ -159,7 +173,7 @@ namespace Worldyssey.UI
             PlaySession session = _levelSession.Session;
             if (_stepCountText != null)
             {
-                _stepCountText.text = string.Format(StepCountFormat, session.StepCount);
+                _stepCountText.text = string.Format(UiText.StepCountFormat, session.StepCount);
             }
 
             if (_levelNameText != null)
@@ -179,7 +193,7 @@ namespace Worldyssey.UI
 
             if (_statusText != null)
             {
-                _statusText.text = session.IsSolved ? SolvedText : string.Empty;
+                _statusText.text = session.IsSolved ? UiText.Solved : string.Empty;
             }
         }
 
@@ -193,7 +207,7 @@ namespace Worldyssey.UI
                     continue;
                 }
 
-                _conflictBuilder.Append(_conflictBuilder.Length == 0 ? ConflictPrefix : ConflictSeparator);
+                _conflictBuilder.Append(_conflictBuilder.Length == 0 ? UiText.ConflictPrefix : UiText.ConflictSeparator);
                 _conflictBuilder.Append(map.GetWorldName(world));
             }
 
@@ -213,21 +227,13 @@ namespace Worldyssey.UI
             switch (failure)
             {
                 case StepFailure.WorldConflicted:
-                    return WorldConflictedHint;
+                    return UiText.WorldConflictedHint;
                 case StepFailure.ExitBlocked:
-                    return ExitBlockedHint;
+                    return UiText.ExitBlockedHint;
                 case StepFailure.PedestalOccupied:
-                    return PedestalOccupiedHint;
+                    return UiText.PedestalOccupiedHint;
                 default:
                     return string.Empty;
-            }
-        }
-
-        private void CheckReference(Object reference, string fieldName)
-        {
-            if (reference == null)
-            {
-                Debug.LogError($"[{nameof(HudPanel)}] {name} 缺少引用：{fieldName}", this);
             }
         }
     }
