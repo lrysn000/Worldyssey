@@ -11,8 +11,8 @@ namespace Worldyssey.EditorTools
     public static class SeasonPaletteTextureSetup
     {
         private const string MenuPath = "Worldyssey/Art/Create Season Palette Textures";
-        private const string MaterialFolder = "Assets/Worldyssey/Materials";
-        private const string TextureFolder = "Assets/Worldyssey/Textures/Palettes";
+        private const string MaterialFolder = ProjectPaths.Materials;
+        private const string TextureFolder = ProjectPaths.Textures + "/Palettes";
         private const string MaterialPrefix = "Bg_Palette256_";
 
         private static readonly string[] SeasonNames = { "Spring", "Summer", "Autumn", "Winter" };

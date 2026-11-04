@@ -15,11 +15,12 @@ MonoBehaviour:
   _floorPrefab: {fileID: 1527595513100604, guid: 1e89b8912fb9356439b4f28d974e8cff, type: 3}
   _floorCornerPrefab: {fileID: 1143586474497050, guid: 33ba61de76ae6544cbe588c14100405c, type: 3}
   _uniqueWallPrefabs: []
+  _grassMaterial: {fileID: 2100000, guid: 62276dd37e3e6f349b46b79b8551d461, type: 2}
   _grassPrefabs: []
   _grassPerCellMin: 5
   _grassPerCellMax: 10
-  _grassEdgeMargin: 0.12
-  _grassScaleRange: {x: 0.4, y: 0.4}
+  _grassEdgeMargin: 0.03
+  _grassScaleRange: {x: 0.2, y: 0.2}
   _rimLowPrefabs: []
   _rimTallPrefabs: []
   _rimLowChance: 0.5

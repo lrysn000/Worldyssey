@@ -14,10 +14,10 @@ namespace Worldyssey.EditorTools
     public static class SkySetup
     {
         private const string MenuPath = "Worldyssey/Setup/Setup Sky (Current Scene)";
-        private const string EnvironmentFolder = "Assets/Worldyssey/Prefabs/Environment";
-        private const string MaterialFolder = "Assets/Worldyssey/Materials/Sky";
-        private const string SettingsPath = "Assets/Worldyssey/Config/SkySettings.asset";
-        private const string SeasonFolder = "Assets/Worldyssey/Config/Seasons";
+        private const string EnvironmentFolder = ProjectPaths.EnvironmentPrefabs;
+        private const string MaterialFolder = ProjectPaths.Materials + "/Sky";
+        private const string SettingsPath = ProjectPaths.Config + "/SkySettings.asset";
+        private const string SeasonFolder = ProjectPaths.Seasons;
         private const string SkyShaderName = "Worldyssey/SkyDome";
         private const string CloudShaderName = "Worldyssey/Cloud";
         private const string SunPivotName = "Sun";

@@ -18,7 +18,7 @@ namespace Worldyssey.EditorTools
     public static class UiRestyleTool
     {
         private const string MenuPath = "Worldyssey/Setup/Restyle UI (Honeti)";
-        private const string LevelButtonPrefabPath = "Assets/Worldyssey/Prefabs/UI/P_LevelButton.prefab";
+        private const string LevelButtonPrefabPath = ProjectPaths.UiPrefabs + "/P_LevelButton.prefab";
         private const float DialogWidth = 560f;
         private const float RowSpacing = 20f;
 

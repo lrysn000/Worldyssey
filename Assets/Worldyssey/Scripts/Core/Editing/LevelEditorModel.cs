@@ -144,6 +144,14 @@ namespace Worldyssey.Core
             });
         }
 
+        /// <summary>
+        /// 设置当前世界的主题；被其他世界占用时两者交换。可以撤销。
+        /// </summary>
+        public EditorFeedback SetCurrentWorldTheme(WorldTheme theme)
+        {
+            return EditStructure(() => Draft.SetWorldTheme(CurrentWorld, theme));
+        }
+
         public EditorFeedback RemoveCurrentWorld()
         {
             return EditStructure(() =>

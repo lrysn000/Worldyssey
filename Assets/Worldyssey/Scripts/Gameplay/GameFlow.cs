@@ -39,6 +39,9 @@ namespace Worldyssey.Gameplay
         [Tooltip("可选：界面主题控制器，用来决定设置面板跟随世界还是用中性主题")]
         [SerializeField] private UiThemeController _uiThemeController;
 
+        [Tooltip("可选：关卡进出场转场。留空时直接进入和离开关卡")]
+        [SerializeField] private LevelTransitionPlayer _levelTransition;
+
         private readonly List<LevelSelectItem> _builtInItems = new List<LevelSelectItem>();
         private readonly List<LevelSelectItem> _customItems = new List<LevelSelectItem>();
         private readonly List<string> _catalogIds = new List<string>();
@@ -273,10 +276,59 @@ namespace Worldyssey.Gameplay
             _pausePanel.SetExitLabel(exitLabel);
             _resultPanel.SetExitLabel(exitLabel);
             SetPanels(GameFlowState.Playing);
+
+            // 编辑器试玩是反复调整关卡的过程，不播放转场
+            if (!isTestPlay)
+            {
+                BeginEntrance(false);
+            }
+        }
+
+        /// <summary>
+        /// 播放入场转场，期间关闭游戏输入，结束（或被跳过）后恢复。
+        /// </summary>
+        private void BeginEntrance(bool isShort)
+        {
+            if (_levelTransition == null)
+            {
+                return;
+            }
+
+            _levelSession.SetInputEnabled(false);
+            _levelTransition.PlayEntrance(isShort, HandleEntranceFinished);
+        }
+
+        /// <summary>
+        /// 淡出后再执行 <paramref name="next"/>（回选关、回主菜单、进下一关）。没有配置转场时直接执行。
+        /// </summary>
+        private void LeaveLevel(System.Action next)
+        {
+            if (_levelTransition == null)
+            {
+                next();
+                return;
+            }
+
+            if (_levelTransition.IsPlayingExit)
+            {
+                return;
+            }
+
+            // 暂停和结算面板先收起，只留 HUD，画面淡出时不会有面板悬在上面
+            _levelSession.SetInputEnabled(false);
+            _pausePanel.SetVisible(false);
+            _resultPanel.SetVisible(false);
+            _levelTransition.PlayExit(next);
         }
 
         private void SetPanels(GameFlowState state)
         {
+            // 入场途中暂停或离开时直接让入场结束，避免恢复游戏后转场还在播、输入却已打开
+            if (state != GameFlowState.Playing && _levelTransition != null)
+            {
+                _levelTransition.CompleteEntrance();
+            }
+
             _state = state;
 
             // 设置面板盖在打开它的界面上，原界面保持可见
@@ -355,6 +407,12 @@ namespace Worldyssey.Gameplay
 
         private void HandlePauseToggle()
         {
+            // 淡出离场途中按 Esc 不应该回到游戏
+            if (_levelTransition != null && _levelTransition.IsPlayingExit)
+            {
+                return;
+            }
+
             if (_state == GameFlowState.Playing)
             {
                 SetPanels(GameFlowState.Paused);
@@ -373,9 +431,18 @@ namespace Worldyssey.Gameplay
         private void HandleMainMenuFromPause()
         {
             // 关卡内进度不存档，直接结束关卡回主菜单
-            if (_state == GameFlowState.Paused)
+            if (_state != GameFlowState.Paused)
+            {
+                return;
+            }
+
+            if (_isTestPlay)
             {
                 ShowMainMenu();
+            }
+            else
+            {
+                LeaveLevel(ShowMainMenu);
             }
         }
 
@@ -425,7 +492,15 @@ namespace Worldyssey.Gameplay
             }
             else
             {
-                ShowLevelSelect();
+                LeaveLevel(ShowLevelSelect);
+            }
+        }
+
+        private void HandleEntranceFinished()
+        {
+            if (_state == GameFlowState.Playing)
+            {
+                _levelSession.SetInputEnabled(true);
             }
         }
 
@@ -472,7 +547,8 @@ namespace Worldyssey.Gameplay
         {
             if (HasNextBuiltInLevel())
             {
-                PlayBuiltInLevel(_currentCatalogIndex + 1);
+                int nextIndex = _currentCatalogIndex + 1;
+                LeaveLevel(() => PlayBuiltInLevel(nextIndex));
             }
         }
 
@@ -485,6 +561,10 @@ namespace Worldyssey.Gameplay
 
             _levelSession.RestartLevel();
             SetPanels(GameFlowState.Playing);
+            if (!_isTestPlay)
+            {
+                BeginEntrance(true);
+            }
         }
 
         private bool CheckReference(Object reference, string fieldName)

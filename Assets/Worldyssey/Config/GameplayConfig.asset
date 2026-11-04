@@ -38,4 +38,33 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  _teleportEnterDuration: 0.5
+  _teleportExitDuration: 0.7
+  _teleportCameraZoom: 0.8
+  _teleportPullBackDuration: 1
+  _snapshotShellSize: 1
+  _snapshotTintStrength: 0.2
+  _snapshotFadeStart: 0.2
+  _snapshotEmergeStart: 0.3
+  _levelRiseDepth: 10
+  _levelRiseDuration: 0.9
+  _levelShortRiseDuration: 0.5
+  _levelCameraStartZoom: 1.5
+  _levelDropHeight: 1.5
+  _levelDropDuration: 0.3
+  _levelDropStagger: 0.07
+  _levelFadeDuration: 0.3
+  _hintDuration: 1.5
+  _bumpDistance: 0.15
+  _bumpDuration: 0.12
+  _pushSquashAmount: 0.12
+  _popHeight: 0.25
+  _popDuration: 0.2
+  _celebrationStagger: 0.08
+  _rewindFadeInDuration: 0.06
+  _rewindHoldDuration: 0.3
+  _rewindFadeOutDuration: 0.35
+  _cameraPitch: 55
+  _cameraMargin: 1
+  _viewRotateDuration: 0.25
   _holdRepeatDelay: 0.18

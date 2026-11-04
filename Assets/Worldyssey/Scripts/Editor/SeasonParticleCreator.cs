@@ -10,9 +10,9 @@ namespace Worldyssey.EditorTools
     /// </summary>
     internal static class SeasonParticleCreator
     {
-        private const string PrefabFolder = "Assets/Worldyssey/Prefabs/Effects";
-        private const string ParticleMaterialPath = "Assets/Worldyssey/Materials/Placeholder/M_Particle.mat";
-        private const string LeafPrefabPath = "Assets/Worldyssey/Packages/CS_StylizedPlantPack/Prefabs/Leaves/Leaf_1.prefab";
+        private const string PrefabFolder = ProjectPaths.EffectPrefabs;
+        private const string ParticleMaterialPath = ProjectPaths.Materials + "/Placeholder/M_Particle.mat";
+        private const string LeafPrefabPath = ProjectPaths.ThirdParty + "/CS_StylizedPlantPack/Prefabs/Leaves/Leaf_1.prefab";
 
         // 覆盖范围：以关卡中心为原点的正方形，足够盖住常见尺寸的关卡和外围两圈
         private const float AreaSize = 26f;

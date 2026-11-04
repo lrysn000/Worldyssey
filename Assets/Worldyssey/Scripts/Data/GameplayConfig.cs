@@ -33,6 +33,60 @@ namespace Worldyssey.Data
         [Range(0.2f, 1f)]
         [SerializeField] private float _teleportCameraZoom = 0.6f;
 
+        [Header("截图缩放转场")]
+        [Tooltip("相机从伙伴箱子跟前拉回正常机位的时长（秒）")]
+        [Min(0.05f)]
+        [SerializeField] private float _teleportPullBackDuration = 1f;
+
+        [Tooltip("快照外壳的边长（格），比箱子稍大，盖住箱子和刚走出来的玩家")]
+        [Range(1f, 3f)]
+        [SerializeField] private float _snapshotShellSize = 1.3f;
+
+        [Tooltip("截图上叠加的目标季节色强度，0 为不叠加，随外壳一起淡出")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _snapshotTintStrength = 0.25f;
+
+        [Tooltip("拉远进行到多少比例时外壳开始淡出（0~1）")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _snapshotFadeStart = 0.6f;
+
+        [Tooltip("拉远进行到多少比例时玩家开始走出箱子（0~1）")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _snapshotEmergeStart = 0.3f;
+
+        [Header("关卡进出场")]
+        [Tooltip("入场时整座岛从多深的地方升起（米），云海在岛下方，岛会从云里冒出来")]
+        [Min(0f)]
+        [SerializeField] private float _levelRiseDepth = 10f;
+
+        [Tooltip("完整入场时岛升起的时长（秒）")]
+        [Min(0.05f)]
+        [SerializeField] private float _levelRiseDuration = 0.9f;
+
+        [Tooltip("结算后重玩时岛升起的时长（秒），不推镜头")]
+        [Min(0.05f)]
+        [SerializeField] private float _levelShortRiseDuration = 0.5f;
+
+        [Tooltip("完整入场时相机起始距离是正常距离的多少倍，随岛升起推到正常机位")]
+        [Range(1f, 3f)]
+        [SerializeField] private float _levelCameraStartZoom = 1.5f;
+
+        [Tooltip("箱子和玩家从多高落下（米）")]
+        [Min(0f)]
+        [SerializeField] private float _levelDropHeight = 1.5f;
+
+        [Tooltip("每个物件落下的时长（秒）")]
+        [Min(0.01f)]
+        [SerializeField] private float _levelDropDuration = 0.3f;
+
+        [Tooltip("物件之间落下的间隔（秒），玩家最后落地")]
+        [Min(0f)]
+        [SerializeField] private float _levelDropStagger = 0.07f;
+
+        [Tooltip("离开关卡时画面淡出、下一关淡入的时长（秒）")]
+        [Min(0.01f)]
+        [SerializeField] private float _levelFadeDuration = 0.3f;
+
         [Header("提示")]
         [Tooltip("传送失败等提示在 HUD 上停留的时长（秒）")]
         [Min(0f)]
@@ -101,7 +155,20 @@ namespace Worldyssey.Data
         public float TeleportEnterDuration => _teleportEnterDuration;
         public float TeleportExitDuration => _teleportExitDuration;
         public float TeleportCameraZoom => _teleportCameraZoom;
+        public float TeleportPullBackDuration => _teleportPullBackDuration;
+        public float SnapshotShellSize => _snapshotShellSize;
+        public float SnapshotTintStrength => _snapshotTintStrength;
+        public float SnapshotFadeStart => _snapshotFadeStart;
+        public float SnapshotEmergeStart => _snapshotEmergeStart;
         public float HintDuration => _hintDuration;
+        public float LevelRiseDepth => _levelRiseDepth;
+        public float LevelRiseDuration => _levelRiseDuration;
+        public float LevelShortRiseDuration => _levelShortRiseDuration;
+        public float LevelCameraStartZoom => _levelCameraStartZoom;
+        public float LevelDropHeight => _levelDropHeight;
+        public float LevelDropDuration => _levelDropDuration;
+        public float LevelDropStagger => _levelDropStagger;
+        public float LevelFadeDuration => _levelFadeDuration;
         public float BumpDistance => _bumpDistance;
         public float BumpDuration => _bumpDuration;
         public float PushSquashAmount => _pushSquashAmount;

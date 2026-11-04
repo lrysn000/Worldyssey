@@ -14,7 +14,7 @@ namespace Worldyssey.EditorTools
     public static class LevelEditorUiBuilder
     {
         private const string MenuPath = "Worldyssey/Setup/Add Level Editor to Scene";
-        private const string CellPrefabFolder = "Assets/Worldyssey/Prefabs/UI";
+        private const string CellPrefabFolder = ProjectPaths.UiPrefabs;
         private const string CellPrefabPath = CellPrefabFolder + "/P_EditorGridCell.prefab";
 
         private static readonly Vector2 SmallButton = new Vector2(64f, 56f);
@@ -121,6 +121,7 @@ namespace Worldyssey.EditorTools
             SetArray(header, "_worldTabs", worldTabs);
             GameUiBuilder.SetReference(header, "_addWorldButton", addWorld);
             GameUiBuilder.SetReference(header, "_removeWorldButton", removeWorld);
+            EditorThemeButtonsSetup.CreateThemeButtons(header);
 
             // 中间网格
             RectTransform gridArea = GameUiBuilder.CreateRect("GridArea", root);

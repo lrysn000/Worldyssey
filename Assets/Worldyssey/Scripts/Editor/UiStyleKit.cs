@@ -17,7 +17,7 @@ namespace Worldyssey.EditorTools
         internal const float Padding = 24f;
         internal const float HeaderHeight = 96f;
 
-        private const string PanelSpritePath = "Assets/Worldyssey/Packages/Honeti/UltimateFlatGUI/ThemeCommon/Textures/Panels/UniversalPanel20.png";
+        private const string PanelSpritePath = ProjectPaths.ThirdParty + "/Honeti/UltimateFlatGUI/ThemeCommon/Textures/Panels/UniversalPanel20.png";
         private const string FontSearch = "t:TMP_FontAsset Poppins";
 
         /// <summary>

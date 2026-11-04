@@ -15,6 +15,7 @@ MonoBehaviour:
   _floorPrefab: {fileID: 1527595513100604, guid: 1e89b8912fb9356439b4f28d974e8cff, type: 3}
   _floorCornerPrefab: {fileID: 1143586474497050, guid: 33ba61de76ae6544cbe588c14100405c, type: 3}
   _uniqueWallPrefabs: []
+  _grassMaterial: {fileID: 2100000, guid: be3b55c884523de4699ec5b5395530b3, type: 2}
   _grassPrefabs:
   - {fileID: 1652027893032058, guid: f7ebdc250a7f767478294f4047e47940, type: 3}
   - {fileID: 1198629284291040, guid: 925c469c1e69ed345ac73731be6abf03, type: 3}
@@ -22,8 +23,8 @@ MonoBehaviour:
   - {fileID: 1247382082025974, guid: 50287f2b2d161504097902cd212f69ce, type: 3}
   _grassPerCellMin: 5
   _grassPerCellMax: 10
-  _grassEdgeMargin: 0.12
-  _grassScaleRange: {x: 0.4, y: 0.4}
+  _grassEdgeMargin: 0.03
+  _grassScaleRange: {x: 0.2, y: 0.2}
   _rimLowPrefabs:
   - {fileID: 4246081301102589422, guid: 6aadd5284244ca14f967628e264e2eaf, type: 3}
   - {fileID: 3167163605490744536, guid: 95ca891e9b7c61948bbf40778b8003fa, type: 3}

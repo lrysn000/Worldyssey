@@ -36,6 +36,12 @@ namespace Worldyssey.View
 
         public bool IsRotating => _rotateRoutine != null;
 
+        /// <summary>被控制的相机。</summary>
+        public Camera ViewCamera => _camera;
+
+        /// <summary>当前视角的朝向（俯角加旋转）。</summary>
+        public Quaternion CurrentRotation => Quaternion.Euler(_gameplayConfig != null ? _gameplayConfig.CameraPitch : 0f, _yaw, 0f);
+
         private void Awake()
         {
             if (_camera == null)
@@ -84,11 +90,62 @@ namespace Worldyssey.View
         }
 
         /// <summary>
+        /// 立即把相机放到正常取景距离的 <paramref name="zoom"/> 倍处（对准关卡中心），用于关卡入场从远处推近。
+        /// </summary>
+        public void SetZoomImmediate(float zoom)
+        {
+            _focusOffset = Vector3.zero;
+            _zoom = zoom;
+            ApplyPose();
+        }
+
+        /// <summary>
         /// 由调用方的协程 yield：在 <paramref name="duration"/> 秒内回到正常取景。
         /// </summary>
         public IEnumerator ZoomBack(float duration)
         {
             return AnimateZoom(Vector3.zero, 1f, duration);
+        }
+
+        /// <summary>
+        /// 朝向不变，立即把相机放到正对 <paramref name="worldPoint"/>、距离为 <paramref name="distance"/> 的位置。
+        /// 用于截图转场的起始机位。
+        /// </summary>
+        public void SnapToward(Vector3 worldPoint, float distance)
+        {
+            if (_camera == null || _gameplayConfig == null)
+            {
+                return;
+            }
+
+            _focusOffset = worldPoint - _focus.center;
+            float fitDistance = CalculateFitDistance(CurrentRotation);
+            _zoom = fitDistance > 0f ? distance / fitDistance : 1f;
+            ApplyPose();
+        }
+
+        /// <summary>
+        /// 由调用方的协程 yield：从当前位置拉回正常取景。距离按指数插值，从极近处拉远时速度感均匀，
+        /// 不会一开始就猛地拉开。
+        /// </summary>
+        public IEnumerator PullBack(float duration)
+        {
+            Vector3 startOffset = _focusOffset;
+            float startZoom = Mathf.Max(_zoom, 0.0001f);
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float eased = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                _focusOffset = Vector3.LerpUnclamped(startOffset, Vector3.zero, eased);
+                _zoom = startZoom * Mathf.Pow(1f / startZoom, eased);
+                ApplyPose();
+                yield return null;
+            }
+
+            _focusOffset = Vector3.zero;
+            _zoom = 1f;
+            ApplyPose();
         }
 
         /// <summary>

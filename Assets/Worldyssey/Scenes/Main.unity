@@ -2401,6 +2401,9 @@ GameObject:
   - component: {fileID: 310310444}
   - component: {fileID: 310310448}
   - component: {fileID: 310310450}
+  - component: {fileID: 310310451}
+  - component: {fileID: 310310452}
+  - component: {fileID: 310310453}
   m_Layer: 0
   m_Name: Game
   m_TagString: Untagged
@@ -2443,6 +2446,7 @@ MonoBehaviour:
   _worldTransition: {fileID: 101361265}
   _gameplayConfig: {fileID: 11400000, guid: e72edc1b95e6fe24f95a3f787eaf345c, type: 2}
   _cameraRig: {fileID: 961739754}
+  _snapshotTransition: {fileID: 310310452}
 --- !u!114 &310310446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2492,6 +2496,7 @@ MonoBehaviour:
   _levelEditorPanel: {fileID: 1464610507}
   _settingsPanel: {fileID: 248297632}
   _uiThemeController: {fileID: 310310450}
+  _levelTransition: {fileID: 310310453}
 --- !u!4 &310310449
 Transform:
   m_ObjectHideFlags: 0
@@ -2530,6 +2535,52 @@ MonoBehaviour:
   - {fileID: 1140462369}
   - {fileID: 1464610510}
   _settingsScope: {fileID: 248297631}
+--- !u!114 &310310451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 310310443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b7329cb03ff087458107b825511d8f9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelView: {fileID: 310310446}
+  _visualConfig: {fileID: 11400000, guid: 7ae509605da963841a1ee5e451562da9, type: 2}
+--- !u!114 &310310452
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 310310443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a71e4b8165d48047b763fea8a55b5db, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelView: {fileID: 310310446}
+  _cameraRig: {fileID: 961739754}
+  _gameplayConfig: {fileID: 11400000, guid: e72edc1b95e6fe24f95a3f787eaf345c, type: 2}
+  _shellMaterial: {fileID: 2100000, guid: ec7b4b4d9f55d7f4294f98dbf1968a8a, type: 2}
+--- !u!114 &310310453
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 310310443}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f9665dd3b7b9f048a698053c766552c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _levelView: {fileID: 310310446}
+  _gameplayConfig: {fileID: 11400000, guid: e72edc1b95e6fe24f95a3f787eaf345c, type: 2}
+  _overlay: {fileID: 101361265}
+  _cameraRig: {fileID: 961739754}
 --- !u!1 &317163409
 GameObject:
   m_ObjectHideFlags: 0
@@ -5808,6 +5859,8 @@ MonoBehaviour:
   - {fileID: 1636911498}
   _addWorldButton: {fileID: 1290541673}
   _removeWorldButton: {fileID: 1777726239}
+  _themeButtons: []
+  _palette: {fileID: 0}
 --- !u!1 &708706842
 GameObject:
   m_ObjectHideFlags: 0

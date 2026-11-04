@@ -27,4 +27,4 @@ MonoBehaviour:
   _skyTint: {r: 0.88, g: 0.93, b: 1, a: 1}
   _cloudTint: {r: 0.92, g: 0.95, b: 1, a: 1}
   _colorProfile: {fileID: 11400000, guid: 6b64cd2b412960b4185595c197241524, type: 2}
-  _particlesPrefab: {fileID: 1206865945560901888, guid: 70725f97b7ded1b4890050894d58f95a, type: 3}
+  _particlesPrefab: {fileID: 19813558, guid: a4709f3bf0c933e4a8d6902e0b9fc137, type: 3}

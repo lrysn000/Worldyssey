@@ -27,7 +27,7 @@ namespace Worldyssey.View
         /// </summary>
         public static void BuildGround(LevelVisualConfig config, LevelMap map, int world, Transform root)
         {
-            SeasonVisualSet season = config.GetSeasonSet(world);
+            SeasonVisualSet season = config.GetSeasonSet((int)map.GetWorldTheme(world));
             GameObject floor = season != null && season.FloorPrefab != null ? season.FloorPrefab : config.FloorPrefab;
             GameObject corner = season != null ? season.FloorCornerPrefab : null;
             int rim = config.RimWidth;
@@ -35,7 +35,7 @@ namespace Worldyssey.View
             int minY = -rim;
             int maxX = map.Width - 1 + rim;
             int maxY = map.Height - 1 + rim;
-            var grassBatch = new GrassMeshBatch(root);
+            var grassBatch = new GrassMeshBatch(root, season != null ? season.GrassMaterial : null);
             for (int y = minY; y <= maxY; y++)
             {
                 for (int x = minX; x <= maxX; x++)
@@ -76,12 +76,13 @@ namespace Worldyssey.View
         }
 
         /// <summary>
-        /// 独有墙的变体和朝向。季节没有配置独有墙时用占位预制体。
+        /// 独有墙的变体和朝向。<paramref name="seasonIndex"/> 决定用哪个季节的模块，<paramref name="world"/> 只用作随机种子。
+        /// 季节没有配置独有墙时用占位预制体。
         /// </summary>
-        public static GameObject PickUniqueWall(LevelVisualConfig config, int world, GridPos pos, out Quaternion rotation)
+        public static GameObject PickUniqueWall(LevelVisualConfig config, int seasonIndex, int world, GridPos pos, out Quaternion rotation)
         {
             var random = new CellRandom(pos, world, SaltUniqueWall);
-            SeasonVisualSet season = config.GetSeasonSet(world);
+            SeasonVisualSet season = config.GetSeasonSet(seasonIndex);
             GameObject prefab = Pick(season != null ? season.UniqueWallPrefabs : null, ref random, config.UniqueWallPrefab);
             rotation = Quaternion.Euler(0f, random.Range(4) * 90f, 0f);
             return prefab;

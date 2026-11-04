@@ -133,6 +133,9 @@ namespace Worldyssey.Core
             LevelState next = state.Clone();
 
             next.SetPlayerWorld(targetWorld);
+
+            // 从伙伴箱子里走出来，背对底座。想再传回去要先转身；朝箱子按方向键只会转身、不会推它（见 TryMove）
+            next.SetPlayerFacing(state.PlayerFacing.Opposite());
             events.Add(new TeleportedEvent(state.PlayerWorld, targetWorld));
 
             // 配对规则：伙伴未出现则生成，在别处则瞬移过来，已在底座上则不变；因此每对在每个世界最多一个

@@ -13,9 +13,9 @@ namespace Worldyssey.EditorTools
     public static class EnvironmentMaterialRemapper
     {
         private const string MenuPath = "Worldyssey/Art/Use Project Materials In Environment Prefabs";
-        private const string EnvironmentFolder = "Assets/Worldyssey/Prefabs/Environment";
-        private const string ProjectMaterialFolder = "Assets/Worldyssey/Materials";
-        private const string PackagesFolder = "Assets/Worldyssey/Packages/";
+        private const string EnvironmentFolder = ProjectPaths.EnvironmentPrefabs;
+        private const string ProjectMaterialFolder = ProjectPaths.Materials;
+        private const string PackagesFolder = ProjectPaths.ThirdParty + "/";
 
         private static readonly string[] SeasonNames = { "Spring", "Summer", "Autumn", "Winter" };
 

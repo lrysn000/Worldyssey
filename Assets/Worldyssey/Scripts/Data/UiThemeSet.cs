@@ -12,7 +12,7 @@ namespace Worldyssey.Data
         [Tooltip("主菜单、选关，以及没有当前世界时使用")]
         [SerializeField] private UiTheme _neutralTheme;
 
-        [Tooltip("按世界编号排列：0 春、1 夏、2 秋、3 冬")]
+        [Tooltip("按季节排列：0 春、1 夏、2 秋、3 冬")]
         [SerializeField] private UiTheme[] _worldThemes = new UiTheme[LevelLimits.MaxWorldCount];
 
         [Tooltip("跟随世界换色时的渐变时长（秒），0 为瞬间切换")]
@@ -23,13 +23,13 @@ namespace Worldyssey.Data
         public float FadeDuration => _fadeDuration;
 
         /// <summary>
-        /// 取某个世界的主题；编号越界或该位置没配置时回退为中性主题。
+        /// 取某个季节的 UI 主题（参数是季节编号，不是世界编号）；越界或没配置时回退为中性主题。
         /// </summary>
-        public UiTheme GetWorldTheme(int world)
+        public UiTheme GetSeasonTheme(int season)
         {
-            if (_worldThemes != null && world >= 0 && world < _worldThemes.Length && _worldThemes[world] != null)
+            if (_worldThemes != null && season >= 0 && season < _worldThemes.Length && _worldThemes[season] != null)
             {
-                return _worldThemes[world];
+                return _worldThemes[season];
             }
 
             return _neutralTheme;

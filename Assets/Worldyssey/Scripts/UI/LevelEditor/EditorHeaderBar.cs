@@ -3,11 +3,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Worldyssey.Core;
+using Worldyssey.Data;
 
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 编辑器顶部栏：关卡名、尺寸调整、世界标签与增删世界。只发出请求事件，不直接修改草稿。
+    /// 编辑器顶部栏：关卡名、尺寸调整、世界标签与增删世界、当前世界的主题。只发出请求事件，不直接修改草稿。
     /// </summary>
     public class EditorHeaderBar : MonoBehaviour
     {
@@ -26,6 +27,12 @@ namespace Worldyssey.UI
         [SerializeField] private Button _addWorldButton;
         [SerializeField] private Button _removeWorldButton;
 
+        [Tooltip("可选：主题按钮，按 春、夏、秋、冬 顺序。点被其他世界占用的主题时两个世界交换主题")]
+        [SerializeField] private Button[] _themeButtons = new Button[0];
+
+        [Tooltip("可选：季节调色板，选中的世界页签和主题按钮用季节色显示")]
+        [SerializeField] private WorldPalette _palette;
+
         private readonly EditorButtonBindings _bindings = new EditorButtonBindings();
 
         public event Action<string> NameEdited;
@@ -36,6 +43,9 @@ namespace Worldyssey.UI
         public event Action<int> WorldSelected;
         public event Action AddWorldRequested;
         public event Action RemoveWorldRequested;
+
+        /// <summary>请求把当前世界设为这个主题。</summary>
+        public event Action<WorldTheme> ThemeSelected;
 
         private void Awake()
         {
@@ -54,6 +64,12 @@ namespace Worldyssey.UI
             {
                 int world = i;
                 _bindings.Add(_worldTabs[i], () => WorldSelected?.Invoke(world));
+            }
+
+            for (int i = 0; i < _themeButtons.Length; i++)
+            {
+                var theme = (WorldTheme)i;
+                _bindings.Add(_themeButtons[i], () => ThemeSelected?.Invoke(theme));
             }
         }
 
@@ -102,13 +118,40 @@ namespace Worldyssey.UI
                     continue;
                 }
 
-                tab.image.color = i == currentWorld ? TabSelectedColor : TabNormalColor;
+                tab.image.color = i == currentWorld ? SelectedColor(draft.GetWorldTheme(i)) : TabNormalColor;
                 TMP_Text label = tab.GetComponentInChildren<TMP_Text>();
                 if (label != null)
                 {
                     label.text = draft.GetWorldName(i) + (i == draft.StartWorld ? UiText.StartWorldMark : string.Empty);
                 }
             }
+
+            RenderThemeButtons(draft.GetWorldTheme(currentWorld));
+        }
+
+        private void RenderThemeButtons(WorldTheme currentTheme)
+        {
+            for (int i = 0; i < _themeButtons.Length; i++)
+            {
+                Button button = _themeButtons[i];
+                if (button == null)
+                {
+                    continue;
+                }
+
+                var theme = (WorldTheme)i;
+                button.image.color = theme == currentTheme ? SelectedColor(theme) : TabNormalColor;
+                TMP_Text label = button.GetComponentInChildren<TMP_Text>();
+                if (label != null)
+                {
+                    label.text = WorldThemes.DisplayName(theme);
+                }
+            }
+        }
+
+        private Color SelectedColor(WorldTheme theme)
+        {
+            return _palette != null && _palette.TryGetColor((int)theme, out Color color) ? color : TabSelectedColor;
         }
 
         private void HandleNameEndEdit(string text)

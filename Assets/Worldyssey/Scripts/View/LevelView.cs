@@ -34,12 +34,17 @@ namespace Worldyssey.View
         private Transform _entitiesRoot;
         private EntityView _playerView;
         private int _shownWorld = -1;
+        private LevelMap _map;
+        private Vector3 _rootOffset;
 
         /// <summary>玩家模型，关卡未生成时为 null。</summary>
         public EntityView PlayerView => _playerView;
 
         /// <summary>目标箱子数量。</summary>
         public int MappedBoxViewCount => _mappedBoxViews.Count;
+
+        /// <summary>传送箱子数量（含当前世界之外、未显示的）。</summary>
+        public int PortalBoxViewCount => _portalBoxViews.Count;
 
         /// <summary>一格的边长（世界单位），未配置时为 1。</summary>
         public float CellSize => _visualConfig != null ? _visualConfig.CellSize : 1f;
@@ -94,7 +99,38 @@ namespace Worldyssey.View
         /// <summary>某个世界的代表色，用于世界切换时的遮罩颜色。</summary>
         public Color GetWorldColor(int world)
         {
-            return _visualConfig != null ? _visualConfig.GetWorldColor(world) : Color.black;
+            return _visualConfig != null ? _visualConfig.GetSeasonColor(GetWorldThemeIndex(world)) : Color.black;
+        }
+
+        /// <summary>
+        /// 整座岛（地形、各世界、实体）整体上下偏移，用于关卡入场时从云海升起。0 为正常位置。
+        /// 只移动根节点，不影响 <see cref="LevelBounds"/>，相机始终按正常位置取景。
+        /// </summary>
+        public void SetIslandHeight(float height)
+        {
+            Vector3 position = _rootOffset + Vector3.up * height;
+            if (_sharedTilesRoot != null)
+            {
+                _sharedTilesRoot.localPosition = position;
+            }
+
+            for (int i = 0; i < _worldTileRoots.Count; i++)
+            {
+                _worldTileRoots[i].localPosition = position;
+            }
+
+            if (_entitiesRoot != null)
+            {
+                _entitiesRoot.localPosition = position;
+            }
+        }
+
+        /// <summary>
+        /// 世界对应的季节编号（<see cref="WorldTheme"/> 的数值），用来取各种季节资源。没有关卡时按世界编号回退。
+        /// </summary>
+        public int GetWorldThemeIndex(int world)
+        {
+            return _map != null && world >= 0 && world < _map.WorldCount ? (int)_map.GetWorldTheme(world) : world;
         }
 
         /// <summary>
@@ -228,10 +264,12 @@ namespace Worldyssey.View
             }
 
             Clear();
+            _map = map;
 
             // 所有根节点共用同一偏移，让关卡中心落在本物体原点，相机只需对准本物体
             float cellSize = _visualConfig.CellSize;
             var centerOffset = new Vector3(-(map.Width - 1) * cellSize * 0.5f, 0f, -(map.Height - 1) * cellSize * 0.5f);
+            _rootOffset = centerOffset;
             _sharedTilesRoot = CreateRoot(SharedTilesRootName, centerOffset);
             for (int world = 0; world < map.WorldCount; world++)
             {
@@ -367,7 +405,7 @@ namespace Worldyssey.View
                     {
                         if (map.IsUniqueWall(world, pos))
                         {
-                            GameObject prefab = SeasonTileBuilder.PickUniqueWall(_visualConfig, world, pos, out Quaternion rotation);
+                            GameObject prefab = SeasonTileBuilder.PickUniqueWall(_visualConfig, GetWorldThemeIndex(world), world, pos, out Quaternion rotation);
                             GameObject wall = SpawnTile(prefab, _worldTileRoots[world], pos);
                             wall.transform.localRotation = rotation;
                             _uniqueWallTiles[world].Add(new PlacedTile(wall.transform, pos, null));
@@ -395,7 +433,7 @@ namespace Worldyssey.View
                 PortalBoxView portalView = Instantiate(_visualConfig.PortalBoxPrefab, _entitiesRoot);
                 portalView.name = $"PortalBox_{i}";
                 int targetWorld = map.GetPortalWorld(LevelMap.GetPartnerIndex(i));
-                portalView.SetTargetWorldColor(_visualConfig.GetWorldColor(targetWorld));
+                portalView.SetTargetWorldColor(GetWorldColor(targetWorld));
                 _portalBoxViews.Add(portalView);
             }
         }
@@ -505,6 +543,7 @@ namespace Worldyssey.View
             _portalBoxViews.Clear();
             _playerView = null;
             _shownWorld = -1;
+            _map = null;
             LevelBounds = default;
 
             for (int i = 0; i < _worldTileRoots.Count; i++)

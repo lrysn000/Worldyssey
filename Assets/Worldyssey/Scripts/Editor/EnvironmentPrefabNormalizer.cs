@@ -15,8 +15,7 @@ namespace Worldyssey.EditorTools
     public static class EnvironmentPrefabNormalizer
     {
         private const string MenuPath = "Worldyssey/Art/Normalize Environment Prefabs";
-        private const string EnvironmentFolder = "Assets/Worldyssey/Prefabs/Environment";
-        private const string ModelName = "Model";
+        private const string EnvironmentFolder = ProjectPaths.EnvironmentPrefabs;
 
         private const float UniqueWallFootprint = 0.9f;
         private const float UniqueWallHeight = 0.8f;
@@ -60,19 +59,19 @@ namespace Worldyssey.EditorTools
                 if (category == Category.Sky)
                 {
                     // 天穹和云的位置、大小由天空系统在运行时决定，这里只删碰撞体，不动结构
-                    int skyColliders = RemoveColliders(root);
+                    int skyColliders = PrefabNormalizeUtility.RemoveColliders(root);
                     PrefabUtility.SaveAsPrefabAsset(root, path);
                     return $"  {root.name}（Sky）：只删除碰撞体 {skyColliders} 个";
                 }
 
-                Transform model = EnsureModelChild(root.transform);
-                int removedColliders = RemoveColliders(root);
+                Transform model = PrefabNormalizeUtility.EnsureModelChild(root.transform);
+                int removedColliders = PrefabNormalizeUtility.RemoveColliders(root);
                 if (category == Category.Grass)
                 {
                     CollectModelPaths(root, grassModels);
                 }
 
-                if (!TryGetBounds(root.transform, out Bounds bounds))
+                if (!PrefabNormalizeUtility.TryGetBounds(root.transform, out Bounds bounds))
                 {
                     return $"  {root.name}：没有网格，跳过";
                 }
@@ -81,7 +80,7 @@ namespace Worldyssey.EditorTools
                 if (!Mathf.Approximately(scale, 1f))
                 {
                     model.localScale *= scale;
-                    TryGetBounds(root.transform, out bounds);
+                    PrefabNormalizeUtility.TryGetBounds(root.transform, out bounds);
                 }
 
                 // 地块只对齐顶面：圆角地块本身不对称，水平居中会让它偏离格子
@@ -89,7 +88,7 @@ namespace Worldyssey.EditorTools
                     ? new Vector3(0f, -bounds.max.y, 0f)
                     : new Vector3(-bounds.center.x, -bounds.min.y, -bounds.center.z);
                 model.localPosition += shift;
-                TryGetBounds(root.transform, out bounds);
+                PrefabNormalizeUtility.TryGetBounds(root.transform, out bounds);
 
                 PrefabUtility.SaveAsPrefabAsset(root, path);
                 return $"  {root.name}（{category}）：{bounds.size.x:F2} × {bounds.size.y:F2} × {bounds.size.z:F2} 米，缩放 ×{scale:F2}，删除碰撞体 {removedColliders} 个";
@@ -149,55 +148,6 @@ namespace Worldyssey.EditorTools
             }
         }
 
-        /// <summary>
-        /// 保证根物体是不缩放、不旋转的空物体，模型和原有子物体都在 Model 下面。
-        /// </summary>
-        private static Transform EnsureModelChild(Transform root)
-        {
-            Transform existing = root.Find(ModelName);
-            bool hasRootMesh = root.TryGetComponent(out MeshFilter _) || root.TryGetComponent(out MeshRenderer _);
-            if (existing != null && !hasRootMesh)
-            {
-                return existing;
-            }
-
-            var children = new List<Transform>();
-            foreach (Transform child in root)
-            {
-                children.Add(child);
-            }
-
-            var model = new GameObject(ModelName).transform;
-            model.SetParent(root, false);
-            model.localRotation = root.localRotation;
-            model.localScale = root.localScale;
-            foreach (Transform child in children)
-            {
-                child.SetParent(model, false);
-            }
-
-            if (root.TryGetComponent(out MeshFilter sourceFilter))
-            {
-                EditorUtility.CopySerialized(sourceFilter, model.gameObject.AddComponent<MeshFilter>());
-            }
-
-            if (root.TryGetComponent(out MeshRenderer sourceRenderer))
-            {
-                EditorUtility.CopySerialized(sourceRenderer, model.gameObject.AddComponent<MeshRenderer>());
-                Object.DestroyImmediate(sourceRenderer);
-            }
-
-            if (sourceFilter != null)
-            {
-                Object.DestroyImmediate(sourceFilter);
-            }
-
-            root.localPosition = Vector3.zero;
-            root.localRotation = Quaternion.identity;
-            root.localScale = Vector3.one;
-            return model;
-        }
-
         private static void CollectModelPaths(GameObject root, HashSet<string> paths)
         {
             foreach (MeshFilter filter in root.GetComponentsInChildren<MeshFilter>(true))
@@ -226,54 +176,6 @@ namespace Worldyssey.EditorTools
             }
 
             return changed;
-        }
-
-        private static int RemoveColliders(GameObject root)
-        {
-            Collider[] colliders = root.GetComponentsInChildren<Collider>(true);
-            foreach (Collider collider in colliders)
-            {
-                Object.DestroyImmediate(collider);
-            }
-
-            return colliders.Length;
-        }
-
-        /// <summary>
-        /// 根物体坐标系下所有网格的包围盒。用网格数据计算，不依赖渲染器是否已经更新。
-        /// </summary>
-        private static bool TryGetBounds(Transform root, out Bounds bounds)
-        {
-            bounds = default;
-            bool hasBounds = false;
-            Matrix4x4 toRoot = root.worldToLocalMatrix;
-            foreach (MeshFilter filter in root.GetComponentsInChildren<MeshFilter>(true))
-            {
-                Mesh mesh = filter.sharedMesh;
-                if (mesh == null)
-                {
-                    continue;
-                }
-
-                Matrix4x4 matrix = toRoot * filter.transform.localToWorldMatrix;
-                Bounds local = mesh.bounds;
-                for (int corner = 0; corner < 8; corner++)
-                {
-                    var sign = new Vector3((corner & 1) == 0 ? -1f : 1f, (corner & 2) == 0 ? -1f : 1f, (corner & 4) == 0 ? -1f : 1f);
-                    Vector3 point = matrix.MultiplyPoint3x4(local.center + Vector3.Scale(local.extents, sign));
-                    if (!hasBounds)
-                    {
-                        bounds = new Bounds(point, Vector3.zero);
-                        hasBounds = true;
-                    }
-                    else
-                    {
-                        bounds.Encapsulate(point);
-                    }
-                }
-            }
-
-            return hasBounds;
         }
 
         private static bool Contains(string text, string value)

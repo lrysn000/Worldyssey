@@ -15,7 +15,7 @@ namespace Worldyssey.EditorTools
     public static class PaletteUsageReport
     {
         private const string MenuPath = "Worldyssey/Art/Palette Usage Report";
-        private const string EnvironmentFolder = "Assets/Worldyssey/Prefabs/Environment";
+        private const string EnvironmentFolder = ProjectPaths.EnvironmentPrefabs;
         private const string PaletteKeyword = "Palette";
 
         // 报告放在项目根目录下、Assets 之外，不会被 Unity 导入

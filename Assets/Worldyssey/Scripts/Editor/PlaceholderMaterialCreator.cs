@@ -10,7 +10,7 @@ namespace Worldyssey.EditorTools
     public static class PlaceholderMaterialCreator
     {
         private const string MenuPath = "Worldyssey/Setup/Create Placeholder Materials";
-        private const string TargetFolder = "Assets/Worldyssey/Materials/Placeholder";
+        private const string TargetFolder = ProjectPaths.Materials + "/Placeholder";
         private const string UrpLitShaderName = "Universal Render Pipeline/Lit";
         private const string BuiltInLitShaderName = "Standard";
 

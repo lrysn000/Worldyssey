@@ -136,6 +136,49 @@ namespace Worldyssey.Core
                         _issues.Add(Warning($"{WorldLabel(world)} has no name", null, world));
                     }
                 }
+
+                // 世界数量不合法时主题必然会重复，那是同一个问题，不重复报错
+                if (LevelLimits.IsValidWorldCount(_worldCount))
+                {
+                    CheckWorldThemes();
+                }
+            }
+
+            /// <summary>
+            /// 主题必须能识别，且同一关卡内不能重复（未指定的按世界编号回退后再比较）。
+            /// </summary>
+            private void CheckWorldThemes()
+            {
+                var owners = new int[WorldThemes.Count];
+                for (int i = 0; i < owners.Length; i++)
+                {
+                    owners[i] = -1;
+                }
+
+                for (int world = 0; world < _worldCount; world++)
+                {
+                    WorldData worldData = _data.Worlds[world];
+                    if (worldData == null)
+                    {
+                        continue;
+                    }
+
+                    if (!WorldThemes.TryParse(worldData.ThemeText, out WorldTheme theme))
+                    {
+                        _issues.Add(Error($"{WorldLabel(world)} has unknown theme '{worldData.ThemeText}'", null, world));
+                        continue;
+                    }
+
+                    theme = WorldThemes.Resolve(theme, world);
+                    int owner = owners[(int)theme];
+                    if (owner >= 0)
+                    {
+                        _issues.Add(Error($"{WorldLabel(owner)} and {WorldLabel(world)} both use theme {theme}", null, world));
+                        continue;
+                    }
+
+                    owners[(int)theme] = world;
+                }
             }
 
             private void ParseSharedRows()

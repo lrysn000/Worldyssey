@@ -16,8 +16,8 @@ namespace Worldyssey.EditorTools
     {
         private const string ImportMenuPath = "Worldyssey/Levels/Import JSON File...";
         private const string ReimportAllMenuPath = "Worldyssey/Levels/Reimport All Source JSON";
-        private const string SourceFolder = "Assets/Worldyssey/Levels/Source";
-        private const string LevelFolder = "Assets/Worldyssey/Levels";
+        private const string SourceFolder = ProjectPaths.LevelSources;
+        private const string LevelFolder = ProjectPaths.Levels;
         private const string TestCatalogPath = LevelFolder + "/LevelCatalog_Tests.asset";
         private const string LevelAssetPrefix = "Level_";
 

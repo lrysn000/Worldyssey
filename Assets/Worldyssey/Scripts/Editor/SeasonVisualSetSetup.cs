@@ -16,8 +16,8 @@ namespace Worldyssey.EditorTools
     public static class SeasonVisualSetSetup
     {
         private const string MenuPath = "Worldyssey/Art/Create + Link Season Visual Sets";
-        private const string EnvironmentFolder = "Assets/Worldyssey/Prefabs/Environment";
-        private const string SetFolder = "Assets/Worldyssey/Config/Seasons";
+        private const string EnvironmentFolder = ProjectPaths.EnvironmentPrefabs;
+        private const string SetFolder = ProjectPaths.Seasons;
         private const int WinterIndex = 3;
 
         private static readonly string[] SeasonNames = { "Spring", "Summer", "Autumn", "Winter" };

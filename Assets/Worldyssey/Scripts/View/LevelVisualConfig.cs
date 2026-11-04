@@ -32,12 +32,29 @@ namespace Worldyssey.View
         [SerializeField] private WorldPalette _worldPalette;
 
         [Header("季节")]
-        [Tooltip("按世界编号排列：0 春、1 夏、2 秋、3 冬。缺少的季节或其中留空的项，用上面的占位预制体")]
+        [Tooltip("按季节排列：0 春、1 夏、2 秋、3 冬（每个世界用哪个季节由关卡数据决定）。缺少的季节或其中留空的项，用上面的占位预制体")]
         [SerializeField] private SeasonVisualSet[] _seasonSets = new SeasonVisualSet[0];
 
         [Tooltip("网格外围装饰地带的圈数，0 为不要外围。外围只是装饰，玩家走不上去")]
         [Range(0, 4)]
         [SerializeField] private int _rimWidth = 2;
+
+        [Header("草的互动")]
+        [Tooltip("玩家压草的半径（米）")]
+        [Min(0f)]
+        [SerializeField] private float _grassPlayerRadius = 0.45f;
+
+        [Tooltip("箱子压草的半径（米）")]
+        [Min(0f)]
+        [SerializeField] private float _grassBoxRadius = 0.6f;
+
+        [Tooltip("压痕完全回弹的时间（秒）")]
+        [Min(0.01f)]
+        [SerializeField] private float _grassRecoverDuration = 0.5f;
+
+        [Tooltip("移动多远留下一个压痕点（米），越小痕迹越连续，占用的互动名额也越多")]
+        [Min(0.01f)]
+        [SerializeField] private float _grassTrailSpacing = 0.2f;
 
         [Header("特效")]
         [Tooltip("可选：通关时在每个终点喷出的粒子预制体，粒子播完后自行销毁")]
@@ -63,6 +80,10 @@ namespace Worldyssey.View
         public float CellSize => _cellSize;
         public IReadOnlyList<GameObject> SharedWallVariants => _sharedWallVariants;
         public int RimWidth => _rimWidth;
+        public float GrassPlayerRadius => _grassPlayerRadius;
+        public float GrassBoxRadius => _grassBoxRadius;
+        public float GrassRecoverDuration => _grassRecoverDuration;
+        public float GrassTrailSpacing => _grassTrailSpacing;
         public ParticleSystem CelebrationBurstPrefab => _celebrationBurstPrefab;
         public Color GoalFlashColor => _goalFlashColor;
 
@@ -75,25 +96,26 @@ namespace Worldyssey.View
         }
 
         /// <summary>
-        /// 世界的代表色，来自 <see cref="WorldPalette"/>。取不到时返回白色并报错，方便发现漏配。
+        /// 季节的代表色，来自 <see cref="WorldPalette"/>。参数是季节编号（<see cref="WorldTheme"/> 的数值），不是世界编号。
+        /// 取不到时返回白色并报错，方便发现漏配。
         /// </summary>
-        public Color GetWorldColor(int world)
+        public Color GetSeasonColor(int season)
         {
-            if (_worldPalette != null && _worldPalette.TryGetColor(world, out Color color))
+            if (_worldPalette != null && _worldPalette.TryGetColor(season, out Color color))
             {
                 return color;
             }
 
-            Debug.LogError($"[{nameof(LevelVisualConfig)}] {name} 取不到世界 {world} 的颜色，检查 {nameof(_worldPalette)}", this);
+            Debug.LogError($"[{nameof(LevelVisualConfig)}] {name} 取不到季节 {season} 的颜色，检查 {nameof(_worldPalette)}", this);
             return Color.white;
         }
 
         /// <summary>
-        /// 某个世界的季节模块组，没有配置时返回 null。
+        /// 某个季节的模块组，没有配置时返回 null。参数是季节编号（<see cref="WorldTheme"/> 的数值），不是世界编号。
         /// </summary>
-        public SeasonVisualSet GetSeasonSet(int world)
+        public SeasonVisualSet GetSeasonSet(int season)
         {
-            return _seasonSets != null && world >= 0 && world < _seasonSets.Length ? _seasonSets[world] : null;
+            return _seasonSets != null && season >= 0 && season < _seasonSets.Length ? _seasonSets[season] : null;
         }
 
         /// <summary>

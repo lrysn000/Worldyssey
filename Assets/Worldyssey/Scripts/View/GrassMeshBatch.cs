@@ -13,13 +13,16 @@ namespace Worldyssey.View
         private const string BatchName = "GrassBatch";
 
         private readonly Transform _root;
+        private readonly Material _overrideMaterial;
         private readonly Dictionary<GameObject, PrefabParts> _partsCache = new Dictionary<GameObject, PrefabParts>();
         private readonly Dictionary<Material, List<CombineInstance>> _instances = new Dictionary<Material, List<CombineInstance>>();
         private readonly Dictionary<Material, ShadowCastingMode> _shadowModes = new Dictionary<Material, ShadowCastingMode>();
 
-        public GrassMeshBatch(Transform root)
+        /// <param name="overrideMaterial">不为空时所有草都用这个材质（例如会摆动的草材质），忽略预制体自带的材质。</param>
+        public GrassMeshBatch(Transform root, Material overrideMaterial)
         {
             _root = root;
+            _overrideMaterial = overrideMaterial;
         }
 
         /// <summary>
@@ -34,6 +37,7 @@ namespace Worldyssey.View
                 tuft.transform.localPosition = localPosition;
                 tuft.transform.localRotation = localRotation;
                 tuft.transform.localScale = Vector3.one * scale;
+                ApplyOverride(tuft);
                 return;
             }
 
@@ -42,7 +46,7 @@ namespace Worldyssey.View
             {
                 for (int subMesh = 0; subMesh < part.Mesh.subMeshCount; subMesh++)
                 {
-                    Material material = part.Materials[Mathf.Min(subMesh, part.Materials.Length - 1)];
+                    Material material = _overrideMaterial != null ? _overrideMaterial : part.Materials[Mathf.Min(subMesh, part.Materials.Length - 1)];
                     if (material == null)
                     {
                         continue;
@@ -82,6 +86,25 @@ namespace Worldyssey.View
 
             _instances.Clear();
             _shadowModes.Clear();
+        }
+
+        private void ApplyOverride(GameObject tuft)
+        {
+            if (_overrideMaterial == null)
+            {
+                return;
+            }
+
+            foreach (Renderer tuftRenderer in tuft.GetComponentsInChildren<Renderer>(true))
+            {
+                var materials = new Material[tuftRenderer.sharedMaterials.Length];
+                for (int i = 0; i < materials.Length; i++)
+                {
+                    materials[i] = _overrideMaterial;
+                }
+
+                tuftRenderer.sharedMaterials = materials;
+            }
         }
 
         private PrefabParts GetParts(GameObject prefab)

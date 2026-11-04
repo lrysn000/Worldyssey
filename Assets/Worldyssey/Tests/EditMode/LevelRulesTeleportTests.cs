@@ -27,7 +27,7 @@ namespace Worldyssey.Tests
             Assert.IsTrue(result.IsStepTaken);
             Assert.AreEqual(1, result.State.PlayerWorld);
             Assert.AreEqual(new GridPos(1, 1), result.State.PlayerPosition);
-            Assert.AreEqual(Direction.Right, result.State.PlayerFacing);
+            Assert.AreEqual(Direction.Left, result.State.PlayerFacing, "传送后背对底座");
             Assert.IsTrue(result.State.PortalBoxes[1].IsPresent);
             Assert.AreEqual(new GridPos(2, 1), result.State.PortalBoxes[1].Position);
             Assert.AreEqual(start.PortalBoxes[0], result.State.PortalBoxes[0]);
@@ -47,11 +47,19 @@ namespace Worldyssey.Tests
             LevelState start = rules.CreateInitialState();
 
             LevelState there = rules.TryTeleport(start).State;
-            StepResult back = rules.TryTeleport(there);
+            Assert.AreEqual(StepFailure.NoPortal, rules.TryTeleport(there).Failure, "背对底座时不能直接传回去");
+
+            // 朝箱子按方向键只转身，不会把伙伴箱子推下底座
+            StepResult turn = rules.TryMove(there, Direction.Right);
+            Assert.AreEqual(StepFailure.TurnedToFaceBox, turn.Failure);
+            Assert.AreEqual(new GridPos(2, 1), turn.State.PortalBoxes[1].Position);
+
+            StepResult back = rules.TryTeleport(turn.State);
 
             Assert.IsTrue(back.IsStepTaken);
             Assert.AreEqual(0, back.State.PlayerWorld);
             Assert.AreEqual(new GridPos(1, 1), back.State.PlayerPosition);
+            Assert.AreEqual(Direction.Left, back.State.PlayerFacing);
             Assert.AreEqual(1, back.Events.Count, "伙伴已在底座上，只有传送事件");
             Assert.IsInstanceOf<TeleportedEvent>(back.Events[0]);
         }

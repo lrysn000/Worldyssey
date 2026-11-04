@@ -13,7 +13,7 @@ namespace Worldyssey.EditorTools
     public static class WorldPaletteSetup
     {
         private const string MenuPath = "Worldyssey/Setup/Link World Palette (3D + UI)";
-        private const string PaletteFolder = "Assets/Worldyssey/Config";
+        private const string PaletteFolder = ProjectPaths.Config;
         private const string PalettePath = PaletteFolder + "/WorldPalette.asset";
 
         [MenuItem(MenuPath)]
@@ -44,7 +44,7 @@ namespace Worldyssey.EditorTools
                 for (int world = 0; world < LevelLimits.MaxWorldCount; world++)
                 {
                     // 越界或没配置时 GetWorldTheme 会回退为中性主题，中性主题不连调色板
-                    UiTheme theme = themeSet.GetWorldTheme(world);
+                    UiTheme theme = themeSet.GetSeasonTheme(world);
                     if (theme == null || theme == themeSet.NeutralTheme || !SetIfEmpty(theme, "_worldPalette", palette))
                     {
                         continue;

@@ -14,7 +14,7 @@ namespace Worldyssey.EditorTools
     public static class SeasonEnvironmentSetup
     {
         private const string MenuPath = "Worldyssey/Setup/Setup Season Environment (Current Scene)";
-        private const string SeasonFolder = "Assets/Worldyssey/Config/Seasons";
+        private const string SeasonFolder = ProjectPaths.Seasons;
 
         private static readonly string[] SeasonNames = { "Spring", "Summer", "Autumn", "Winter" };
 

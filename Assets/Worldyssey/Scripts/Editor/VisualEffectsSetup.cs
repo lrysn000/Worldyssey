@@ -14,9 +14,9 @@ namespace Worldyssey.EditorTools
     public static class VisualEffectsSetup
     {
         private const string MenuPath = "Worldyssey/Setup/Setup Visual Effects (Current Scene)";
-        private const string MaterialFolder = "Assets/Worldyssey/Materials/Placeholder";
-        private const string PrefabFolder = "Assets/Worldyssey/Prefabs/Placeholder";
-        private const string ConfigFolder = "Assets/Worldyssey/Config";
+        private const string MaterialFolder = ProjectPaths.Materials + "/Placeholder";
+        private const string PrefabFolder = ProjectPaths.PlaceholderPrefabs;
+        private const string ConfigFolder = ProjectPaths.Config;
         private const string ParticleMaterialPath = MaterialFolder + "/M_Particle.mat";
         private const string BurstPrefabPath = PrefabFolder + "/P_CelebrationBurst.prefab";
         private const string ProfilePath = ConfigFolder + "/PostProcessProfile.asset";

@@ -20,7 +20,7 @@ namespace Worldyssey.EditorTools
     public static class GameUiBuilder
     {
         private const string MenuPath = "Worldyssey/Setup/Build Game Scene (Logic + UI)";
-        private const string LevelButtonPrefabFolder = "Assets/Worldyssey/Prefabs/UI";
+        private const string LevelButtonPrefabFolder = ProjectPaths.UiPrefabs;
         private const string LevelButtonPrefabPath = LevelButtonPrefabFolder + "/P_LevelButton.prefab";
         private const string PreferredCatalogName = "LevelCatalog_Tests";
 

@@ -11,7 +11,7 @@ namespace Worldyssey.UI
     /// </summary>
     public class UiThemeController : MonoBehaviour
     {
-        private const int NoWorld = -1;
+        private const int NoSeason = -1;
 
         [SerializeField] private LevelView _levelView;
         [SerializeField] private UiThemeSet _themeSet;
@@ -26,7 +26,7 @@ namespace Worldyssey.UI
         [Tooltip("可选：设置面板。从主菜单打开用中性主题，从暂停打开跟随当前世界")]
         [SerializeField] private UiThemeScope _settingsScope;
 
-        private int _currentWorld = NoWorld;
+        private int _currentSeason = NoSeason;
         private bool _hasReferences;
 
         private void Awake()
@@ -51,7 +51,7 @@ namespace Worldyssey.UI
             }
 
             ApplyToAll(_neutralScopes, _themeSet.NeutralTheme, 0f);
-            ApplyToAll(_worldScopes, _themeSet.GetWorldTheme(_currentWorld), 0f);
+            ApplyToAll(_worldScopes, _themeSet.GetSeasonTheme(_currentSeason), 0f);
             if (_settingsScope != null)
             {
                 _settingsScope.SetTheme(_themeSet.NeutralTheme, 0f);
@@ -76,14 +76,15 @@ namespace Worldyssey.UI
                 return;
             }
 
-            UiTheme theme = followsWorld ? _themeSet.GetWorldTheme(_currentWorld) : _themeSet.NeutralTheme;
+            UiTheme theme = followsWorld ? _themeSet.GetSeasonTheme(_currentSeason) : _themeSet.NeutralTheme;
             _settingsScope.SetTheme(theme, 0f);
         }
 
         private void HandleShownWorldChanged(int world)
         {
-            _currentWorld = world;
-            ApplyToAll(_worldScopes, _themeSet.GetWorldTheme(world), _themeSet.FadeDuration);
+            // 世界编号先换成它的季节，每个世界的季节由关卡数据决定
+            _currentSeason = _levelView.GetWorldThemeIndex(world);
+            ApplyToAll(_worldScopes, _themeSet.GetSeasonTheme(_currentSeason), _themeSet.FadeDuration);
         }
 
         private void ApplyToAll(UiThemeScope[] scopes, UiTheme theme, float fadeDuration)

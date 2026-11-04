@@ -13,7 +13,7 @@ namespace Worldyssey.EditorTools
     {
         private const string MenuPath = "Worldyssey/Setup/Create Sample Level";
         private const string TwoWorldMenuPath = "Worldyssey/Setup/Create Sample Level (Two Worlds)";
-        private const string LevelFolder = "Assets/Worldyssey/Levels";
+        private const string LevelFolder = ProjectPaths.Levels;
         private const string LevelPath = LevelFolder + "/Level_Sandbox01.asset";
         private const string TwoWorldLevelPath = LevelFolder + "/Level_Sandbox02.asset";
 

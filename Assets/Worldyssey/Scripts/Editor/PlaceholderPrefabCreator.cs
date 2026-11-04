@@ -11,10 +11,10 @@ namespace Worldyssey.EditorTools
     public static class PlaceholderPrefabCreator
     {
         private const string MenuPath = "Worldyssey/Setup/Create Placeholder Prefabs";
-        private const string PrefabFolder = "Assets/Worldyssey/Prefabs/Placeholder";
-        private const string ConfigFolder = "Assets/Worldyssey/Config";
+        private const string PrefabFolder = ProjectPaths.PlaceholderPrefabs;
+        private const string ConfigFolder = ProjectPaths.Config;
         private const string ConfigPath = ConfigFolder + "/LevelVisualConfig.asset";
-        private const string MaterialFolder = "Assets/Worldyssey/Materials/Placeholder";
+        private const string MaterialFolder = ProjectPaths.Materials + "/Placeholder";
 
         private const string FloorName = "P_Floor";
         private const string SharedWallName = "P_SharedWall";

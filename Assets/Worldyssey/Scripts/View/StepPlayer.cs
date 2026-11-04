@@ -9,7 +9,8 @@ namespace Worldyssey.View
     /// <summary>
     /// 播放一步的结果，播完前 <see cref="IsPlaying"/> 为 true。
     /// 普通步：转向、移动、推箱同时补间，推动的箱子挤压，到达终点的箱子弹起，撞墙时回弹。
-    /// 传送步：玩家钻进传送箱子、相机推近、画面染成目标世界颜色 → 切换世界 → 相机拉回、新世界从底座向外展开、玩家走出伙伴箱子。
+    /// 传送步：配置了 <see cref="SnapshotTeleportTransition"/> 时播放截图缩放转场；否则玩家钻进传送箱子、相机推近、
+    /// 画面染成目标世界颜色 → 切换世界 → 相机拉回、新世界从底座向外展开、玩家走出伙伴箱子。
     /// 通关步：移动播完后终点闪光、所有箱子依次弹起庆祝。
     /// 面提示也由这里刷新，保证提示变化与画面变化同时发生。
     /// </summary>
@@ -21,6 +22,9 @@ namespace Worldyssey.View
 
         [Tooltip("可选：传送时推近和拉回的相机")]
         [SerializeField] private CameraRig _cameraRig;
+
+        [Tooltip("可选：截图缩放转场。留空时用颜色遮罩转场")]
+        [SerializeField] private SnapshotTeleportTransition _snapshotTransition;
 
         private readonly List<EntityView> _animatingViews = new List<EntityView>(4);
         private readonly List<EntityView> _pendingPops = new List<EntityView>(2);
@@ -60,7 +64,10 @@ namespace Worldyssey.View
             {
                 _pendingRules = rules;
                 _pendingTeleportState = result.State;
-                _playRoutine = StartCoroutine(TeleportRoutine(FindTargetWorld(result)));
+                int targetWorld = FindTargetWorld(result);
+                _playRoutine = StartCoroutine(_snapshotTransition != null && _snapshotTransition.IsAvailable
+                    ? SnapshotTeleportRoutine(targetWorld)
+                    : TeleportRoutine(targetWorld));
                 return;
             }
 
@@ -91,6 +98,11 @@ namespace Worldyssey.View
             {
                 StopCoroutine(_cameraRoutine);
                 _cameraRoutine = null;
+            }
+
+            if (_snapshotTransition != null)
+            {
+                _snapshotTransition.Cancel();
             }
 
             if (_cameraRig != null)
@@ -252,12 +264,28 @@ namespace Worldyssey.View
             }
         }
 
+        private IEnumerator SnapshotTeleportRoutine(int targetWorld)
+        {
+            Direction towardBox = TowardPedestal(_pendingTeleportState);
+            GridPos pedestal = _pendingTeleportState.PlayerPosition + towardBox;
+            yield return _snapshotTransition.Play(pedestal, towardBox, targetWorld, ApplyTeleportedState);
+            _playRoutine = null;
+        }
+
+        /// <summary>
+        /// 传送前后玩家站在同一格；传送后背对底座，所以底座在结果朝向的反方向。
+        /// </summary>
+        private static Direction TowardPedestal(LevelState teleportedState)
+        {
+            return teleportedState.PlayerFacing.Opposite();
+        }
+
         private IEnumerator TeleportRoutine(int targetWorld)
         {
-            // 传送前后玩家都站在同一格、面朝底座，所以底座位置可以从结果状态算出
             LevelState state = _pendingTeleportState;
-            GridPos pedestal = state.PlayerPosition + state.PlayerFacing;
-            Vector3 intoBox = _levelView.DirectionToLocal(state.PlayerFacing);
+            Direction towardBox = TowardPedestal(state);
+            GridPos pedestal = state.PlayerPosition + towardBox;
+            Vector3 intoBox = _levelView.DirectionToLocal(towardBox);
             Vector3 pedestalWorld = _levelView.GridToWorld(pedestal) + Vector3.up * (_levelView.CellSize * 0.5f);
             float enterDuration = _gameplayConfig.TeleportEnterDuration;
             float exitDuration = _gameplayConfig.TeleportExitDuration;

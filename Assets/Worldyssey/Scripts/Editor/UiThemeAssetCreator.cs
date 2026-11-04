@@ -11,7 +11,7 @@ namespace Worldyssey.EditorTools
     public static class UiThemeAssetCreator
     {
         private const string MenuPath = "Worldyssey/UI/Create Theme Assets";
-        private const string ThemeFolder = "Assets/Worldyssey/UI/Themes";
+        private const string ThemeFolder = ProjectPaths.Ui + "/Themes";
         private const string PalettePath = ThemeFolder + "/UiFunctionalPalette.asset";
         private const string ThemeSetPath = ThemeFolder + "/UiThemeSet.asset";
 

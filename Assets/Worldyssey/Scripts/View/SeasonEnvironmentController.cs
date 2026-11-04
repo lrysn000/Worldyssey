@@ -11,8 +11,8 @@ namespace Worldyssey.View
     /// </summary>
     public class SeasonEnvironmentController : MonoBehaviour
     {
-        private const int NoWorld = -1;
-        private const int DefaultWorld = 0;
+        private const int NoSeason = -1;
+        private const int DefaultSeason = 0;
 
         [SerializeField] private LevelView _levelView;
         [SerializeField] private LevelVisualConfig _visualConfig;
@@ -29,10 +29,10 @@ namespace Worldyssey.View
         [Tooltip("季节调色 Volume 的优先级：高于全局后处理（0），低于撤销褪色（10）")]
         [SerializeField] private float _volumePriority = 1f;
 
-        private readonly Volume[] _volumes = new Volume[LevelLimits.MaxWorldCount];
-        private readonly ParticleSystem[] _particles = new ParticleSystem[LevelLimits.MaxWorldCount];
+        private readonly Volume[] _volumes = new Volume[WorldThemes.Count];
+        private readonly ParticleSystem[] _particles = new ParticleSystem[WorldThemes.Count];
         private SeasonEnvironment _current;
-        private int _currentWorld = NoWorld;
+        private int _currentSeason = NoSeason;
         private bool _hasReferences;
 
         private void Awake()
@@ -47,9 +47,9 @@ namespace Worldyssey.View
             }
 
             // 四季的 Volume 和粒子一次建好，切换时只开关，避免运行中实例化
-            for (int world = 0; world < LevelLimits.MaxWorldCount; world++)
+            for (int season = 0; season < WorldThemes.Count; season++)
             {
-                SeasonEnvironment environment = GetEnvironment(world);
+                SeasonEnvironment environment = GetEnvironment(season);
                 if (environment == null)
                 {
                     continue;
@@ -57,22 +57,22 @@ namespace Worldyssey.View
 
                 if (environment.ColorProfile != null)
                 {
-                    var volumeObject = new GameObject($"SeasonVolume_{world}");
+                    var volumeObject = new GameObject($"SeasonVolume_{season}");
                     volumeObject.transform.SetParent(transform, false);
                     Volume volume = volumeObject.AddComponent<Volume>();
                     volume.isGlobal = true;
                     volume.priority = _volumePriority;
                     volume.sharedProfile = environment.ColorProfile;
                     volume.weight = 0f;
-                    _volumes[world] = volume;
+                    _volumes[season] = volume;
                 }
 
                 if (environment.ParticlesPrefab != null)
                 {
                     ParticleSystem particles = Instantiate(environment.ParticlesPrefab, transform);
-                    particles.name = $"SeasonParticles_{world}";
+                    particles.name = $"SeasonParticles_{season}";
                     particles.gameObject.SetActive(false);
-                    _particles[world] = particles;
+                    _particles[season] = particles;
                 }
             }
         }
@@ -88,9 +88,9 @@ namespace Worldyssey.View
         private void Start()
         {
             // 菜单界面还没有关卡，先用第一个季节的环境，避免显示默认的灰色天空
-            if (_hasReferences && _currentWorld == NoWorld)
+            if (_hasReferences && _currentSeason == NoSeason)
             {
-                Apply(DefaultWorld);
+                Apply(DefaultSeason);
             }
         }
 
@@ -124,19 +124,20 @@ namespace Worldyssey.View
 
         private void HandleShownWorldChanged(int world)
         {
-            Apply(world);
+            // 每个世界的季节由关卡数据决定，先换成季节编号
+            Apply(_levelView.GetWorldThemeIndex(world));
         }
 
-        private void Apply(int world)
+        private void Apply(int season)
         {
-            SeasonEnvironment environment = GetEnvironment(world);
+            SeasonEnvironment environment = GetEnvironment(season);
             if (environment == null)
             {
                 // 这个季节还没配置环境，保持上一个季节的样子
                 return;
             }
 
-            _currentWorld = world;
+            _currentSeason = season;
             _current = environment;
             _sun.color = environment.SunColor;
             _sun.intensity = environment.SunIntensity;
@@ -157,24 +158,24 @@ namespace Worldyssey.View
                 _sky.ApplySeason(environment, environment.SunRotation);
             }
 
-            for (int i = 0; i < LevelLimits.MaxWorldCount; i++)
+            for (int i = 0; i < WorldThemes.Count; i++)
             {
                 if (_volumes[i] != null)
                 {
-                    _volumes[i].weight = i == world ? 1f : 0f;
+                    _volumes[i].weight = i == season ? 1f : 0f;
                 }
 
                 if (_particles[i] != null)
                 {
-                    _particles[i].gameObject.SetActive(i == world);
+                    _particles[i].gameObject.SetActive(i == season);
                 }
             }
         }
 
-        private SeasonEnvironment GetEnvironment(int world)
+        private SeasonEnvironment GetEnvironment(int season)
         {
-            SeasonVisualSet season = _visualConfig.GetSeasonSet(world);
-            return season != null ? season.Environment : null;
+            SeasonVisualSet set = _visualConfig.GetSeasonSet(season);
+            return set != null ? set.Environment : null;
         }
 
         private bool CheckReference(Object reference, string fieldName)

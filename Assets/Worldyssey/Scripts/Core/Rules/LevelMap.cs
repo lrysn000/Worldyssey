@@ -23,7 +23,7 @@ namespace Worldyssey.Core
         private readonly bool[] _pedestals;
         private readonly bool[] _goals;
         private readonly bool[][] _uniqueWalls;
-        private readonly string[] _worldNames;
+        private readonly WorldTheme[] _worldThemes;
         private readonly int[] _portalSideWorlds;
         private readonly GridPos[] _goalPositions;
         private readonly GridPos[] _mappedBoxStarts;
@@ -71,12 +71,14 @@ namespace Worldyssey.Core
                 throw Error(data, $"起始世界 {StartWorld} 不存在");
             }
 
-            _worldNames = new string[worldCount];
+            _worldThemes = new WorldTheme[worldCount];
             _uniqueWalls = new bool[worldCount][];
             for (int world = 0; world < worldCount; world++)
             {
                 WorldData worldData = data.Worlds[world] ?? throw Error(data, $"世界 {world} 为空");
-                _worldNames[world] = worldData.Name;
+                // 主题写错时同样按编号回退，具体错误由 LevelValidator 报告
+                WorldThemes.TryParse(worldData.ThemeText, out WorldTheme theme);
+                _worldThemes[world] = WorldThemes.Resolve(theme, world);
                 _uniqueWalls[world] = ParseWallRows(data, world, worldData.WallRows);
             }
 
@@ -96,7 +98,7 @@ namespace Worldyssey.Core
         public int StartWorld { get; }
         public GridPos PlayerStart { get; }
         public Direction PlayerStartFacing { get; }
-        public int WorldCount => _worldNames.Length;
+        public int WorldCount => _worldThemes.Length;
 
         /// <summary>配对数量。传送箱子总数（含未出现的）为它的两倍。</summary>
         public int PortalPairCount => _portalSideWorlds.Length / 2;
@@ -110,9 +112,16 @@ namespace Worldyssey.Core
         /// <summary>传送箱子的初始状态，下标规则见 <see cref="PortalBoxState"/>。</summary>
         public IReadOnlyList<PortalBoxState> PortalBoxStarts => _portalBoxStarts;
 
+        /// <summary>世界的显示名称，跟随主题。</summary>
         public string GetWorldName(int world)
         {
-            return _worldNames[world];
+            return WorldThemes.DisplayName(_worldThemes[world]);
+        }
+
+        /// <summary>世界的主题，未指定时已按世界编号回退，不会是 <see cref="WorldTheme.Unset"/>。</summary>
+        public WorldTheme GetWorldTheme(int world)
+        {
+            return _worldThemes[world];
         }
 
         /// <summary>

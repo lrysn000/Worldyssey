@@ -21,7 +21,7 @@ MonoBehaviour:
   - {fileID: 1781864451337916, guid: b1cdb08adfee1e74bbb03dadb9fd9dc9, type: 3}
   - {fileID: 1519992906359704, guid: 190247f20efbcab4d90f206c795f61fd, type: 3}
   _playerPrefab: {fileID: 7021193736796914776, guid: 1382fe9737d8e9e47b30fd905e34c324, type: 3}
-  _mappedBoxPrefab: {fileID: 5619987713316836826, guid: fd4fe6337df6f3c44aef3ce7d71430d3, type: 3}
+  _mappedBoxPrefab: {fileID: 6760825990669059278, guid: 48bb5f77bacf95246a9be4c73004bcfc, type: 3}
   _portalBoxPrefab: {fileID: 8522791343757278690, guid: b0627c8d56dcd9f4d8ca011497ca82f5, type: 3}
   _worldPalette: {fileID: 11400000, guid: e155b111138d382499b32829a361925d, type: 2}
   _seasonSets:
@@ -30,6 +30,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: fb35ac21d3bc8a046ab3461ebc816e7c, type: 2}
   - {fileID: 11400000, guid: 7e80c93156d1cb9468451a89404bbf7a, type: 2}
   _rimWidth: 2
+  _grassPlayerRadius: 0.45
+  _grassBoxRadius: 0.6
+  _grassRecoverDuration: 0.5
+  _grassTrailSpacing: 0.2
   _celebrationBurstPrefab: {fileID: 1001176739863736477, guid: ba435953b0dd6aa4c812abe29d7c7b9a, type: 3}
   _goalFlashColor: {r: 3, g: 2.5500002, b: 0.90000004, a: 3}
   _cellSize: 1

@@ -68,6 +68,7 @@ namespace Worldyssey.UI
             _header.WorldSelected += HandleWorldSelected;
             _header.AddWorldRequested += HandleAddWorld;
             _header.RemoveWorldRequested += HandleRemoveWorld;
+            _header.ThemeSelected += HandleThemeSelected;
             _pairList.PairSelected += HandlePairSelected;
             _pairList.TargetCycleRequested += HandleTargetCycle;
             _pairList.AddRequested += HandleAddPair;
@@ -107,6 +108,7 @@ namespace Worldyssey.UI
             _header.WorldSelected -= HandleWorldSelected;
             _header.AddWorldRequested -= HandleAddWorld;
             _header.RemoveWorldRequested -= HandleRemoveWorld;
+            _header.ThemeSelected -= HandleThemeSelected;
             _pairList.PairSelected -= HandlePairSelected;
             _pairList.TargetCycleRequested -= HandleTargetCycle;
             _pairList.AddRequested -= HandleAddPair;
@@ -170,6 +172,11 @@ namespace Worldyssey.UI
         private void HandleRemoveWorld()
         {
             Present(_model.RemoveCurrentWorld());
+        }
+
+        private void HandleThemeSelected(WorldTheme theme)
+        {
+            Present(_model.SetCurrentWorldTheme(theme));
         }
 
         private void HandlePairSelected(int pair)

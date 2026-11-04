@@ -168,7 +168,8 @@ namespace Worldyssey.Tests
             Assert.AreEqual(1, _draft.Portals[0].World);
             Assert.IsTrue(_draft.IsUniqueWall(1, new GridPos(5, 5)));
             Assert.AreEqual(1, _draft.StartWorld);
-            Assert.AreEqual("World 2", _draft.GetWorldName(1));
+            Assert.AreEqual(WorldTheme.Autumn, _draft.GetWorldTheme(1), "删除世界不改变其他世界的主题");
+            Assert.AreEqual("Autumn", _draft.GetWorldName(1), "世界名称跟随主题");
         }
 
         [Test]

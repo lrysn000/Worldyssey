@@ -143,7 +143,15 @@ namespace Worldyssey.View
         /// </summary>
         public void PlayEmerge(Vector3 localOffset, float duration)
         {
-            StartAppearRoutine(localOffset, Vector3.zero, 0f, 1f, 0f, duration);
+            PlayEmerge(localOffset, duration, 0f);
+        }
+
+        /// <summary>
+        /// 等待 <paramref name="delay"/> 后走出伙伴箱子；等待期间保持缩小、藏在箱子里。
+        /// </summary>
+        public void PlayEmerge(Vector3 localOffset, float duration, float delay)
+        {
+            StartAppearRoutine(localOffset, Vector3.zero, 0f, 1f, delay, duration);
         }
 
         /// <summary>

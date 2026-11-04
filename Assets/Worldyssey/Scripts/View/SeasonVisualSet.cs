@@ -22,6 +22,9 @@ namespace Worldyssey.View
         [SerializeField] private GameObject[] _uniqueWallPrefabs = new GameObject[0];
 
         [Header("草")]
+        [Tooltip("可选：草专用材质（Worldyssey/Grass 着色器），会摆动、被压扁。留空则用草预制体自带的材质")]
+        [SerializeField] private Material _grassMaterial;
+
         [Tooltip("撒在空地上的草；终点、底座、墙所在的格子不撒")]
         [SerializeField] private GameObject[] _grassPrefabs = new GameObject[0];
 
@@ -66,6 +69,7 @@ namespace Worldyssey.View
         public GameObject FloorCornerPrefab => _floorCornerPrefab;
         public IReadOnlyList<GameObject> UniqueWallPrefabs => _uniqueWallPrefabs;
         public IReadOnlyList<GameObject> GrassPrefabs => _grassPrefabs;
+        public Material GrassMaterial => _grassMaterial;
         public int GrassPerCellMin => _grassPerCellMin;
         public int GrassPerCellMax => Mathf.Max(_grassPerCellMin, _grassPerCellMax);
         public float GrassEdgeMargin => _grassEdgeMargin;

@@ -11,9 +11,7 @@ namespace Worldyssey.Core
     {
         public const int DefaultWidth = 9;
         public const int DefaultHeight = 7;
-        private const string WorldNameFormat = "World {0}";
-
-        private readonly List<string> _worldNames = new List<string>();
+        private readonly List<WorldTheme> _worldThemes = new List<WorldTheme>();
         private readonly List<bool[]> _uniqueWalls = new List<bool[]>();
         private readonly List<GridPos> _mappedBoxes = new List<GridPos>();
         private readonly List<DraftPair> _pairs = new List<DraftPair>();
@@ -33,7 +31,7 @@ namespace Worldyssey.Core
         public string DisplayName { get; set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
-        public int WorldCount => _worldNames.Count;
+        public int WorldCount => _worldThemes.Count;
 
         /// <summary>起始世界，玩家只存在于这个世界。</summary>
         public int StartWorld { get; private set; }
@@ -50,7 +48,7 @@ namespace Worldyssey.Core
         public static LevelDraft CreateNew(string id, string displayName)
         {
             var draft = new LevelDraft(id, displayName, DefaultWidth, DefaultHeight);
-            draft._worldNames.Add(string.Format(WorldNameFormat, 1));
+            draft._worldThemes.Add(WorldTheme.Spring);
             draft._uniqueWalls.Add(new bool[DefaultWidth * DefaultHeight]);
             for (int y = 0; y < DefaultHeight; y++)
             {
@@ -88,7 +86,7 @@ namespace Worldyssey.Core
 
             for (int world = 0; world < map.WorldCount; world++)
             {
-                draft._worldNames.Add(map.GetWorldName(world));
+                draft._worldThemes.Add(map.GetWorldTheme(world));
                 var walls = new bool[map.Width * map.Height];
                 for (int i = 0; i < walls.Length; i++)
                 {
@@ -140,7 +138,8 @@ namespace Worldyssey.Core
             var worlds = new WorldData[WorldCount];
             for (int world = 0; world < WorldCount; world++)
             {
-                worlds[world] = new WorldData(_worldNames[world], BuildWallRows(_uniqueWalls[world], cells));
+                WorldTheme theme = _worldThemes[world];
+                worlds[world] = new WorldData(WorldThemes.DisplayName(theme), BuildWallRows(_uniqueWalls[world], cells), WorldThemes.ToData(theme));
             }
 
             var pairs = new PortalPairData[_pairs.Count];
@@ -182,7 +181,7 @@ namespace Worldyssey.Core
                 PlayerFacing = PlayerFacing,
             };
             Array.Copy(_shared, copy._shared, _shared.Length);
-            copy._worldNames.AddRange(_worldNames);
+            copy._worldThemes.AddRange(_worldThemes);
             for (int i = 0; i < _uniqueWalls.Count; i++)
             {
                 copy._uniqueWalls.Add((bool[])_uniqueWalls[i].Clone());
@@ -199,9 +198,35 @@ namespace Worldyssey.Core
             return pos.X >= 0 && pos.X < Width && pos.Y >= 0 && pos.Y < Height;
         }
 
+        /// <summary>世界的显示名称，跟随主题。</summary>
         public string GetWorldName(int world)
         {
-            return _worldNames[world];
+            return WorldThemes.DisplayName(_worldThemes[world]);
+        }
+
+        public WorldTheme GetWorldTheme(int world)
+        {
+            return _worldThemes[world];
+        }
+
+        /// <summary>
+        /// 设置世界的主题。主题已被另一个世界占用时两者交换，保证同一关卡内不重复。没有变化或参数非法时返回 false。
+        /// </summary>
+        public bool SetWorldTheme(int world, WorldTheme theme)
+        {
+            if (world < 0 || world >= WorldCount || !WorldThemes.IsValid(theme) || _worldThemes[world] == theme)
+            {
+                return false;
+            }
+
+            int owner = _worldThemes.IndexOf(theme);
+            if (owner >= 0)
+            {
+                _worldThemes[owner] = _worldThemes[world];
+            }
+
+            _worldThemes[world] = theme;
+            return true;
         }
 
         public SharedCell GetSharedCell(GridPos pos)
@@ -377,13 +402,13 @@ namespace Worldyssey.Core
                 return -1;
             }
 
-            _worldNames.Add(string.Format(WorldNameFormat, WorldCount + 1));
+            _worldThemes.Add(FirstUnusedTheme());
             _uniqueWalls.Add(new bool[Width * Height]);
             return WorldCount - 1;
         }
 
         /// <summary>
-        /// 删除一个世界，连带删除引用它的配对及其传送箱子；之后的世界编号前移，名称按新编号重排。只剩一个世界时返回 false。
+        /// 删除一个世界，连带删除引用它的配对及其传送箱子；之后的世界编号前移，其他世界的主题不变。只剩一个世界时返回 false。
         /// </summary>
         public bool RemoveWorld(int world)
         {
@@ -420,12 +445,8 @@ namespace Worldyssey.Core
                 StartWorld = ShiftWorld(StartWorld, world);
             }
 
-            _worldNames.RemoveAt(world);
+            _worldThemes.RemoveAt(world);
             _uniqueWalls.RemoveAt(world);
-            for (int i = 0; i < _worldNames.Count; i++)
-            {
-                _worldNames[i] = string.Format(WorldNameFormat, i + 1);
-            }
 
             return true;
         }
@@ -566,6 +587,22 @@ namespace Worldyssey.Core
         private GridPos FromIndex(int index)
         {
             return new GridPos(index % Width, index / Width);
+        }
+
+        /// <summary>
+        /// 按春夏秋冬顺序找第一个还没被用的主题。世界数不超过主题数，所以总能找到。
+        /// </summary>
+        private WorldTheme FirstUnusedTheme()
+        {
+            for (int i = 0; i < WorldThemes.Count; i++)
+            {
+                if (!_worldThemes.Contains((WorldTheme)i))
+                {
+                    return (WorldTheme)i;
+                }
+            }
+
+            return WorldTheme.Spring;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Worldyssey.EditorTools
         private const float CellSize = 14f;
         private const float CellGap = 1f;
         private const int MaxPreviewSize = 64;
-        private const string SourceFolder = "Assets/Worldyssey/Levels/Source";
+        private const string SourceFolder = ProjectPaths.LevelSources;
 
         private static readonly Color FloorColor = new Color(0.55f, 0.55f, 0.52f);
         private static readonly Color SharedWallColor = new Color(0.18f, 0.19f, 0.22f);
