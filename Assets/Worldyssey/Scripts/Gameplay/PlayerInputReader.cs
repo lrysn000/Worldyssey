@@ -12,17 +12,17 @@ namespace Worldyssey.Gameplay
     /// </summary>
     public class PlayerInputReader : MonoBehaviour
     {
-        private const string GameplayMapName = "Gameplay";
-        private const string MoveUpActionName = "MoveUp";
-        private const string MoveDownActionName = "MoveDown";
-        private const string MoveLeftActionName = "MoveLeft";
-        private const string MoveRightActionName = "MoveRight";
-        private const string TeleportActionName = "Teleport";
-        private const string UndoActionName = "Undo";
-        private const string RestartActionName = "Restart";
-        private const string PauseActionName = "Pause";
-        private const string RotateViewLeftActionName = "RotateViewLeft";
-        private const string RotateViewRightActionName = "RotateViewRight";
+        private const string GameplayMapName = InputActionNames.GameplayMap;
+        private const string MoveUpActionName = InputActionNames.MoveUp;
+        private const string MoveDownActionName = InputActionNames.MoveDown;
+        private const string MoveLeftActionName = InputActionNames.MoveLeft;
+        private const string MoveRightActionName = InputActionNames.MoveRight;
+        private const string TeleportActionName = InputActionNames.Teleport;
+        private const string UndoActionName = InputActionNames.Undo;
+        private const string RestartActionName = InputActionNames.Restart;
+        private const string PauseActionName = InputActionNames.Pause;
+        private const string RotateViewLeftActionName = InputActionNames.RotateViewLeft;
+        private const string RotateViewRightActionName = InputActionNames.RotateViewRight;
 
         [Tooltip("包含 Gameplay 动作表的输入资源")]
         [SerializeField] private InputActionAsset _inputActions;

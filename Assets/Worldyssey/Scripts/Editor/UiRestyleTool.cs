@@ -22,7 +22,6 @@ namespace Worldyssey.EditorTools
         private const float DialogWidth = 560f;
         private const float RowSpacing = 20f;
 
-        private static readonly Vector2 TopLeft = new Vector2(0f, 1f);
         private static readonly Vector2 TopCenter = new Vector2(0.5f, 1f);
         private static readonly Vector2 BottomCenter = new Vector2(0.5f, 0f);
 
@@ -95,7 +94,8 @@ namespace Worldyssey.EditorTools
         }
 
         /// <summary>
-        /// HUD：左上角信息卡片，通关文字和传送提示各加一块有内容时才显示的底板，右上按钮用强调色。
+        /// HUD：左上角信息卡片和正上方世界指示器（见 <see cref="HudWorldIndicatorSetup"/>），
+        /// 传送提示加一块有内容时才显示的底板，右上按钮用强调色。
         /// </summary>
         private static void RestyleHud(HudPanel hud, UiStyleKit.Context context)
         {
@@ -105,19 +105,9 @@ namespace Worldyssey.EditorTools
             }
 
             var serialized = new SerializedObject(hud);
-            RectTransform info = UiStyleKit.CreateCard(hud.transform, "InfoCard", TopLeft, new Vector2(UiStyleKit.Padding, -UiStyleKit.Padding),
-                new Vector2(DialogWidth, 212f), UiColorRole.PanelBackground, scope, context);
-            info.SetAsFirstSibling();
-            PlaceText(serialized, "_levelNameText", TopLeft, new Vector2(48f, -36f), new Vector2(512f, 48f), 36f, UiColorRole.Header, true, scope, context);
-            PlaceText(serialized, "_worldNameText", TopLeft, new Vector2(48f, -88f), new Vector2(512f, 40f), 28f, UiColorRole.Text, false, scope, context);
-            PlaceText(serialized, "_stepCountText", TopLeft, new Vector2(48f, -130f), new Vector2(512f, 40f), 28f, UiColorRole.Text, false, scope, context);
-            PlaceText(serialized, "_conflictText", TopLeft, new Vector2(48f, -172f), new Vector2(512f, 36f), 24f, UiColorRole.Cancel, false, scope, context);
-
-            GameObject status = CreateTextBackground(serialized, "_statusText", TopCenter, new Vector2(0f, -48f), new Vector2(520f, 92f),
-                UiColorRole.Header, UiColorRole.HeaderText, scope, context);
+            HudWorldIndicatorSetup.Apply(hud, scope, context);
             GameObject hint = CreateTextBackground(serialized, "_hintText", BottomCenter, new Vector2(0f, 110f), new Vector2(1000f, 72f),
                 UiColorRole.PanelBackground, UiColorRole.Text, scope, context);
-            GameUiBuilder.SetReference(hud, "_statusBackground", status);
             GameUiBuilder.SetReference(hud, "_hintBackground", hint);
 
             foreach (Button button in hud.GetComponentsInChildren<Button>(true))
@@ -255,7 +245,7 @@ namespace Worldyssey.EditorTools
             return true;
         }
 
-        private static void PlaceText(SerializedObject owner, string field, Vector2 anchor, Vector2 position, Vector2 size, float fontSize,
+        internal static void PlaceText(SerializedObject owner, string field, Vector2 anchor, Vector2 position, Vector2 size, float fontSize,
             UiColorRole role, bool isBold, UiThemeScope scope, UiStyleKit.Context context)
         {
             var text = UiThemeSceneSetup.GetReference<TMP_Text>(owner, field);

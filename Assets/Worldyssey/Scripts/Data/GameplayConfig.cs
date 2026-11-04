@@ -139,6 +139,10 @@ namespace Worldyssey.Data
         [Min(0f)]
         [SerializeField] private float _cameraMargin = 1f;
 
+        [Tooltip("画面顶部留给 HUD 世界指示器的比例（占屏幕高度），关卡取景会避开这一条")]
+        [Range(0f, 0.4f)]
+        [SerializeField] private float _cameraTopReserve = 0.12f;
+
         [Tooltip("旋转视角 90° 的时长（秒），期间不能操作")]
         [Min(0f)]
         [SerializeField] private float _viewRotateDuration = 0.25f;
@@ -180,6 +184,7 @@ namespace Worldyssey.Data
         public float RewindFadeOutDuration => _rewindFadeOutDuration;
         public float CameraPitch => _cameraPitch;
         public float CameraMargin => _cameraMargin;
+        public float CameraTopReserve => _cameraTopReserve;
         public float ViewRotateDuration => _viewRotateDuration;
     }
 }

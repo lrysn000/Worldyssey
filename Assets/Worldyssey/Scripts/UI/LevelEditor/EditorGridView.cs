@@ -3,26 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Worldyssey.Core;
+using Worldyssey.Data;
 
 namespace Worldyssey.UI
 {
     /// <summary>
     /// 关卡编辑器的俯视网格：显示当前世界的全部内容，用外框标出校验问题，并把鼠标绘制转成笔画事件。
     /// 左键用当前画笔，右键总是橡皮擦；按住拖动连续绘制，一次按下到松开为一笔。
+    /// 配色来自 <see cref="EditorGridPalette"/>；独有墙用当前世界的季节色，传送箱子用目标世界的季节色。
     /// </summary>
     public class EditorGridView : MonoBehaviour
     {
-        private static readonly Color NoFrame = new Color(0.12f, 0.12f, 0.14f, 1f);
-        private static readonly Color ErrorFrame = new Color(0.95f, 0.15f, 0.15f, 1f);
-        private static readonly Color WarningFrame = new Color(1f, 0.6f, 0.1f, 1f);
-        private static readonly Color FloorColor = new Color(0.55f, 0.55f, 0.52f, 1f);
-        private static readonly Color SharedWallColor = new Color(0.18f, 0.19f, 0.22f, 1f);
-        private static readonly Color UniqueWallColor = new Color(0.40f, 0.47f, 0.62f, 1f);
-        private static readonly Color GoalColor = new Color(0.95f, 0.80f, 0.25f, 1f);
-        private static readonly Color PedestalColor = new Color(0.30f, 0.72f, 0.75f, 1f);
-        private static readonly Color MappedBoxColor = new Color(0.88f, 0.45f, 0.20f, 1f);
-        private static readonly Color PlayerColor = new Color(0.20f, 0.50f, 0.95f, 1f);
-        private static readonly Color PortalBoxColor = new Color(0.65f, 0.35f, 0.90f, 1f);
         private static readonly Color Hidden = new Color(0f, 0f, 0f, 0f);
         private static readonly string[] FacingLabels = { "@^", "@>", "@v", "@<" };
         private const string BoxLabel = "B";
@@ -30,6 +21,13 @@ namespace Worldyssey.UI
 
         [SerializeField] private RectTransform _gridArea;
         [SerializeField] private EditorGridCell _cellPrefab;
+        [SerializeField] private EditorGridPalette _palette;
+
+        [Tooltip("季节色：独有墙和传送箱子按世界主题着色")]
+        [SerializeField] private WorldPalette _worldPalette;
+
+        [Tooltip("可选：绘制时格子弹跳的幅度和时长。不设置则不弹")]
+        [SerializeField] private UiMotionConfig _motionConfig;
 
         private readonly List<EditorGridCell> _cells = new List<EditorGridCell>();
         private readonly bool[] _errorCells = new bool[LevelLimits.MaxWidth * LevelLimits.MaxHeight];
@@ -47,9 +45,9 @@ namespace Worldyssey.UI
 
         private void Awake()
         {
-            if (_gridArea == null || _cellPrefab == null)
+            if (_gridArea == null || _cellPrefab == null || _palette == null || _worldPalette == null)
             {
-                Debug.LogError($"[{nameof(EditorGridView)}] {name} 缺少网格区域或格子预制体引用", this);
+                Debug.LogError($"[{nameof(EditorGridView)}] {name} 缺少网格区域、格子预制体或配色引用", this);
             }
         }
 
@@ -64,7 +62,7 @@ namespace Worldyssey.UI
         /// </summary>
         public void Render(LevelDraft draft, int world, LevelValidationReport report)
         {
-            if (_gridArea == null || _cellPrefab == null)
+            if (_gridArea == null || _cellPrefab == null || _palette == null || _worldPalette == null)
             {
                 return;
             }
@@ -106,6 +104,7 @@ namespace Worldyssey.UI
             }
 
             _isStroking = true;
+            PopCell(cell);
             StrokeStarted?.Invoke(cell.Position, button == PointerEventData.InputButton.Right);
         }
 
@@ -113,6 +112,7 @@ namespace Worldyssey.UI
         {
             if (_isStroking)
             {
+                PopCell(cell);
                 StrokeContinued?.Invoke(cell.Position);
             }
         }
@@ -120,6 +120,14 @@ namespace Worldyssey.UI
         internal void HandleCellUp()
         {
             EndStroke();
+        }
+
+        private void PopCell(EditorGridCell cell)
+        {
+            if (_motionConfig != null)
+            {
+                cell.Pop(_motionConfig.CellPopScale, _motionConfig.CellPopDuration);
+            }
         }
 
         private void EndStroke()
@@ -185,52 +193,63 @@ namespace Worldyssey.UI
         private void RenderCell(EditorGridCell cell, LevelDraft draft, int world, GridPos pos)
         {
             int index = pos.Y * _width + pos.X;
-            Color frame = _errorCells[index] ? ErrorFrame : _warningCells[index] ? WarningFrame : NoFrame;
-            Color terrain = TerrainColor(draft.GetSharedCell(pos), draft.IsUniqueWall(world, pos));
+            Color frame = _errorCells[index] ? _palette.ErrorFrame : _warningCells[index] ? _palette.WarningFrame : _palette.Frame;
+            Color terrain = TerrainColor(draft, world, pos);
 
             Color entity = Hidden;
             string label = string.Empty;
             int portal = draft.FindPortal(world, pos);
             if (world == draft.StartWorld && pos == draft.PlayerPosition)
             {
-                entity = PlayerColor;
+                entity = _palette.Player;
                 label = FacingLabels[(int)draft.PlayerFacing];
             }
             else if (draft.FindMappedBox(pos) >= 0)
             {
-                entity = MappedBoxColor;
+                entity = _palette.MappedBox;
                 label = BoxLabel;
             }
             else if (portal >= 0)
             {
-                entity = PortalBoxColor;
-                label = PortalLabelPrefix + draft.Portals[portal].Pair;
+                int pairIndex = draft.Portals[portal].Pair;
+                DraftPair pair = draft.Pairs[pairIndex];
+                int target = pair.WorldA == world ? pair.WorldB : pair.WorldA;
+                entity = SeasonColor(draft, target, _palette.PortalBoxFallback);
+                label = PortalLabelPrefix + pairIndex;
             }
 
             cell.Render(frame, terrain, entity, label);
         }
 
-        private static Color TerrainColor(SharedCell shared, bool isUniqueWall)
+        private Color TerrainColor(LevelDraft draft, int world, GridPos pos)
         {
+            SharedCell shared = draft.GetSharedCell(pos);
             if (shared == SharedCell.Wall)
             {
-                return SharedWallColor;
+                return _palette.SharedWall;
             }
 
-            if (isUniqueWall)
+            if (draft.IsUniqueWall(world, pos))
             {
-                return UniqueWallColor;
+                return SeasonColor(draft, world, _palette.UniqueWallFallback);
             }
 
             switch (shared)
             {
                 case SharedCell.Pedestal:
-                    return PedestalColor;
+                    return _palette.Pedestal;
                 case SharedCell.Goal:
-                    return GoalColor;
+                    return _palette.Goal;
                 default:
-                    return FloorColor;
+                    return _palette.Floor;
             }
+        }
+
+        private Color SeasonColor(LevelDraft draft, int world, Color fallback)
+        {
+            return world >= 0 && world < draft.WorldCount && _worldPalette.TryGetColor((int)draft.GetWorldTheme(world), out Color color)
+                ? color
+                : fallback;
         }
     }
 }

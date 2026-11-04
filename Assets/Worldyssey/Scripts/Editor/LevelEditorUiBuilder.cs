@@ -3,170 +3,132 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
+using Worldyssey.Data;
 using Worldyssey.Gameplay;
 using Worldyssey.UI;
 
 namespace Worldyssey.EditorTools
 {
     /// <summary>
-    /// 把关卡编辑器界面加入已用 <see cref="GameUiBuilder"/> 生成的场景：编辑器面板、打开关卡对话框、主菜单入口按钮，并连好引用。
+    /// 生成（或重新生成）关卡编辑器界面：删除场景中已有的编辑器面板，按新布局整个重建并连好引用，
+    /// 然后重新登记主题作用域、补上主菜单入口和悬停放大。运行逻辑都在 UI 脚本里，重建不会丢数据。
     /// </summary>
     public static class LevelEditorUiBuilder
     {
-        private const string MenuPath = "Worldyssey/Setup/Add Level Editor to Scene";
-        private const string CellPrefabFolder = ProjectPaths.UiPrefabs;
-        private const string CellPrefabPath = CellPrefabFolder + "/P_EditorGridCell.prefab";
+        private const string MenuPath = "Worldyssey/Setup/Rebuild Level Editor UI";
+        private const string UndoName = "Rebuild Level Editor UI";
+        private const string GridPalettePath = ProjectPaths.Config + "/EditorGridPalette.asset";
+        private const string BrushFolder = ProjectPaths.Textures + "/UI/EditorBrushes";
 
-        private static readonly Vector2 SmallButton = new Vector2(64f, 56f);
-        private static readonly Vector2 ToolButtonSize = new Vector2(230f, 60f);
-        private static readonly Vector2 TabSize = new Vector2(150f, 56f);
-        private static readonly Vector2 HalfButton = new Vector2(205f, 56f);
-        private static readonly Vector2 ThirdButton = new Vector2(135f, 56f);
+        // 与 EditorTool 枚举顺序一致
+        private static readonly string[] BrushNames =
+        {
+            "Brush_Floor", "Brush_Wall", "Brush_Pedestal", "Brush_Goal", "Brush_UniqueWall", "Brush_Box", "Brush_Player", "Brush_Portal", "Brush_Eraser",
+        };
 
         [MenuItem(MenuPath)]
-        public static void AddLevelEditor()
+        public static void Rebuild()
         {
             var gameFlow = Object.FindObjectOfType<GameFlow>();
             var mainMenu = Object.FindObjectOfType<MainMenuPanel>(true);
-            if (gameFlow == null || mainMenu == null)
+            var themeSet = GameUiBuilder.FindAsset<UiThemeSet>(null);
+            if (gameFlow == null || mainMenu == null || themeSet == null)
             {
-                Debug.LogError($"[{nameof(LevelEditorUiBuilder)}] 当前场景没有 GameFlow 或主菜单，请先运行 Build Game Scene");
+                Debug.LogError($"[{nameof(LevelEditorUiBuilder)}] 当前场景没有 GameFlow 或主菜单，或缺少主题资源，未做任何修改");
                 return;
             }
 
-            if (Object.FindObjectOfType<LevelEditorPanel>(true) != null)
-            {
-                Debug.LogError($"[{nameof(LevelEditorUiBuilder)}] 当前场景已经有关卡编辑器，为避免重复未做任何修改");
-                return;
-            }
-
-            var serializedFlow = new SerializedObject(gameFlow);
-            var inputReader = serializedFlow.FindProperty("_inputReader").objectReferenceValue as PlayerInputReader;
+            var inputReader = UiThemeSceneSetup.GetReference<PlayerInputReader>(new SerializedObject(gameFlow), "_inputReader");
             Transform canvas = mainMenu.transform.parent;
-            LevelButton listItemPrefab = GameUiBuilder.GetOrCreateLevelButtonPrefab();
-            EditorGridCell cellPrefab = GetOrCreateCellPrefab();
+            int siblingIndex = -1;
+            var old = Object.FindObjectOfType<LevelEditorPanel>(true);
+            if (old != null)
+            {
+                siblingIndex = old.transform.GetSiblingIndex();
+                Undo.DestroyObjectImmediate(old.gameObject);
+            }
 
-            LevelEditorPanel editor = CreateEditorPanel(canvas, inputReader, listItemPrefab, cellPrefab);
-            Undo.RegisterCreatedObjectUndo(editor.gameObject, "Add Level Editor");
-            AddMainMenuButton(mainMenu);
+            var context = new UiStyleKit.Context(themeSet.NeutralTheme);
+            LevelEditorPanel editor = CreateEditorPanel(canvas, inputReader, themeSet.NeutralTheme, context);
+            Undo.RegisterCreatedObjectUndo(editor.gameObject, UndoName);
+            if (siblingIndex >= 0)
+            {
+                editor.transform.SetSiblingIndex(siblingIndex);
+            }
+
             GameUiBuilder.SetReference(gameFlow, "_levelEditorPanel", editor);
+            UiThemeSceneSetup.AddButton(mainMenu, "_levelEditorButton", UiText.LevelEditor, "_quitButton", true);
+
+            // 重新登记主题作用域（旧面板的作用域已随面板删除），并给新按钮加悬停放大
+            UiThemeSceneSetup.Setup();
+            UiHoverScaleSetup.Setup();
 
             EditorSceneManager.MarkSceneDirty(gameFlow.gameObject.scene);
             Selection.activeObject = editor.gameObject;
-            Debug.Log($"[{nameof(LevelEditorUiBuilder)}] 已加入关卡编辑器，记得保存场景");
+            Debug.Log($"[{nameof(LevelEditorUiBuilder)}] 关卡编辑器界面已重建，网格配色在 {GridPalettePath}，记得保存场景", editor);
         }
 
-        private static void AddMainMenuButton(MainMenuPanel mainMenu)
-        {
-            var serialized = new SerializedObject(mainMenu);
-            var quit = serialized.FindProperty("_quitButton").objectReferenceValue as Button;
-
-            // 编辑器按钮放在 Start 和 Quit 之间，Quit 下移一格
-            Button editorButton = GameUiBuilder.CreateButton(mainMenu.transform, "LevelEditorButton", UiText.LevelEditor,
-                GameUiBuilder.Center, new Vector2(0f, -120f), GameUiBuilder.MenuButtonSize);
-            if (quit != null)
-            {
-                Undo.RecordObject(quit.transform, "Add Level Editor");
-                ((RectTransform)quit.transform).anchoredPosition = new Vector2(0f, -240f);
-            }
-
-            GameUiBuilder.SetReference(mainMenu, "_levelEditorButton", editorButton);
-        }
-
-        private static LevelEditorPanel CreateEditorPanel(Transform canvas, PlayerInputReader inputReader, LevelButton listItemPrefab, EditorGridCell cellPrefab)
+        private static LevelEditorPanel CreateEditorPanel(Transform canvas, PlayerInputReader inputReader, UiTheme neutral, UiStyleKit.Context context)
         {
             RectTransform root = GameUiBuilder.CreateFullscreen("LevelEditor", canvas, GameUiBuilder.MenuBackground, true);
             var panel = root.gameObject.AddComponent<LevelEditorPanel>();
-            Vector2 topLeft = GameUiBuilder.TopLeft;
+            UiThemeScope scope = UiStyleKit.EnsureScope(panel, neutral);
+            UiStyleKit.Theme(root.GetComponent<Image>(), UiColorRole.PanelBackground, scope, context);
+            var layout = new LevelEditorLayout(scope, context);
+            UiMotionConfig motion = UiHoverScaleSetup.GetOrCreateConfig();
+            var worldPalette = GameUiBuilder.FindAsset<WorldPalette>(null);
+
+            float gap = LevelEditorLayout.Gap;
+            float belowTop = -gap - LevelEditorLayout.TopBarHeight - gap;
+            RectTransform topBar = layout.CreateStretchCard(root, "TopBar", new Vector2(0f, 1f), Vector2.one,
+                new Vector2(gap, -gap - LevelEditorLayout.TopBarHeight), new Vector2(-gap, -gap), UiColorRole.Header);
+            RectTransform toolsCard = layout.CreateStretchCard(root, "ToolsCard", Vector2.zero, new Vector2(0f, 1f),
+                new Vector2(gap, gap), new Vector2(gap + LevelEditorLayout.ToolsWidth, belowTop), UiColorRole.InnerFrame);
+            RectTransform sideCard = layout.CreateStretchCard(root, "SideCard", new Vector2(1f, 0f), Vector2.one,
+                new Vector2(-gap - LevelEditorLayout.SideWidth, gap), new Vector2(-gap, belowTop), UiColorRole.InnerFrame);
+            RectTransform centerCard = layout.CreateStretchCard(root, "CenterCard", Vector2.zero, Vector2.one,
+                new Vector2(gap * 2f + LevelEditorLayout.ToolsWidth, gap), new Vector2(-gap * 2f - LevelEditorLayout.SideWidth, belowTop), UiColorRole.InnerFrame);
+
+            // 顶栏 + 世界栏 → EditorHeaderBar
+            layout.BuildTopBar(topBar, out LevelEditorTopBarParts top);
+            layout.BuildWorldBar(centerCard, out LevelEditorWorldBarParts worlds);
+            var header = topBar.gameObject.AddComponent<EditorHeaderBar>();
+            GameUiBuilder.SetReference(header, "_nameInput", top.NameInput);
+            GameUiBuilder.SetReference(header, "_sizeText", top.SizeText);
+            GameUiBuilder.SetReference(header, "_widthMinusButton", top.WidthMinus);
+            GameUiBuilder.SetReference(header, "_widthPlusButton", top.WidthPlus);
+            GameUiBuilder.SetReference(header, "_heightMinusButton", top.HeightMinus);
+            GameUiBuilder.SetReference(header, "_heightPlusButton", top.HeightPlus);
+            GameUiBuilder.SetReference(header, "_addWorldButton", worlds.AddWorld);
+            GameUiBuilder.SetReference(header, "_removeWorldButton", worlds.RemoveWorld);
+            GameUiBuilder.SetReference(header, "_palette", worldPalette);
+            GameUiBuilder.SetReference(header, "_themeScope", scope);
+            UiThemeSceneSetup.SetReferenceArray(header, "_worldTabs", worlds.Tabs);
+            UiThemeSceneSetup.SetReferenceArray(header, "_worldTabIcons", worlds.TabIcons);
+            UiThemeSceneSetup.SetReferenceArray(header, "_themeButtons", worlds.ThemeButtons);
+            UiThemeSceneSetup.SetReferenceArray(header, "_themeIcons", worlds.ThemeIcons);
+            UiThemeSceneSetup.SetReferenceArray(header, "_seasonIcons", UiStyleKit.LoadWorldIcons());
 
             // 左侧画笔栏
-            GameUiBuilder.CreateText(root, "ToolsHeader", UiText.ToolsHeader, 34f, TextAlignmentOptions.Left, topLeft, new Vector2(30f, -110f), new Vector2(230f, 44f));
-            var toolbarRoot = GameUiBuilder.CreateRect("Toolbar", root);
-            GameUiBuilder.Stretch(toolbarRoot);
-            var toolbar = toolbarRoot.gameObject.AddComponent<EditorToolbar>();
-            var toolButtons = new Button[UiText.EditorToolNames.Length];
-            for (int i = 0; i < toolButtons.Length; i++)
-            {
-                toolButtons[i] = GameUiBuilder.CreateButton(toolbarRoot, "Tool_" + UiText.EditorToolNames[i], UiText.EditorToolNames[i],
-                    topLeft, new Vector2(30f, -165f - i * 70f), ToolButtonSize);
-            }
+            var toolbar = toolsCard.gameObject.AddComponent<EditorToolbar>();
+            UiThemeSceneSetup.SetReferenceArray(toolbar, "_toolButtons", layout.BuildToolbar(toolsCard, LoadBrushIcons()));
 
-            SetArray(toolbar, "_toolButtons", toolButtons);
-
-            // 顶部：关卡名、尺寸、世界标签
-            RectTransform headerRoot = GameUiBuilder.CreateRect("Header", root);
-            GameUiBuilder.Stretch(headerRoot);
-            var header = headerRoot.gameObject.AddComponent<EditorHeaderBar>();
-            TMP_InputField nameInput = CreateInputField(headerRoot, new Vector2(290f, -30f), new Vector2(460f, 56f));
-            TMP_Text sizeText = GameUiBuilder.CreateText(headerRoot, "SizeText", "9 x 7", 30f, TextAlignmentOptions.Center, topLeft, new Vector2(840f, -30f), new Vector2(120f, 56f));
-            Button widthMinus = GameUiBuilder.CreateButton(headerRoot, "WidthMinus", "W-", topLeft, new Vector2(770f, -30f), SmallButton);
-            Button widthPlus = GameUiBuilder.CreateButton(headerRoot, "WidthPlus", "W+", topLeft, new Vector2(965f, -30f), SmallButton);
-            Button heightMinus = GameUiBuilder.CreateButton(headerRoot, "HeightMinus", "H-", topLeft, new Vector2(1035f, -30f), SmallButton);
-            Button heightPlus = GameUiBuilder.CreateButton(headerRoot, "HeightPlus", "H+", topLeft, new Vector2(1105f, -30f), SmallButton);
-            var worldTabs = new Button[4];
-            for (int i = 0; i < worldTabs.Length; i++)
-            {
-                worldTabs[i] = GameUiBuilder.CreateButton(headerRoot, "WorldTab_" + (i + 1), string.Format(UiText.WorldTabFormat, i + 1),
-                    topLeft, new Vector2(1200f + i * 160f, -30f), TabSize);
-            }
-
-            Button addWorld = GameUiBuilder.CreateButton(headerRoot, "AddWorld", "+", topLeft, new Vector2(1200f, -96f), SmallButton);
-            Button removeWorld = GameUiBuilder.CreateButton(headerRoot, "RemoveWorld", "-", topLeft, new Vector2(1270f, -96f), SmallButton);
-            GameUiBuilder.SetReference(header, "_nameInput", nameInput);
-            GameUiBuilder.SetReference(header, "_sizeText", sizeText);
-            GameUiBuilder.SetReference(header, "_widthMinusButton", widthMinus);
-            GameUiBuilder.SetReference(header, "_widthPlusButton", widthPlus);
-            GameUiBuilder.SetReference(header, "_heightMinusButton", heightMinus);
-            GameUiBuilder.SetReference(header, "_heightPlusButton", heightPlus);
-            SetArray(header, "_worldTabs", worldTabs);
-            GameUiBuilder.SetReference(header, "_addWorldButton", addWorld);
-            GameUiBuilder.SetReference(header, "_removeWorldButton", removeWorld);
-            EditorThemeButtonsSetup.CreateThemeButtons(header);
-
-            // 中间网格
-            RectTransform gridArea = GameUiBuilder.CreateRect("GridArea", root);
-            GameUiBuilder.Place(gridArea, topLeft, new Vector2(290f, -170f), new Vector2(1140f, 820f));
+            // 中间网格：世界栏下方到状态提示上方
+            RectTransform gridArea = GameUiBuilder.CreateRect("GridArea", centerCard);
+            gridArea.anchorMin = Vector2.zero;
+            gridArea.anchorMax = Vector2.one;
+            gridArea.offsetMin = new Vector2(24f, 88f);
+            gridArea.offsetMax = new Vector2(-24f, -96f);
             var grid = gridArea.gameObject.AddComponent<EditorGridView>();
             GameUiBuilder.SetReference(grid, "_gridArea", gridArea);
-            GameUiBuilder.SetReference(grid, "_cellPrefab", cellPrefab);
+            GameUiBuilder.SetReference(grid, "_cellPrefab", EditorGridCellPrefabBuilder.GetOrUpdate(context));
+            GameUiBuilder.SetReference(grid, "_palette", GetOrCreateGridPalette());
+            GameUiBuilder.SetReference(grid, "_worldPalette", worldPalette);
+            GameUiBuilder.SetReference(grid, "_motionConfig", motion);
 
-            // 右侧：配对、问题、操作
-            float right = 1460f;
-            GameUiBuilder.CreateText(root, "PairsHeader", UiText.PairsHeader, 34f, TextAlignmentOptions.Left, topLeft, new Vector2(right, -170f), new Vector2(430f, 44f));
-            var pairRoot = GameUiBuilder.CreateRect("PairList", root);
-            GameUiBuilder.Stretch(pairRoot);
-            var pairList = pairRoot.gameObject.AddComponent<EditorPairList>();
-            Button target = GameUiBuilder.CreateButton(pairRoot, "TargetButton", string.Format(UiText.TargetWorldFormat, "-"), topLeft, new Vector2(right, -222f), new Vector2(430f, 56f));
-            Button addPair = GameUiBuilder.CreateButton(pairRoot, "AddPair", UiText.AddPair, topLeft, new Vector2(right, -288f), HalfButton);
-            Button removePair = GameUiBuilder.CreateButton(pairRoot, "RemovePair", UiText.RemovePair, topLeft, new Vector2(right + 225f, -288f), HalfButton);
-            Transform pairItems = CreateList(pairRoot, "PairItems", new Vector2(right, -356f), new Vector2(430f, 300f), new Vector2(205f, 80f), 2);
-            GameUiBuilder.SetReference(pairList, "_itemPrefab", listItemPrefab);
-            GameUiBuilder.SetReference(pairList, "_listRoot", pairItems);
-            GameUiBuilder.SetReference(pairList, "_targetButton", target);
-            GameUiBuilder.SetReference(pairList, "_targetLabel", target.GetComponentInChildren<TMP_Text>());
-            GameUiBuilder.SetReference(pairList, "_addButton", addPair);
-            GameUiBuilder.SetReference(pairList, "_removeButton", removePair);
-
-            RectTransform actionRoot = GameUiBuilder.CreateRect("ActionBar", root);
-            GameUiBuilder.Stretch(actionRoot);
-            var actionBar = actionRoot.gameObject.AddComponent<EditorActionBar>();
-            GameUiBuilder.CreateText(actionRoot, "IssuesHeader", UiText.IssuesHeader, 34f, TextAlignmentOptions.Left, topLeft, new Vector2(right, -670f), new Vector2(430f, 44f));
-            TMP_Text issues = GameUiBuilder.CreateText(actionRoot, "IssuesText", UiText.NoIssues, 20f, TextAlignmentOptions.TopLeft, topLeft, new Vector2(right, -720f), new Vector2(430f, 200f));
-            TMP_Text status = GameUiBuilder.CreateText(actionRoot, "StatusText", string.Empty, 28f, TextAlignmentOptions.Left, topLeft, new Vector2(290f, -1010f), new Vector2(1140f, 50f));
-            Button newButton = GameUiBuilder.CreateButton(actionRoot, "NewButton", UiText.NewLevel, topLeft, new Vector2(right, -940f), ThirdButton);
-            Button openButton = GameUiBuilder.CreateButton(actionRoot, "OpenButton", UiText.OpenLevel, topLeft, new Vector2(right + 147f, -940f), ThirdButton);
-            Button saveButton = GameUiBuilder.CreateButton(actionRoot, "SaveButton", UiText.SaveLevel, topLeft, new Vector2(right + 294f, -940f), ThirdButton);
-            Button testButton = GameUiBuilder.CreateButton(actionRoot, "TestPlayButton", UiText.TestPlay, topLeft, new Vector2(right, -1006f), HalfButton);
-            Button backButton = GameUiBuilder.CreateButton(actionRoot, "BackButton", UiText.Back, topLeft, new Vector2(right + 225f, -1006f), HalfButton);
-            GameUiBuilder.SetReference(actionBar, "_issuesText", issues);
-            GameUiBuilder.SetReference(actionBar, "_statusText", status);
-            GameUiBuilder.SetReference(actionBar, "_newButton", newButton);
-            GameUiBuilder.SetReference(actionBar, "_openButton", openButton);
-            GameUiBuilder.SetReference(actionBar, "_saveButton", saveButton);
-            GameUiBuilder.SetReference(actionBar, "_testPlayButton", testButton);
-            GameUiBuilder.SetReference(actionBar, "_backButton", backButton);
-
-            EditorOpenDialog openDialog = CreateOpenDialog(root, listItemPrefab);
+            EditorPairList pairList = BuildPairSection(sideCard, layout, out TMP_Text issuesHeader);
+            EditorActionBar actionBar = BuildActionBar(sideCard, centerCard, layout, top, issuesHeader, motion);
+            EditorOpenDialog openDialog = CreateOpenDialog(root, scope, context);
 
             GameUiBuilder.SetReference(panel, "_grid", grid);
             GameUiBuilder.SetReference(panel, "_toolbar", toolbar);
@@ -181,14 +143,75 @@ namespace Worldyssey.EditorTools
             return panel;
         }
 
-        private static EditorOpenDialog CreateOpenDialog(Transform parent, LevelButton listItemPrefab)
+        /// <summary>
+        /// 右侧上半：配对（目标世界、增删、列表）；同时放好下半的问题标题，由调用方接到 EditorActionBar。
+        /// </summary>
+        private static EditorPairList BuildPairSection(RectTransform card, LevelEditorLayout layout, out TMP_Text issuesHeader)
+        {
+            float width = LevelEditorLayout.SideWidth - 48f;
+            layout.CreateTitle(card, "PairsHeader", UiText.PairsHeader, new Vector2(24f, -20f), width);
+            var pairList = card.gameObject.AddComponent<EditorPairList>();
+            var topLeft = new Vector2(0f, 1f);
+            Button target = layout.CreateButton(card, "TargetButton", string.Format(UiText.TargetWorldFormat, "-"), topLeft,
+                new Vector2(24f, -72f), new Vector2(width, 56f), UiColorRole.Accent);
+            float half = (width - 16f) * 0.5f;
+            Button addPair = layout.CreateButton(card, "AddPair", UiText.AddPair, topLeft, new Vector2(24f, -140f), new Vector2(half, 56f), UiColorRole.Accent);
+            Button removePair = layout.CreateButton(card, "RemovePair", UiText.RemovePair, topLeft, new Vector2(40f + half, -140f), new Vector2(half, 56f), UiColorRole.Cancel);
+
+            // 列表项未选中时是白底，垫一块浅灰底板，免得和白色卡片混在一起
+            UiStyleKit.CreateCard(card, "PairListBackground", topLeft, new Vector2(24f, -212f), new Vector2(width, 260f),
+                UiColorRole.PanelBackground, layout.Scope, layout.Context);
+            float itemWidth = (width - 16f - 16f) * 0.5f;
+            Transform items = CreateList(card, "PairItems", new Vector2(32f, -220f), new Vector2(width - 16f, 244f), new Vector2(itemWidth, 72f), 2, topLeft);
+
+            GameUiBuilder.SetReference(pairList, "_itemPrefab", GameUiBuilder.GetOrCreateLevelButtonPrefab());
+            GameUiBuilder.SetReference(pairList, "_listRoot", items);
+            GameUiBuilder.SetReference(pairList, "_targetButton", target);
+            GameUiBuilder.SetReference(pairList, "_targetLabel", target.GetComponentInChildren<TMP_Text>());
+            GameUiBuilder.SetReference(pairList, "_addButton", addPair);
+            GameUiBuilder.SetReference(pairList, "_removeButton", removePair);
+
+            issuesHeader = layout.CreateTitle(card, "IssuesHeader", UiText.IssuesHeader, new Vector2(24f, -496f), width);
+            return pairList;
+        }
+
+        private static EditorActionBar BuildActionBar(RectTransform sideCard, RectTransform centerCard, LevelEditorLayout layout,
+            LevelEditorTopBarParts top, TMP_Text issuesHeader, UiMotionConfig motion)
+        {
+            TMP_Text issues = layout.BuildIssueScroll(sideCard, 544f);
+            TMP_Text status = layout.BuildStatusToast(centerCard, out CanvasGroup statusGroup);
+            var actionBar = sideCard.gameObject.AddComponent<EditorActionBar>();
+            GameUiBuilder.SetReference(actionBar, "_issuesText", issues);
+            GameUiBuilder.SetReference(actionBar, "_statusText", status);
+            GameUiBuilder.SetReference(actionBar, "_newButton", top.New);
+            GameUiBuilder.SetReference(actionBar, "_openButton", top.Open);
+            GameUiBuilder.SetReference(actionBar, "_saveButton", top.Save);
+            GameUiBuilder.SetReference(actionBar, "_testPlayButton", top.TestPlay);
+            GameUiBuilder.SetReference(actionBar, "_backButton", top.Back);
+            GameUiBuilder.SetReference(actionBar, "_issuesHeaderText", issuesHeader);
+            GameUiBuilder.SetReference(actionBar, "_statusGroup", statusGroup);
+            GameUiBuilder.SetReference(actionBar, "_motionConfig", motion);
+            return actionBar;
+        }
+
+        /// <summary>
+        /// 打开关卡对话框：半透明遮罩上一张“标题栏 + 卡片”，与暂停、结算面板同一风格。
+        /// </summary>
+        private static EditorOpenDialog CreateOpenDialog(Transform parent, UiThemeScope scope, UiStyleKit.Context context)
         {
             RectTransform root = GameUiBuilder.CreateFullscreen("OpenDialog", parent, GameUiBuilder.DimBackground, true);
             var dialog = root.gameObject.AddComponent<EditorOpenDialog>();
-            GameUiBuilder.CreateText(root, "Title", UiText.OpenLevelTitle, 60f, TextAlignmentOptions.Center, GameUiBuilder.Center, new Vector2(0f, 380f), new Vector2(1000f, 80f));
-            Transform list = CreateList(root, "Items", new Vector2(-720f, 300f), new Vector2(1440f, 600f), new Vector2(260f, 100f), 5, GameUiBuilder.Center);
-            Button cancel = GameUiBuilder.CreateButton(root, "CancelButton", UiText.Cancel, GameUiBuilder.Center, new Vector2(0f, -400f), GameUiBuilder.MenuButtonSize);
-            GameUiBuilder.SetReference(dialog, "_itemPrefab", listItemPrefab);
+            var center = new Vector2(0.5f, 0.5f);
+            RectTransform card = UiStyleKit.CreateCard(root, "Card", center, Vector2.zero, new Vector2(1000f, 720f), UiColorRole.PanelBackground, scope, context);
+            RectTransform header = UiStyleKit.CreateHeaderBar(card, scope, context);
+            TMP_Text title = GameUiBuilder.CreateText(card, "Title", UiText.OpenLevelTitle, 44f, TextAlignmentOptions.Center, center, Vector2.zero, Vector2.zero);
+            UiStyleKit.PutTitleInHeader(title, header, scope, context);
+
+            Transform list = CreateList(card, "Items", new Vector2(40f, -140f), new Vector2(920f, 440f), new Vector2(288f, 96f), 3, new Vector2(0f, 1f));
+            Button cancel = GameUiBuilder.CreateButton(card, "CancelButton", UiText.Cancel, new Vector2(0.5f, 0f), new Vector2(0f, 32f), new Vector2(300f, 72f));
+            UiStyleKit.StyleButton(cancel, UiColorRole.Cancel, scope, context);
+
+            GameUiBuilder.SetReference(dialog, "_itemPrefab", GameUiBuilder.GetOrCreateLevelButtonPrefab());
             GameUiBuilder.SetReference(dialog, "_listRoot", list);
             GameUiBuilder.SetReference(dialog, "_cancelButton", cancel);
             root.gameObject.SetActive(false);
@@ -198,109 +221,47 @@ namespace Worldyssey.EditorTools
         /// <summary>
         /// 创建一个从左上角开始排列的网格列表区域。
         /// </summary>
-        private static Transform CreateList(Transform parent, string name, Vector2 position, Vector2 size, Vector2 cellSize, int columns, Vector2? anchor = null)
+        private static Transform CreateList(Transform parent, string name, Vector2 position, Vector2 size, Vector2 cellSize, int columns, Vector2 anchor)
         {
             RectTransform rect = GameUiBuilder.CreateRect(name, parent);
-            Vector2 at = anchor ?? GameUiBuilder.TopLeft;
-            rect.anchorMin = at;
-            rect.anchorMax = at;
-            rect.pivot = GameUiBuilder.TopLeft;
+            rect.anchorMin = anchor;
+            rect.anchorMax = anchor;
+            rect.pivot = new Vector2(0f, 1f);
             rect.anchoredPosition = position;
             rect.sizeDelta = size;
             var grid = rect.gameObject.AddComponent<GridLayoutGroup>();
             grid.cellSize = cellSize;
-            grid.spacing = new Vector2(20f, 16f);
+            grid.spacing = new Vector2(16f, 16f);
             grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
             grid.constraintCount = columns;
             grid.childAlignment = TextAnchor.UpperLeft;
             return rect;
         }
 
-        private static TMP_InputField CreateInputField(Transform parent, Vector2 position, Vector2 size)
+        private static Sprite[] LoadBrushIcons()
         {
-            GameObject go = TMP_DefaultControls.CreateInputField(new TMP_DefaultControls.Resources());
-            go.name = "NameInput";
-            go.transform.SetParent(parent, false);
-            GameUiBuilder.Place((RectTransform)go.transform, GameUiBuilder.TopLeft, position, size);
-            var input = go.GetComponent<TMP_InputField>();
-            input.textComponent.fontSize = 28f;
-            input.characterLimit = 40;
-            if (input.placeholder is TMP_Text placeholder)
+            var icons = new Sprite[BrushNames.Length];
+            for (int i = 0; i < BrushNames.Length; i++)
             {
-                placeholder.text = UiText.NamePlaceholder;
-                placeholder.fontSize = 28f;
+                icons[i] = UiStyleKit.LoadIconSprite($"{BrushFolder}/{BrushNames[i]}.png");
             }
 
-            return input;
+            return icons;
         }
 
-        private static EditorGridCell GetOrCreateCellPrefab()
+        private static EditorGridPalette GetOrCreateGridPalette()
         {
-            var existing = AssetDatabase.LoadAssetAtPath<EditorGridCell>(CellPrefabPath);
-            if (existing != null)
+            var palette = AssetDatabase.LoadAssetAtPath<EditorGridPalette>(GridPalettePath);
+            if (palette != null)
             {
-                return existing;
+                return palette;
             }
 
-            AssetFolderUtility.EnsureFolder(CellPrefabFolder);
-            var root = new GameObject("P_EditorGridCell", typeof(RectTransform));
-            var frame = root.AddComponent<Image>();
-
-            Image terrain = CreateInsetImage(root.transform, "Terrain", 2f);
-            Image entity = CreateInsetImage(root.transform, "Entity", 9f);
-            RectTransform labelRect = GameUiBuilder.CreateRect("Label", root.transform);
-            GameUiBuilder.Stretch(labelRect);
-            var label = labelRect.gameObject.AddComponent<TextMeshProUGUI>();
-            label.fontSize = 20f;
-            label.enableAutoSizing = true;
-            label.fontSizeMin = 8f;
-            label.fontSizeMax = 24f;
-            label.alignment = TextAlignmentOptions.Center;
-            label.color = Color.white;
-            label.raycastTarget = false;
-
-            var cell = root.AddComponent<EditorGridCell>();
-            GameUiBuilder.SetReference(cell, "_frame", frame);
-            GameUiBuilder.SetReference(cell, "_terrain", terrain);
-            GameUiBuilder.SetReference(cell, "_entity", entity);
-            GameUiBuilder.SetReference(cell, "_label", label);
-
-            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, CellPrefabPath);
-            Object.DestroyImmediate(root);
-            return prefab.GetComponent<EditorGridCell>();
-        }
-
-        /// <summary>
-        /// 四边各缩进 <paramref name="inset"/> 像素的图像。只有最外层的外框接收鼠标事件。
-        /// </summary>
-        private static Image CreateInsetImage(Transform parent, string name, float inset)
-        {
-            RectTransform rect = GameUiBuilder.CreateRect(name, parent);
-            GameUiBuilder.Stretch(rect);
-            rect.offsetMin = new Vector2(inset, inset);
-            rect.offsetMax = new Vector2(-inset, -inset);
-            var image = rect.gameObject.AddComponent<Image>();
-            image.raycastTarget = false;
-            return image;
-        }
-
-        private static void SetArray(Object target, string propertyName, Object[] values)
-        {
-            var serialized = new SerializedObject(target);
-            SerializedProperty property = serialized.FindProperty(propertyName);
-            if (property == null)
-            {
-                Debug.LogError($"[{nameof(LevelEditorUiBuilder)}] {target.GetType().Name} 中找不到字段 {propertyName}", target);
-                return;
-            }
-
-            property.arraySize = values.Length;
-            for (int i = 0; i < values.Length; i++)
-            {
-                property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
-            }
-
-            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetFolderUtility.EnsureFolder(ProjectPaths.Config);
+            palette = ScriptableObject.CreateInstance<EditorGridPalette>();
+            AssetDatabase.CreateAsset(palette, GridPalettePath);
+            AssetDatabase.SaveAssets();
+            return palette;
         }
     }
 }

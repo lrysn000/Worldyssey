@@ -163,7 +163,7 @@ namespace Worldyssey.EditorTools
             return property != null ? property.objectReferenceValue as T : null;
         }
 
-        private static void SetReferenceArray(Object target, string propertyName, Object[] values)
+        internal static void SetReferenceArray(Object target, string propertyName, Object[] values)
         {
             var serialized = new SerializedObject(target);
             SerializedProperty property = serialized.FindProperty(propertyName);

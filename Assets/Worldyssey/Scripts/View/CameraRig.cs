@@ -258,14 +258,26 @@ namespace Worldyssey.View
             _lastAspect = _camera.aspect;
             Quaternion rotation = Quaternion.Euler(_gameplayConfig.CameraPitch, _yaw, 0f);
             Vector3 forward = rotation * Vector3.forward;
+            Vector3 up = rotation * Vector3.up;
             float distance = CalculateFitDistance(rotation) * _zoom;
+
+            // 顶部留给 HUD：相机沿自身向上平移，关卡在画面里下移到剩余区域的中央。
+            // 推近（传送截图、推向箱子）时按缩放比例减弱，贴近目标时目标仍在画面正中，与截图机位一致
+            float tanHalfVertical = Mathf.Tan(_camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
+            float shift = distance * tanHalfVertical * GetTopReserve() * Mathf.Clamp01(_zoom);
             Transform cameraTransform = _camera.transform;
-            cameraTransform.SetPositionAndRotation(_focus.center + _focusOffset - forward * distance, rotation);
+            cameraTransform.SetPositionAndRotation(_focus.center + _focusOffset - forward * distance + up * shift, rotation);
+        }
+
+        private float GetTopReserve()
+        {
+            return Mathf.Clamp(_gameplayConfig.CameraTopReserve, 0f, 0.4f);
         }
 
         /// <summary>
         /// 计算让包围盒（含边距）的 8 个角都落在视锥内所需的最小距离。
         /// 对每个角：横向偏移 / tan(半水平视角) 与纵向偏移 / tan(半垂直视角) 取大者，再减去该角在视线方向上的深度。
+        /// 顶部预留区不能放关卡，纵向可用的半视角相应缩小。
         /// </summary>
         private float CalculateFitDistance(Quaternion rotation)
         {
@@ -274,6 +286,7 @@ namespace Worldyssey.View
             Vector3 forward = rotation * Vector3.forward;
             float tanHalfVertical = Mathf.Tan(_camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
             float tanHalfHorizontal = tanHalfVertical * _camera.aspect;
+            tanHalfVertical *= 1f - GetTopReserve();
 
             float margin = _gameplayConfig.CameraMargin;
             Vector3 extents = _focus.extents + new Vector3(margin, 0f, margin);

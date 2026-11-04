@@ -9,11 +9,12 @@ namespace Worldyssey.UI
 {
     /// <summary>
     /// 编辑器顶部栏：关卡名、尺寸调整、世界标签与增删世界、当前世界的主题。只发出请求事件，不直接修改草稿。
+    /// 选中的世界页签和主题按钮用季节色作底；未选中的用主题的面板底色，图标保留季节色，方便辨认。
     /// </summary>
     public class EditorHeaderBar : MonoBehaviour
     {
-        private static readonly Color TabNormalColor = new Color(0.22f, 0.24f, 0.30f, 1f);
-        private static readonly Color TabSelectedColor = new Color(0.30f, 0.50f, 0.85f, 1f);
+        private static readonly Color FallbackNormalColor = new Color(0.22f, 0.24f, 0.30f, 1f);
+        private static readonly Color FallbackSelectedColor = new Color(0.30f, 0.50f, 0.85f, 1f);
 
         [SerializeField] private TMP_InputField _nameInput;
         [SerializeField] private TMP_Text _sizeText;
@@ -33,7 +34,22 @@ namespace Worldyssey.UI
         [Tooltip("可选：季节调色板，选中的世界页签和主题按钮用季节色显示")]
         [SerializeField] private WorldPalette _palette;
 
+        [Header("外观（可选）")]
+        [Tooltip("未选中页签的底色和文字色取自这里；不设置时用内置深色底、白字")]
+        [SerializeField] private UiThemeScope _themeScope;
+
+        [Tooltip("按 春、夏、秋、冬 排列的季节图标，显示在世界页签和主题按钮上")]
+        [SerializeField] private Sprite[] _seasonIcons = new Sprite[WorldThemes.Count];
+
+        [Tooltip("与世界页签一一对应的图标")]
+        [SerializeField] private Image[] _worldTabIcons = new Image[0];
+
+        [Tooltip("与主题按钮一一对应的图标")]
+        [SerializeField] private Image[] _themeIcons = new Image[0];
+
         private readonly EditorButtonBindings _bindings = new EditorButtonBindings();
+        private LevelDraft _lastDraft;
+        private int _lastWorld;
 
         public event Action<string> NameEdited;
 
@@ -80,6 +96,11 @@ namespace Worldyssey.UI
             {
                 _nameInput.onEndEdit.AddListener(HandleNameEndEdit);
             }
+
+            if (_themeScope != null)
+            {
+                _themeScope.ColorsChanged += HandleColorsChanged;
+            }
         }
 
         private void OnDisable()
@@ -89,10 +110,17 @@ namespace Worldyssey.UI
             {
                 _nameInput.onEndEdit.RemoveListener(HandleNameEndEdit);
             }
+
+            if (_themeScope != null)
+            {
+                _themeScope.ColorsChanged -= HandleColorsChanged;
+            }
         }
 
         public void Render(LevelDraft draft, int currentWorld)
         {
+            _lastDraft = draft;
+            _lastWorld = currentWorld;
             if (_nameInput != null)
             {
                 _nameInput.SetTextWithoutNotify(draft.DisplayName);
@@ -118,40 +146,67 @@ namespace Worldyssey.UI
                     continue;
                 }
 
-                tab.image.color = i == currentWorld ? SelectedColor(draft.GetWorldTheme(i)) : TabNormalColor;
-                TMP_Text label = tab.GetComponentInChildren<TMP_Text>();
-                if (label != null)
-                {
-                    label.text = draft.GetWorldName(i) + (i == draft.StartWorld ? UiText.StartWorldMark : string.Empty);
-                }
+                string tabName = draft.GetWorldName(i) + (i == draft.StartWorld ? UiText.StartWorldMark : string.Empty);
+                Image icon = i < _worldTabIcons.Length ? _worldTabIcons[i] : null;
+                RenderButton(tab, icon, draft.GetWorldTheme(i), i == currentWorld, tabName);
             }
 
-            RenderThemeButtons(draft.GetWorldTheme(currentWorld));
-        }
-
-        private void RenderThemeButtons(WorldTheme currentTheme)
-        {
+            WorldTheme currentTheme = draft.GetWorldTheme(currentWorld);
             for (int i = 0; i < _themeButtons.Length; i++)
             {
-                Button button = _themeButtons[i];
-                if (button == null)
+                if (_themeButtons[i] == null)
                 {
                     continue;
                 }
 
                 var theme = (WorldTheme)i;
-                button.image.color = theme == currentTheme ? SelectedColor(theme) : TabNormalColor;
-                TMP_Text label = button.GetComponentInChildren<TMP_Text>();
-                if (label != null)
-                {
-                    label.text = WorldThemes.DisplayName(theme);
-                }
+                Image icon = i < _themeIcons.Length ? _themeIcons[i] : null;
+                RenderButton(_themeButtons[i], icon, theme, theme == currentTheme, WorldThemes.DisplayName(theme));
             }
         }
 
-        private Color SelectedColor(WorldTheme theme)
+        /// <summary>
+        /// 选中：季节色底 + 浅色图标和文字；未选中：面板底色 + 季节色图标 + 正文色文字。按钮上的文字可以没有（只有图标的主题按钮）。
+        /// </summary>
+        private void RenderButton(Button button, Image icon, WorldTheme theme, bool isSelected, string text)
         {
-            return _palette != null && _palette.TryGetColor((int)theme, out Color color) ? color : TabSelectedColor;
+            Color season = SeasonColor(theme);
+            Color background = isSelected ? season : GetThemeColor(UiColorRole.PanelBackground, FallbackNormalColor);
+            Color content = isSelected ? GetThemeColor(UiColorRole.HeaderText, Color.white) : GetThemeColor(UiColorRole.Text, Color.white);
+            button.image.color = background;
+
+            if (icon != null)
+            {
+                int seasonIndex = (int)theme;
+                icon.sprite = seasonIndex >= 0 && seasonIndex < _seasonIcons.Length ? _seasonIcons[seasonIndex] : null;
+                icon.enabled = icon.sprite != null;
+                icon.color = isSelected ? content : season;
+            }
+
+            TMP_Text label = button.GetComponentInChildren<TMP_Text>(true);
+            if (label != null)
+            {
+                label.text = text;
+                label.color = content;
+            }
+        }
+
+        private Color SeasonColor(WorldTheme theme)
+        {
+            return _palette != null && _palette.TryGetColor((int)theme, out Color color) ? color : FallbackSelectedColor;
+        }
+
+        private Color GetThemeColor(UiColorRole role, Color fallback)
+        {
+            return _themeScope != null && _themeScope.TryGetColor(role, out Color color) ? color : fallback;
+        }
+
+        private void HandleColorsChanged()
+        {
+            if (_lastDraft != null)
+            {
+                Render(_lastDraft, _lastWorld);
+            }
         }
 
         private void HandleNameEndEdit(string text)

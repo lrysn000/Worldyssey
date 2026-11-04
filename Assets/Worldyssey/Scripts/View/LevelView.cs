@@ -52,6 +52,9 @@ namespace Worldyssey.View
         /// <summary>当前关卡在世界空间中的范围（含一格高度），供相机取景。未生成关卡时大小为零。</summary>
         public Bounds LevelBounds { get; private set; }
 
+        /// <summary>正在显示的世界，未生成关卡时为 -1。</summary>
+        public int ShownWorld => _shownWorld;
+
         /// <summary>显示的世界变了。传送时在画面被颜色充满的那一刻触发，撤销和重开时随同步立即触发。</summary>
         public event Action<int> ShownWorldChanged;
 

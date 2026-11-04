@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -12,7 +11,8 @@ using Worldyssey.Gameplay;
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 游戏内 HUD：步数、关卡名、当前世界、冲突中的世界、通关和传送失败提示，以及撤销、重开、暂停按钮。
+    /// 游戏内 HUD：左上角关卡名和步数、传送失败提示，以及撤销、重开、暂停按钮。
+    /// 当前世界和冲突状态由 <see cref="WorldIndicatorPanel"/> 显示；通关由结算面板表现，这里不再显示文字。
     /// </summary>
     public class HudPanel : UiPanel
     {
@@ -22,15 +22,9 @@ namespace Worldyssey.UI
         [Header("文本")]
         [SerializeField] private TMP_Text _stepCountText;
         [SerializeField] private TMP_Text _levelNameText;
-        [SerializeField] private TMP_Text _worldNameText;
-        [SerializeField] private TMP_Text _conflictText;
-        [SerializeField] private TMP_Text _statusText;
         [SerializeField] private TMP_Text _hintText;
 
         [Header("文字底板（可选）")]
-        [Tooltip("通关文字的底板，有文字时才显示")]
-        [SerializeField] private GameObject _statusBackground;
-
         [Tooltip("传送失败提示的底板，有提示时才显示")]
         [SerializeField] private GameObject _hintBackground;
 
@@ -41,7 +35,6 @@ namespace Worldyssey.UI
         [Tooltip("可选：没有暂停流程的开发场景可以不设置")]
         [SerializeField] private Button _pauseButton;
 
-        private readonly StringBuilder _conflictBuilder = new StringBuilder(64);
         private Coroutine _hintRoutine;
 
         /// <summary>点击了暂停按钮。</summary>
@@ -53,9 +46,6 @@ namespace Worldyssey.UI
             CheckReference(_gameplayConfig, nameof(_gameplayConfig));
             CheckReference(_stepCountText, nameof(_stepCountText));
             CheckReference(_levelNameText, nameof(_levelNameText));
-            CheckReference(_worldNameText, nameof(_worldNameText));
-            CheckReference(_conflictText, nameof(_conflictText));
-            CheckReference(_statusText, nameof(_statusText));
             CheckReference(_hintText, nameof(_hintText));
             CheckReference(_undoButton, nameof(_undoButton));
             CheckReference(_restartButton, nameof(_restartButton));
@@ -187,43 +177,6 @@ namespace Worldyssey.UI
             {
                 _levelNameText.text = _levelSession.LevelDisplayName;
             }
-
-            if (_worldNameText != null)
-            {
-                _worldNameText.text = _levelSession.CurrentWorldName;
-            }
-
-            if (_conflictText != null)
-            {
-                _conflictText.text = BuildConflictText(session.Rules.Map);
-            }
-
-            if (_statusText != null)
-            {
-                _statusText.text = session.IsSolved ? UiText.Solved : string.Empty;
-            }
-
-            if (_statusBackground != null)
-            {
-                _statusBackground.SetActive(session.IsSolved);
-            }
-        }
-
-        private string BuildConflictText(LevelMap map)
-        {
-            _conflictBuilder.Clear();
-            for (int world = 0; world < map.WorldCount; world++)
-            {
-                if (!_levelSession.IsWorldConflicted(world))
-                {
-                    continue;
-                }
-
-                _conflictBuilder.Append(_conflictBuilder.Length == 0 ? UiText.ConflictPrefix : UiText.ConflictSeparator);
-                _conflictBuilder.Append(map.GetWorldName(world));
-            }
-
-            return _conflictBuilder.ToString();
         }
 
         private void SetHint(string message)

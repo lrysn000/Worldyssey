@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3ffb88c4c9aa1b2448c7ce7d5b90d47e, type: 3}
+  m_Name: EditorGridPalette
+  m_EditorClassIdentifier: 
+  _frame: {r: 0.82, g: 0.84, b: 0.87, a: 1}
+  _errorFrame: {r: 0.93, g: 0.42, b: 0.36, a: 1}
+  _warningFrame: {r: 0.96, g: 0.7, b: 0.28, a: 1}
+  _floor: {r: 0.96, g: 0.95, b: 0.92, a: 1}
+  _sharedWall: {r: 0.33, g: 0.36, b: 0.42, a: 1}
+  _pedestal: {r: 0.62, g: 0.8, b: 0.82, a: 1}
+  _goal: {r: 0.98, g: 0.84, b: 0.42, a: 1}
+  _uniqueWallFallback: {r: 0.4, g: 0.47, b: 0.62, a: 1}
+  _player: {r: 0.25, g: 0.45, b: 0.8, a: 1}
+  _mappedBox: {r: 0.72, g: 0.48, b: 0.3, a: 1}
+  _portalBoxFallback: {r: 0.65, g: 0.35, b: 0.9, a: 1}

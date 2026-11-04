@@ -28,7 +28,6 @@ namespace Worldyssey.EditorTools
         internal static readonly Vector2 Center = new Vector2(0.5f, 0.5f);
         internal static readonly Vector2 TopLeft = new Vector2(0f, 1f);
         private static readonly Vector2 TopRight = new Vector2(1f, 1f);
-        private static readonly Vector2 TopCenter = new Vector2(0.5f, 1f);
         private static readonly Vector2 BottomCenter = new Vector2(0.5f, 0f);
         internal static readonly Vector2 MenuButtonSize = new Vector2(380f, 84f);
         private static readonly Vector2 HudButtonSize = new Vector2(260f, 68f);
@@ -37,7 +36,6 @@ namespace Worldyssey.EditorTools
         internal static readonly Color DimBackground = new Color(0f, 0f, 0f, 0.65f);
         internal static readonly Color ButtonColor = new Color(0.22f, 0.24f, 0.30f, 1f);
         private static readonly Color TextColor = Color.white;
-        private static readonly Color ConflictTextColor = new Color(1f, 0.6f, 0.3f, 1f);
 
         [MenuItem(MenuPath)]
         public static void BuildGameScene()
@@ -175,11 +173,7 @@ namespace Worldyssey.EditorTools
             var hud = root.gameObject.AddComponent<HudPanel>();
 
             TMP_Text levelName = CreateText(root, "LevelName", "Level", 40f, TextAlignmentOptions.TopLeft, TopLeft, new Vector2(40f, -36f), new Vector2(900f, 52f));
-            TMP_Text worldName = CreateText(root, "WorldName", "World", 32f, TextAlignmentOptions.TopLeft, TopLeft, new Vector2(40f, -92f), new Vector2(900f, 44f));
-            TMP_Text steps = CreateText(root, "Steps", "Steps: 0", 32f, TextAlignmentOptions.TopLeft, TopLeft, new Vector2(40f, -140f), new Vector2(900f, 44f));
-            TMP_Text conflict = CreateText(root, "Conflict", string.Empty, 28f, TextAlignmentOptions.TopLeft, TopLeft, new Vector2(40f, -188f), new Vector2(900f, 40f));
-            conflict.color = ConflictTextColor;
-            TMP_Text status = CreateText(root, "Status", string.Empty, 56f, TextAlignmentOptions.Center, TopCenter, new Vector2(0f, -60f), new Vector2(800f, 70f));
+            TMP_Text steps = CreateText(root, "Steps", "Steps: 0", 32f, TextAlignmentOptions.TopLeft, TopLeft, new Vector2(40f, -92f), new Vector2(900f, 44f));
             TMP_Text hint = CreateText(root, "Hint", string.Empty, 36f, TextAlignmentOptions.Center, BottomCenter, new Vector2(0f, 120f), new Vector2(1200f, 50f));
 
             Button undo = CreateButton(root, "UndoButton", UiText.Undo, TopRight, new Vector2(-40f, -36f), HudButtonSize);
@@ -190,9 +184,6 @@ namespace Worldyssey.EditorTools
             SetReference(hud, "_gameplayConfig", gameplayConfig);
             SetReference(hud, "_stepCountText", steps);
             SetReference(hud, "_levelNameText", levelName);
-            SetReference(hud, "_worldNameText", worldName);
-            SetReference(hud, "_conflictText", conflict);
-            SetReference(hud, "_statusText", status);
             SetReference(hud, "_hintText", hint);
             SetReference(hud, "_undoButton", undo);
             SetReference(hud, "_restartButton", restart);

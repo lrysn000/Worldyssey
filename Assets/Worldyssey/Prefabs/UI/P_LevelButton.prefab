@@ -314,6 +314,7 @@ GameObject:
   - component: {fileID: 377449691589133271}
   - component: {fileID: 3706929790047567845}
   - component: {fileID: 5191808218786337944}
+  - component: {fileID: 3100845717690597135}
   m_Layer: 0
   m_Name: P_LevelButton
   m_TagString: Untagged
@@ -455,3 +456,16 @@ MonoBehaviour:
   _role: 2
   _keepAlpha: 0
   _scope: {fileID: 0}
+--- !u!114 &3100845717690597135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8841394351050779885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 50c93d05a99afc94a83ec689c2140395, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _config: {fileID: 11400000, guid: eca0bf7fa436ae642ad6029e10e2baf2, type: 2}

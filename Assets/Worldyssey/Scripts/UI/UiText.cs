@@ -17,6 +17,26 @@ namespace Worldyssey.UI
         public const string SettingsTitle = "Settings";
         public const string SettingsPlaceholder = "More options coming soon";
         public const string Close = "Close";
+        public const string Fullscreen = "Fullscreen";
+        public const string Resolution = "Resolution";
+        public const string ResolutionFormat = "{0} x {1}";
+        public const string MasterVolume = "Master Volume";
+        public const string MusicVolume = "Music";
+        public const string SfxVolume = "Sound Effects";
+        public const string ControlsHeader = "Controls";
+        public const string ControlLineFormat = "{0}    {1}";
+
+        // 按键提示的条目名，顺序与 SettingsPanel 里的动作列表一致
+        public const string ControlMoveUp = "Move Up";
+        public const string ControlMoveDown = "Move Down";
+        public const string ControlMoveLeft = "Move Left";
+        public const string ControlMoveRight = "Move Right";
+        public const string ControlTeleport = "Enter Portal";
+        public const string ControlUndo = "Undo";
+        public const string ControlRestart = "Restart";
+        public const string ControlRotateLeft = "Rotate View Left";
+        public const string ControlRotateRight = "Rotate View Right";
+        public const string ControlPause = "Pause";
 
         // 选关
         public const string SelectLevelTitle = "Select Level";
@@ -30,9 +50,6 @@ namespace Worldyssey.UI
 
         // HUD
         public const string StepCountFormat = "Steps: {0}";
-        public const string Solved = "Solved!";
-        public const string ConflictPrefix = "Conflict: ";
-        public const string ConflictSeparator = ", ";
         public const string Undo = "Undo (Z)";
         public const string Restart = "Restart (R)";
         public const string Pause = "Pause (Esc)";
@@ -76,6 +93,10 @@ namespace Worldyssey.UI
         public const string OpenLevelTitle = "Open Level";
         public const string Cancel = "Cancel";
         public const string NoIssues = "No issues";
+        public const string IssuesCountFormat = "Issues ({0})";
+        public const string ToolGroupTerrain = "Terrain";
+        public const string ToolGroupWorld = "This World";
+        public const string ToolGroupObjects = "Objects";
         public const string ErrorPrefix = "E: ";
         public const string WarningPrefix = "W: ";
         public const string MoreIssuesFormat = "... and {0} more";

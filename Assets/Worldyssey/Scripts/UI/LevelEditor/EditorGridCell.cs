@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -7,6 +8,7 @@ namespace Worldyssey.UI
 {
     /// <summary>
     /// 编辑器网格中的一格：外框（标记问题）、地形底色、实体色块和文字。把指针事件转交给 <see cref="EditorGridView"/>。
+    /// 被绘制时弹一下，给鼠标操作一个手感反馈。
     /// </summary>
     public class EditorGridCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
     {
@@ -16,6 +18,7 @@ namespace Worldyssey.UI
         [SerializeField] private TMP_Text _label;
 
         private EditorGridView _owner;
+        private Coroutine _popRoutine;
 
         /// <summary>该格对应的网格坐标。</summary>
         public Core.GridPos Position { get; private set; }
@@ -28,6 +31,18 @@ namespace Worldyssey.UI
             {
                 Debug.LogError($"[{nameof(EditorGridCell)}] {name} 的图像或文字引用未设置", this);
             }
+        }
+
+        private void OnDisable()
+        {
+            // 弹跳中途被隐藏（改尺寸、关面板）时直接复位
+            if (_popRoutine != null)
+            {
+                StopCoroutine(_popRoutine);
+                _popRoutine = null;
+            }
+
+            transform.localScale = Vector3.one;
         }
 
         public void Bind(EditorGridView owner, Core.GridPos position)
@@ -46,6 +61,26 @@ namespace Worldyssey.UI
             _entity.enabled = entityColor.a > 0f;
             _entity.color = entityColor;
             _label.text = label;
+        }
+
+        /// <summary>
+        /// 从 <paramref name="startScale"/> 倍缩回原大小。弹跳期间移到同级最后，放大的部分不会被相邻格子盖住；
+        /// 网格按列表而不是同级顺序管理格子，所以改顺序没有影响。
+        /// </summary>
+        public void Pop(float startScale, float duration)
+        {
+            if (!isActiveAndEnabled || duration <= 0f)
+            {
+                return;
+            }
+
+            if (_popRoutine != null)
+            {
+                StopCoroutine(_popRoutine);
+            }
+
+            transform.SetAsLastSibling();
+            _popRoutine = StartCoroutine(PopRoutine(startScale, duration));
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -70,6 +105,22 @@ namespace Worldyssey.UI
             {
                 _owner.HandleCellUp();
             }
+        }
+
+        private IEnumerator PopRoutine(float startScale, float duration)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+                float eased = 1f - (1f - t) * (1f - t);
+                transform.localScale = Vector3.one * Mathf.LerpUnclamped(startScale, 1f, eased);
+                yield return null;
+            }
+
+            transform.localScale = Vector3.one;
+            _popRoutine = null;
         }
     }
 }

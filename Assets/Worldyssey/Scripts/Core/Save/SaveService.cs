@@ -12,6 +12,7 @@ namespace Worldyssey.Core
     public sealed class SaveService
     {
         public const string SaveFileName = "save.json";
+        public const string SettingsFileName = "settings.json";
         public const string CustomLevelFolderName = "Levels";
         public const string CustomLevelExtension = ".json";
         private const string TempSuffix = ".tmp";
@@ -32,6 +33,7 @@ namespace Worldyssey.Core
 
         public string RootDirectory { get; }
         public string SaveFilePath => Path.Combine(RootDirectory, SaveFileName);
+        public string SettingsFilePath => Path.Combine(RootDirectory, SettingsFileName);
         public string CustomLevelDirectory => Path.Combine(RootDirectory, CustomLevelFolderName);
 
         /// <summary>
@@ -96,6 +98,64 @@ namespace Worldyssey.Core
 
             Directory.CreateDirectory(RootDirectory);
             WriteAtomically(SaveFilePath, JsonUtility.ToJson(data, true));
+        }
+
+        /// <summary>
+        /// 读取设置。文件不存在时返回默认设置；读取失败时把坏文件备份为 .corrupt，返回默认设置，
+        /// 并通过 <paramref name="error"/> 给出原因（成功时为空字符串），由调用方记录日志。
+        /// </summary>
+        public SettingsData LoadSettingsOrDefault(out string error)
+        {
+            error = string.Empty;
+            string path = SettingsFilePath;
+            if (!File.Exists(path))
+            {
+                return new SettingsData();
+            }
+
+            string failure;
+            try
+            {
+                SettingsData data = JsonUtility.FromJson<SettingsData>(File.ReadAllText(path, FileEncoding));
+                if (data == null)
+                {
+                    failure = "设置内容为空";
+                }
+                else if (data.Version < 1 || data.Version > SettingsData.CurrentVersion)
+                {
+                    failure = $"设置版本 {data.Version} 不受支持";
+                }
+                else
+                {
+                    return data;
+                }
+            }
+            catch (ArgumentException exception)
+            {
+                failure = $"设置格式错误：{exception.Message}";
+            }
+            catch (IOException exception)
+            {
+                failure = $"读取设置失败：{exception.Message}";
+            }
+
+            error = $"{failure}；已备份为 {SettingsFileName}{CorruptSuffix} 并使用默认设置";
+            BackupCorruptFile(path);
+            return new SettingsData();
+        }
+
+        /// <summary>
+        /// 写入设置，同样先写临时文件再替换。IO 失败时抛出异常，由调用方记录。
+        /// </summary>
+        public void SaveSettings(SettingsData data)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            Directory.CreateDirectory(RootDirectory);
+            WriteAtomically(SettingsFilePath, JsonUtility.ToJson(data, true));
         }
 
         /// <summary>

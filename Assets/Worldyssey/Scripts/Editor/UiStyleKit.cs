@@ -17,6 +17,11 @@ namespace Worldyssey.EditorTools
         internal const float Padding = 24f;
         internal const float HeaderHeight = 96f;
 
+        internal const string WorldIconFolder = ProjectPaths.Textures + "/UI/WorldIcons";
+
+        // 与 WorldTheme 的数值顺序一致：春、夏、秋、冬
+        private static readonly string[] WorldIconNames = { "WorldIcon_Spring", "WorldIcon_Summer", "WorldIcon_Autumn", "WorldIcon_Winter" };
+
         private const string PanelSpritePath = ProjectPaths.ThirdParty + "/Honeti/UltimateFlatGUI/ThemeCommon/Textures/Panels/UniversalPanel20.png";
         private const string FontSearch = "t:TMP_FontAsset Poppins";
 
@@ -182,6 +187,43 @@ namespace Worldyssey.EditorTools
             Undo.RecordObject(image, UndoName);
             image.sprite = sprite;
             image.type = Image.Type.Sliced;
+        }
+
+        /// <summary>
+        /// 读取四张世界图标（春、夏、秋、冬），缺的位置为 null。
+        /// </summary>
+        internal static Sprite[] LoadWorldIcons()
+        {
+            var icons = new Sprite[WorldIconNames.Length];
+            for (int i = 0; i < WorldIconNames.Length; i++)
+            {
+                icons[i] = LoadIconSprite($"{WorldIconFolder}/{WorldIconNames[i]}.png");
+            }
+
+            return icons;
+        }
+
+        /// <summary>
+        /// 读取一张白色剪影图标，并确保它以 Sprite 导入（透明背景、无 mipmap）。找不到时返回 null 并警告。
+        /// </summary>
+        internal static Sprite LoadIconSprite(string path)
+        {
+            if (!(AssetImporter.GetAtPath(path) is TextureImporter importer))
+            {
+                Debug.LogWarning($"[{nameof(UiStyleKit)}] 找不到图标 {path}");
+                return null;
+            }
+
+            if (importer.textureType != TextureImporterType.Sprite || importer.mipmapEnabled || !importer.alphaIsTransparency)
+            {
+                importer.textureType = TextureImporterType.Sprite;
+                importer.spriteImportMode = SpriteImportMode.Single;
+                importer.mipmapEnabled = false;
+                importer.alphaIsTransparency = true;
+                importer.SaveAndReimport();
+            }
+
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path);
         }
     }
 }
