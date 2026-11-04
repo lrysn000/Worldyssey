@@ -335,6 +335,12 @@ namespace Worldyssey.View
 
         private void BuildTiles(LevelMap map)
         {
+            // 地面、草和外围装饰随季节不同，每个世界各生成一套，切换世界时随世界根节点一起显示和隐藏
+            for (int world = 0; world < map.WorldCount; world++)
+            {
+                SeasonTileBuilder.BuildGround(_visualConfig, map, world, _worldTileRoots[world]);
+            }
+
             for (int y = 0; y < map.Height; y++)
             {
                 for (int x = 0; x < map.Width; x++)
@@ -342,11 +348,10 @@ namespace Worldyssey.View
                     var pos = new GridPos(x, y);
                     if (map.IsSharedWall(pos))
                     {
-                        SpawnTile(_visualConfig.SharedWallPrefab, _sharedTilesRoot, pos);
+                        SpawnTile(SeasonTileBuilder.PickSharedWall(_visualConfig, pos), _sharedTilesRoot, pos);
                         continue;
                     }
 
-                    SpawnTile(_visualConfig.FloorPrefab, _sharedTilesRoot, pos);
                     if (map.IsGoal(pos))
                     {
                         GameObject goal = SpawnTile(_visualConfig.GoalPrefab, _sharedTilesRoot, pos);
@@ -362,7 +367,9 @@ namespace Worldyssey.View
                     {
                         if (map.IsUniqueWall(world, pos))
                         {
-                            GameObject wall = SpawnTile(_visualConfig.UniqueWallPrefab, _worldTileRoots[world], pos);
+                            GameObject prefab = SeasonTileBuilder.PickUniqueWall(_visualConfig, world, pos, out Quaternion rotation);
+                            GameObject wall = SpawnTile(prefab, _worldTileRoots[world], pos);
+                            wall.transform.localRotation = rotation;
                             _uniqueWallTiles[world].Add(new PlacedTile(wall.transform, pos, null));
                         }
                     }

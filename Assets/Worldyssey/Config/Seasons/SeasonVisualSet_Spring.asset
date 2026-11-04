@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f50e88d22440e40b2661cca0931000, type: 3}
+  m_Name: SeasonVisualSet_Spring
+  m_EditorClassIdentifier: 
+  _floorPrefab: {fileID: 1527595513100604, guid: b6fa03512f3fbf54aa0078e44514e63f, type: 3}
+  _floorCornerPrefab: {fileID: 1143586474497050, guid: f3e4e0647cdd5d545a0d269998f347a5, type: 3}
+  _uniqueWallPrefabs:
+  - {fileID: 6825078121324823328, guid: f063457ad8c04ea42ad27b6a9364bfdb, type: 3}
+  - {fileID: 8207027027677494654, guid: 5024b1bae5eab014db55abd2348fc65d, type: 3}
+  _grassPrefabs:
+  - {fileID: 1652027893032058, guid: 2de706c632076434cadb942b0125afd1, type: 3}
+  - {fileID: 1198629284291040, guid: 3c936b3593a700e44921ba76451752df, type: 3}
+  - {fileID: 1247382082025974, guid: bff729096b3ecea489d8c084ed6e02e5, type: 3}
+  - {fileID: 1543525995138054, guid: b9bd1e02be0b6004ba108f480aee3ccb, type: 3}
+  _grassPerCellMin: 5
+  _grassPerCellMax: 10
+  _grassEdgeMargin: 0.03
+  _grassScaleRange: {x: 0.4, y: 0.4}
+  _rimLowPrefabs:
+  - {fileID: 7005279699740287353, guid: d6fc7c1204f26c745ba3852c9b91c467, type: 3}
+  _rimTallPrefabs:
+  - {fileID: 5677682458803599596, guid: 369d256c70cf5834cb5e61d9d498d286, type: 3}
+  - {fileID: 5255093490781614215, guid: bbe218820235dcd43a5b79aec77961b2, type: 3}
+  - {fileID: 3416145695673621212, guid: 96d2705ea7bf9e84bafe1ad787392c61, type: 3}
+  - {fileID: 73071809764193977, guid: ac5a5ed6a1b532b418ba3d5caf3d7b45, type: 3}
+  - {fileID: 2070615289596976189, guid: e174d974c154d1244b16665bb907f784, type: 3}
+  _rimLowChance: 0.5
+  _rimTallChance: 0.6
+  _rimScaleRange: {x: 0.8, y: 1.2}
+  _environment: {fileID: 11400000, guid: 7b3f3947e2f8a994f90df0cd0a8feaa2, type: 2}

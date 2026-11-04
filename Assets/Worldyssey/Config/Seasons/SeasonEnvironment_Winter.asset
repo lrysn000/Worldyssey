@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11d678bf8e234674788b97a54b55e358, type: 3}
+  m_Name: SeasonEnvironment_Winter
+  m_EditorClassIdentifier: 
+  _sunColor: {r: 0.85, g: 0.92, b: 1, a: 1}
+  _sunIntensity: 0.95
+  _sunPitch: 28
+  _sunYaw: -35
+  _ambientSky: {r: 0.8, g: 0.88, b: 1, a: 1}
+  _ambientEquator: {r: 0.75, g: 0.8, b: 0.88, a: 1}
+  _ambientGround: {r: 0.6, g: 0.65, b: 0.72, a: 1}
+  _backgroundColor: {r: 0.86, g: 0.92, b: 0.98, a: 1}
+  _fogColor: {r: 0, g: 0, b: 0, a: 0}
+  _isFogEnabled: 1
+  _fogStartOffset: 2
+  _fogRange: 14
+  _skyTint: {r: 0.88, g: 0.93, b: 1, a: 1}
+  _cloudTint: {r: 0.92, g: 0.95, b: 1, a: 1}
+  _colorProfile: {fileID: 11400000, guid: 6b64cd2b412960b4185595c197241524, type: 2}
+  _particlesPrefab: {fileID: 1206865945560901888, guid: 70725f97b7ded1b4890050894d58f95a, type: 3}

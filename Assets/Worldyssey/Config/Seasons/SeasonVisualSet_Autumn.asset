@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f50e88d22440e40b2661cca0931000, type: 3}
+  m_Name: SeasonVisualSet_Autumn
+  m_EditorClassIdentifier: 
+  _floorPrefab: {fileID: 1527595513100604, guid: 1e89b8912fb9356439b4f28d974e8cff, type: 3}
+  _floorCornerPrefab: {fileID: 1143586474497050, guid: 33ba61de76ae6544cbe588c14100405c, type: 3}
+  _uniqueWallPrefabs:
+  - {fileID: 7532042162032914290, guid: 57b3148b6d34b034b932083521800b03, type: 3}
+  - {fileID: 1980593005630887698, guid: 625ae65af35627d488044d5388fb7844, type: 3}
+  _grassPrefabs:
+  - {fileID: 1624936624803700, guid: 5f70be7cc2f7c7b40a0ece4e7c24c1cb, type: 3}
+  - {fileID: 1347733748445922, guid: d4eb959301a8fc9438a2b0c0eb3db44e, type: 3}
+  - {fileID: 1219610862859366, guid: eaba5c15069d81f4aa29ac27969f7851, type: 3}
+  - {fileID: 1181748640373702, guid: 0028253a67bff344dabfba8172ba877c, type: 3}
+  _grassPerCellMin: 5
+  _grassPerCellMax: 10
+  _grassEdgeMargin: 0.12
+  _grassScaleRange: {x: 0.4, y: 0.4}
+  _rimLowPrefabs:
+  - {fileID: 1185721159669130, guid: 66ca39c2b0dc9304588020feb8b4884a, type: 3}
+  - {fileID: 1462216651073009970, guid: 5303b67d846059b49b7f745450c45187, type: 3}
+  - {fileID: 8198712834987195590, guid: 5cc8e731fadb0624aa08d4d90f183c61, type: 3}
+  - {fileID: 3244738280681672502, guid: ac93ac1003d17ec4fb03f14bde1019dd, type: 3}
+  - {fileID: 5323172328654598658, guid: 50218fd265d35a84786dc5f1dfb95ae6, type: 3}
+  _rimTallPrefabs:
+  - {fileID: 1244874361112060, guid: c1cb7b89770403944915e286b897bf8b, type: 3}
+  _rimLowChance: 0.5
+  _rimTallChance: 0.6
+  _rimScaleRange: {x: 0.8, y: 1.2}
+  _environment: {fileID: 11400000, guid: db49fe28ec29d4a4380c9807cff1d2e0, type: 2}

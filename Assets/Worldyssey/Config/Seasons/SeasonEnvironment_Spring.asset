@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11d678bf8e234674788b97a54b55e358, type: 3}
+  m_Name: SeasonEnvironment_Spring
+  m_EditorClassIdentifier: 
+  _sunColor: {r: 1, g: 0.95, b: 0.9, a: 1}
+  _sunIntensity: 1.1
+  _sunPitch: 50
+  _sunYaw: -30
+  _ambientSky: {r: 0.85, g: 0.82, b: 0.9, a: 1}
+  _ambientEquator: {r: 0.75, g: 0.7, b: 0.72, a: 1}
+  _ambientGround: {r: 0.45, g: 0.4, b: 0.4, a: 1}
+  _backgroundColor: {r: 0.97, g: 0.88, b: 0.9, a: 1}
+  _fogColor: {r: 0, g: 0, b: 0, a: 0}
+  _isFogEnabled: 1
+  _fogStartOffset: 2
+  _fogRange: 14
+  _skyTint: {r: 1, g: 0.9, b: 0.95, a: 1}
+  _cloudTint: {r: 1, g: 0.95, b: 0.97, a: 1}
+  _colorProfile: {fileID: 11400000, guid: 6ead133e506981c429ff53ec1140d6ed, type: 2}
+  _particlesPrefab: {fileID: 4165681939194415545, guid: dcbcc1b4630475e4489cfc04abe23d0b, type: 3}

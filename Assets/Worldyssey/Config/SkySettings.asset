@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02adcc36e41d75e48957ba63ec471b75, type: 3}
+  m_Name: SkySettings
+  m_EditorClassIdentifier: 
+  _domePrefab: {fileID: 5905153949183517735, guid: 991bba47e33869d4b8b00554c81e4f28, type: 3}
+  _cloudPrefabs:
+  - {fileID: 100000, guid: 28f2acd011f1c394abff5f8dbd833d6b, type: 3}
+  - {fileID: 100000, guid: 7249cc95e2780ce4b810c0048bb0d190, type: 3}
+  - {fileID: 100000, guid: 2ffb9d20b22f97e48b540a4a1897d4db, type: 3}
+  - {fileID: 100000, guid: ea689d902428c05469ef21fea5a219b3, type: 3}
+  _cloudCount: 8
+  _cloudMinDistance: 4
+  _cloudDistanceSpread: 8
+  _cloudHeightRange: {x: -7, y: 3}
+  _cloudLengthRange: {x: 4, y: 9}
+  _cloudDriftSpeedRange: {x: 0.8, y: 2}
+  _cloudBobAmplitude: 0.3
+  _defaultIslandRadius: 6

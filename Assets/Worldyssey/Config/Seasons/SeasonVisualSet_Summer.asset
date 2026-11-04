@@ -1,0 +1,48 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f50e88d22440e40b2661cca0931000, type: 3}
+  m_Name: SeasonVisualSet_Summer
+  m_EditorClassIdentifier: 
+  _floorPrefab: {fileID: 1527595513100604, guid: 1e89b8912fb9356439b4f28d974e8cff, type: 3}
+  _floorCornerPrefab: {fileID: 1143586474497050, guid: 33ba61de76ae6544cbe588c14100405c, type: 3}
+  _uniqueWallPrefabs: []
+  _grassPrefabs:
+  - {fileID: 1652027893032058, guid: f7ebdc250a7f767478294f4047e47940, type: 3}
+  - {fileID: 1198629284291040, guid: 925c469c1e69ed345ac73731be6abf03, type: 3}
+  - {fileID: 1543525995138054, guid: 6c8e7356bbea9b246917cb5ab34e3160, type: 3}
+  - {fileID: 1247382082025974, guid: 50287f2b2d161504097902cd212f69ce, type: 3}
+  _grassPerCellMin: 5
+  _grassPerCellMax: 10
+  _grassEdgeMargin: 0.12
+  _grassScaleRange: {x: 0.4, y: 0.4}
+  _rimLowPrefabs:
+  - {fileID: 4246081301102589422, guid: 6aadd5284244ca14f967628e264e2eaf, type: 3}
+  - {fileID: 3167163605490744536, guid: 95ca891e9b7c61948bbf40778b8003fa, type: 3}
+  - {fileID: 6421900384675618967, guid: 8fd280621a4087d4f9d513c2cd7054e4, type: 3}
+  - {fileID: 8173604970626440629, guid: 88da33a9e84b2564c8bc60ae14f2ca4d, type: 3}
+  - {fileID: 6912184970694881351, guid: 25108f2d294b54b42aadbcb9ed418d5b, type: 3}
+  - {fileID: 3996303449643336764, guid: c227a8e78938cc642bcb40551c12a73e, type: 3}
+  - {fileID: 3731166387358156420, guid: e6f5b7680dda6c74fa86bb831586cb7b, type: 3}
+  - {fileID: 3560973226349895772, guid: 76da5b9347cc39c44a100edc3d63413a, type: 3}
+  - {fileID: 468939118048036724, guid: 1e4714ff5735f124497f2c9d3dd323f5, type: 3}
+  - {fileID: 1516246178927969064, guid: cd7f106b3aab59749a282497c0a2ab4e, type: 3}
+  - {fileID: 4056044826157357193, guid: 996d9f5d0b830f14dbe31b382707d6de, type: 3}
+  _rimTallPrefabs:
+  - {fileID: 7394248395146570975, guid: 2ba2fa3b9a335344f93248c3df873355, type: 3}
+  - {fileID: 8668438846915949117, guid: 5384e1a0148b92b4eb77a4ad3ab0055a, type: 3}
+  - {fileID: 7826445371974186688, guid: bc1a94c576e6d134583c86fe818f4079, type: 3}
+  - {fileID: 2764003219981825146, guid: eab42f6ed69ac524e9d3247268c684df, type: 3}
+  - {fileID: 443423740216082906, guid: d47b0f245cbfca84694c45c8813e22df, type: 3}
+  _rimLowChance: 0.5
+  _rimTallChance: 0.6
+  _rimScaleRange: {x: 0.8, y: 1.2}
+  _environment: {fileID: 11400000, guid: 1e866d65ced944440a98bf3721471944, type: 2}

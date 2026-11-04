@@ -23,7 +23,7 @@ namespace Worldyssey.Data
         [SerializeField] private Color _innerFrame = Color.white;
 
         [Header("强调与文字")]
-        [Tooltip("普通按钮、滑条填充、选中状态")]
+        [Tooltip("普通按钮、滑条填充、选中状态。下方填了调色板时以调色板为准")]
         [SerializeField] private Color _accent = new Color(0.38f, 0.55f, 0.75f, 1f);
 
         [Tooltip("面板内的正文")]
@@ -34,6 +34,14 @@ namespace Worldyssey.Data
 
         [Tooltip("可着色的图标")]
         [SerializeField] private Color _icon = new Color(0.30f, 0.34f, 0.40f, 1f);
+
+        [Header("强调色来源")]
+        [Tooltip("可选：填了就用调色板中对应世界的颜色作为强调色，与 3D 的传送箱子、传送遮罩保持一致。中性主题留空")]
+        [SerializeField] private WorldPalette _worldPalette;
+
+        [Tooltip("调色板中的世界编号：0 春、1 夏、2 秋、3 冬")]
+        [Min(0)]
+        [SerializeField] private int _paletteWorld;
 
         [Header("功能色")]
         [Tooltip("确认、取消、禁用的颜色，所有主题引用同一份")]
@@ -53,7 +61,7 @@ namespace Worldyssey.Data
                 case UiColorRole.InnerFrame:
                     return _innerFrame;
                 case UiColorRole.Accent:
-                    return _accent;
+                    return _worldPalette != null && _worldPalette.TryGetColor(_paletteWorld, out Color accent) ? accent : _accent;
                 case UiColorRole.Text:
                     return _text;
                 case UiColorRole.HeaderText:

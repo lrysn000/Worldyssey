@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 54f50e88d22440e40b2661cca0931000, type: 3}
+  m_Name: SeasonVisualSet_Winter
+  m_EditorClassIdentifier: 
+  _floorPrefab: {fileID: 1527595513100604, guid: 1e89b8912fb9356439b4f28d974e8cff, type: 3}
+  _floorCornerPrefab: {fileID: 1143586474497050, guid: 33ba61de76ae6544cbe588c14100405c, type: 3}
+  _uniqueWallPrefabs: []
+  _grassPrefabs: []
+  _grassPerCellMin: 5
+  _grassPerCellMax: 10
+  _grassEdgeMargin: 0.12
+  _grassScaleRange: {x: 0.4, y: 0.4}
+  _rimLowPrefabs: []
+  _rimTallPrefabs: []
+  _rimLowChance: 0.5
+  _rimTallChance: 0.6
+  _rimScaleRange: {x: 0.8, y: 1.2}
+  _environment: {fileID: 11400000, guid: 9430d0ffff34de7428460471b79cca0f, type: 2}

@@ -19,4 +19,6 @@ MonoBehaviour:
   _text: {r: 0.3, g: 0.2, b: 0.24, a: 1}
   _headerText: {r: 1, g: 1, b: 1, a: 1}
   _icon: {r: 0.78, g: 0.38, b: 0.5, a: 1}
+  _worldPalette: {fileID: 11400000, guid: e155b111138d382499b32829a361925d, type: 2}
+  _paletteWorld: 0
   _functionalPalette: {fileID: 11400000, guid: 65b18ade6a2c6a2468810981935babd8, type: 2}

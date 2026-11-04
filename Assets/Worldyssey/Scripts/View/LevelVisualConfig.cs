@@ -1,10 +1,13 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Worldyssey.Core;
+using Worldyssey.Data;
 
 namespace Worldyssey.View
 {
     /// <summary>
     /// 关卡表现配置：各类格子和实体的预制体、格子尺寸。替换美术时只需替换这里的引用。
+    /// 地面和独有墙优先使用各季节的 <see cref="SeasonVisualSet"/>，没配置的季节回退到这里的占位预制体。
     /// </summary>
     [CreateAssetMenu(fileName = "LevelVisualConfig", menuName = "Worldyssey/Level Visual Config")]
     public class LevelVisualConfig : ScriptableObject
@@ -16,20 +19,25 @@ namespace Worldyssey.View
         [SerializeField] private GameObject _pedestalPrefab;
         [SerializeField] private GameObject _uniqueWallPrefab;
 
+        [Tooltip("可选：共享墙的变体，按格子坐标固定挑选。为空时用上面的 Shared Wall Prefab")]
+        [SerializeField] private GameObject[] _sharedWallVariants = new GameObject[0];
+
         [Header("实体")]
         [SerializeField] private EntityView _playerPrefab;
         [SerializeField] private EntityView _mappedBoxPrefab;
         [SerializeField] private PortalBoxView _portalBoxPrefab;
 
         [Header("世界")]
-        [Tooltip("每个世界的代表色，下标即世界编号。传送箱子按它指向的世界着色")]
-        [SerializeField] private Color[] _worldColors =
-        {
-            new Color(0.95f, 0.55f, 0.25f),
-            new Color(0.25f, 0.75f, 0.85f),
-            new Color(0.50f, 0.85f, 0.35f),
-            new Color(0.90f, 0.40f, 0.70f),
-        };
+        [Tooltip("各世界的代表色，与 UI 强调色共用。传送箱子按它指向的世界着色，传送遮罩用目标世界的颜色")]
+        [SerializeField] private WorldPalette _worldPalette;
+
+        [Header("季节")]
+        [Tooltip("按世界编号排列：0 春、1 夏、2 秋、3 冬。缺少的季节或其中留空的项，用上面的占位预制体")]
+        [SerializeField] private SeasonVisualSet[] _seasonSets = new SeasonVisualSet[0];
+
+        [Tooltip("网格外围装饰地带的圈数，0 为不要外围。外围只是装饰，玩家走不上去")]
+        [Range(0, 4)]
+        [SerializeField] private int _rimWidth = 2;
 
         [Header("特效")]
         [Tooltip("可选：通关时在每个终点喷出的粒子预制体，粒子播完后自行销毁")]
@@ -53,6 +61,8 @@ namespace Worldyssey.View
         public EntityView MappedBoxPrefab => _mappedBoxPrefab;
         public PortalBoxView PortalBoxPrefab => _portalBoxPrefab;
         public float CellSize => _cellSize;
+        public IReadOnlyList<GameObject> SharedWallVariants => _sharedWallVariants;
+        public int RimWidth => _rimWidth;
         public ParticleSystem CelebrationBurstPrefab => _celebrationBurstPrefab;
         public Color GoalFlashColor => _goalFlashColor;
 
@@ -65,17 +75,25 @@ namespace Worldyssey.View
         }
 
         /// <summary>
-        /// 世界的代表色。配置的颜色不够时返回白色并报错，方便发现漏配。
+        /// 世界的代表色，来自 <see cref="WorldPalette"/>。取不到时返回白色并报错，方便发现漏配。
         /// </summary>
         public Color GetWorldColor(int world)
         {
-            if (_worldColors != null && world >= 0 && world < _worldColors.Length)
+            if (_worldPalette != null && _worldPalette.TryGetColor(world, out Color color))
             {
-                return _worldColors[world];
+                return color;
             }
 
-            Debug.LogError($"[{nameof(LevelVisualConfig)}] {name} 没有配置世界 {world} 的颜色", this);
+            Debug.LogError($"[{nameof(LevelVisualConfig)}] {name} 取不到世界 {world} 的颜色，检查 {nameof(_worldPalette)}", this);
             return Color.white;
+        }
+
+        /// <summary>
+        /// 某个世界的季节模块组，没有配置时返回 null。
+        /// </summary>
+        public SeasonVisualSet GetSeasonSet(int world)
+        {
+            return _seasonSets != null && world >= 0 && world < _seasonSets.Length ? _seasonSets[world] : null;
         }
 
         /// <summary>
@@ -100,6 +118,7 @@ namespace Worldyssey.View
             isValid &= CheckAssigned(_playerPrefab, nameof(_playerPrefab), context);
             isValid &= CheckAssigned(_mappedBoxPrefab, nameof(_mappedBoxPrefab), context);
             isValid &= CheckAssigned(_portalBoxPrefab, nameof(_portalBoxPrefab), context);
+            isValid &= CheckAssigned(_worldPalette, nameof(_worldPalette), context);
             return isValid;
         }
 

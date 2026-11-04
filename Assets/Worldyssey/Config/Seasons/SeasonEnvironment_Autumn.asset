@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11d678bf8e234674788b97a54b55e358, type: 3}
+  m_Name: SeasonEnvironment_Autumn
+  m_EditorClassIdentifier: 
+  _sunColor: {r: 1, g: 0.78, b: 0.5, a: 1}
+  _sunIntensity: 1.05
+  _sunPitch: 32
+  _sunYaw: -40
+  _ambientSky: {r: 0.9, g: 0.78, b: 0.65, a: 1}
+  _ambientEquator: {r: 0.75, g: 0.62, b: 0.5, a: 1}
+  _ambientGround: {r: 0.45, g: 0.35, b: 0.28, a: 1}
+  _backgroundColor: {r: 0.97, g: 0.85, b: 0.68, a: 1}
+  _fogColor: {r: 0, g: 0, b: 0, a: 0}
+  _isFogEnabled: 1
+  _fogStartOffset: 2
+  _fogRange: 14
+  _skyTint: {r: 1, g: 0.9, b: 0.78, a: 1}
+  _cloudTint: {r: 1, g: 0.93, b: 0.85, a: 1}
+  _colorProfile: {fileID: 11400000, guid: e84e0b7021094c84bb843019d82b3869, type: 2}
+  _particlesPrefab: {fileID: 7964562167666296348, guid: 03e73619c1bb3a645a4a84189ecfab41, type: 3}
