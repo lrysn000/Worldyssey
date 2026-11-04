@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 主菜单：开始游戏、关卡编辑器、退出。设置入口在 M8 加入。
+    /// 主菜单：开始游戏、关卡编辑器、设置、退出。
     /// </summary>
     public class MainMenuPanel : UiPanel
     {
@@ -15,9 +15,13 @@ namespace Worldyssey.UI
         [Tooltip("可选：场景中没有关卡编辑器时留空，按钮会被隐藏")]
         [SerializeField] private Button _levelEditorButton;
 
+        [Tooltip("可选：场景中没有设置面板时留空")]
+        [SerializeField] private Button _settingsButton;
+
         public event Action StartRequested;
         public event Action QuitRequested;
         public event Action LevelEditorRequested;
+        public event Action SettingsRequested;
 
         private void Awake()
         {
@@ -41,6 +45,11 @@ namespace Worldyssey.UI
             {
                 _levelEditorButton.onClick.AddListener(HandleLevelEditorClicked);
             }
+
+            if (_settingsButton != null)
+            {
+                _settingsButton.onClick.AddListener(HandleSettingsClicked);
+            }
         }
 
         private void OnDisable()
@@ -58,6 +67,11 @@ namespace Worldyssey.UI
             if (_levelEditorButton != null)
             {
                 _levelEditorButton.onClick.RemoveListener(HandleLevelEditorClicked);
+            }
+
+            if (_settingsButton != null)
+            {
+                _settingsButton.onClick.RemoveListener(HandleSettingsClicked);
             }
         }
 
@@ -85,6 +99,11 @@ namespace Worldyssey.UI
         private void HandleLevelEditorClicked()
         {
             LevelEditorRequested?.Invoke();
+        }
+
+        private void HandleSettingsClicked()
+        {
+            SettingsRequested?.Invoke();
         }
     }
 }

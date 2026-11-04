@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Worldyssey.Core;
@@ -15,11 +17,19 @@ namespace Worldyssey.View
         private const string WorldTilesRootPrefix = "WorldTiles_";
         private const string EntitiesRootName = "Entities";
 
+        private const float GoalFlashDuration = 0.6f;
+        private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
+
         [SerializeField] private LevelVisualConfig _visualConfig;
 
         private readonly List<EntityView> _mappedBoxViews = new List<EntityView>();
         private readonly List<PortalBoxView> _portalBoxViews = new List<PortalBoxView>();
         private readonly List<Transform> _worldTileRoots = new List<Transform>();
+        private readonly List<List<PlacedTile>> _uniqueWallTiles = new List<List<PlacedTile>>();
+        private readonly List<PlacedTile> _goalTiles = new List<PlacedTile>();
+        private MaterialPropertyBlock _propertyBlock;
+        private Coroutine _revealRoutine;
+        private Coroutine _goalFlashRoutine;
         private Transform _sharedTilesRoot;
         private Transform _entitiesRoot;
         private EntityView _playerView;
@@ -36,6 +46,9 @@ namespace Worldyssey.View
 
         /// <summary>当前关卡在世界空间中的范围（含一格高度），供相机取景。未生成关卡时大小为零。</summary>
         public Bounds LevelBounds { get; private set; }
+
+        /// <summary>显示的世界变了。传送时在画面被颜色充满的那一刻触发，撤销和重开时随同步立即触发。</summary>
+        public event Action<int> ShownWorldChanged;
 
         private void Awake()
         {
@@ -67,6 +80,112 @@ namespace Worldyssey.View
         public Vector3 DirectionToLocal(Direction direction)
         {
             return _visualConfig.GridToLocal(direction.ToOffset()) - _visualConfig.GridToLocal(new GridPos(0, 0));
+        }
+
+        /// <summary>
+        /// 网格坐标转换为世界坐标（格子底面中心）。
+        /// </summary>
+        public Vector3 GridToWorld(GridPos pos)
+        {
+            Vector3 local = _visualConfig.GridToLocal(pos);
+            return _entitiesRoot != null ? _entitiesRoot.TransformPoint(local) : transform.TransformPoint(local);
+        }
+
+        /// <summary>某个世界的代表色，用于世界切换时的遮罩颜色。</summary>
+        public Color GetWorldColor(int world)
+        {
+            return _visualConfig != null ? _visualConfig.GetWorldColor(world) : Color.black;
+        }
+
+        /// <summary>
+        /// 新世界从 <paramref name="origin"/>（传送底座）向外展开：独有墙按距离依次从地面升起，传送箱子依次放大出现。
+        /// 整个展开在 <paramref name="duration"/> 秒内完成。
+        /// </summary>
+        public void PlayWorldReveal(int world, GridPos origin, float duration)
+        {
+            CompleteReveal();
+            if (world < 0 || world >= _uniqueWallTiles.Count || duration <= 0f)
+            {
+                return;
+            }
+
+            // 一半时间用于按距离错开起始，一半用于每个物体自身的升起，保证最远的也在时限内完成
+            float maxDistance = 1f;
+            List<PlacedTile> walls = _uniqueWallTiles[world];
+            for (int i = 0; i < walls.Count; i++)
+            {
+                maxDistance = Mathf.Max(maxDistance, Distance(origin, walls[i].Position));
+            }
+
+            for (int i = 0; i < _portalBoxViews.Count; i++)
+            {
+                if (_portalBoxViews[i].gameObject.activeSelf)
+                {
+                    maxDistance = Mathf.Max(maxDistance, Distance(origin, LocalToGrid(_portalBoxViews[i].transform.localPosition)));
+                }
+            }
+
+            float delayPerUnit = duration * 0.5f / maxDistance;
+            float riseDuration = duration * 0.5f;
+            for (int i = 0; i < _portalBoxViews.Count; i++)
+            {
+                PortalBoxView view = _portalBoxViews[i];
+                if (view.gameObject.activeSelf)
+                {
+                    float distance = Distance(origin, LocalToGrid(view.transform.localPosition));
+                    view.PlayAppear(distance * delayPerUnit, riseDuration);
+                }
+            }
+
+            _revealRoutine = StartCoroutine(RevealRoutine(walls, origin, delayPerUnit, riseDuration));
+        }
+
+        /// <summary>
+        /// 立即结束正在进行的展开，所有独有墙回到原位。
+        /// </summary>
+        public void CompleteReveal()
+        {
+            if (_revealRoutine != null)
+            {
+                StopCoroutine(_revealRoutine);
+                _revealRoutine = null;
+            }
+
+            for (int world = 0; world < _uniqueWallTiles.Count; world++)
+            {
+                List<PlacedTile> walls = _uniqueWallTiles[world];
+                for (int i = 0; i < walls.Count; i++)
+                {
+                    walls[i].Transform.localPosition = _visualConfig.GridToLocal(walls[i].Position);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 通关庆祝：每个终点闪光，并在终点上喷出粒子（若配置了粒子预制体）。
+        /// </summary>
+        public void PlayGoalCelebration()
+        {
+            if (_goalFlashRoutine != null)
+            {
+                StopCoroutine(_goalFlashRoutine);
+            }
+
+            _goalFlashRoutine = StartCoroutine(GoalFlashRoutine());
+
+            ParticleSystem burstPrefab = _visualConfig.CelebrationBurstPrefab;
+            if (burstPrefab == null)
+            {
+                return;
+            }
+
+            // 只在通关时生成少量粒子，频率很低，不做对象池；粒子停止后由 stopAction 自行销毁
+            for (int i = 0; i < _goalTiles.Count; i++)
+            {
+                ParticleSystem burst = Instantiate(burstPrefab, _sharedTilesRoot);
+                burst.transform.localPosition = _visualConfig.GridToLocal(_goalTiles[i].Position);
+                burst.Play();
+            }
         }
 
         /// <summary>
@@ -117,6 +236,7 @@ namespace Worldyssey.View
             for (int world = 0; world < map.WorldCount; world++)
             {
                 _worldTileRoots.Add(CreateRoot(WorldTilesRootPrefix + world, centerOffset));
+                _uniqueWallTiles.Add(new List<PlacedTile>());
             }
 
             _entitiesRoot = CreateRoot(EntitiesRootName, centerOffset);
@@ -210,6 +330,7 @@ namespace Worldyssey.View
             }
 
             _shownWorld = world;
+            ShownWorldChanged?.Invoke(world);
         }
 
         private void BuildTiles(LevelMap map)
@@ -228,7 +349,8 @@ namespace Worldyssey.View
                     SpawnTile(_visualConfig.FloorPrefab, _sharedTilesRoot, pos);
                     if (map.IsGoal(pos))
                     {
-                        SpawnTile(_visualConfig.GoalPrefab, _sharedTilesRoot, pos);
+                        GameObject goal = SpawnTile(_visualConfig.GoalPrefab, _sharedTilesRoot, pos);
+                        _goalTiles.Add(new PlacedTile(goal.transform, pos, goal.GetComponentInChildren<Renderer>()));
                     }
 
                     if (map.IsPedestal(pos))
@@ -240,7 +362,8 @@ namespace Worldyssey.View
                     {
                         if (map.IsUniqueWall(world, pos))
                         {
-                            SpawnTile(_visualConfig.UniqueWallPrefab, _worldTileRoots[world], pos);
+                            GameObject wall = SpawnTile(_visualConfig.UniqueWallPrefab, _worldTileRoots[world], pos);
+                            _uniqueWallTiles[world].Add(new PlacedTile(wall.transform, pos, null));
                         }
                     }
                 }
@@ -270,10 +393,78 @@ namespace Worldyssey.View
             }
         }
 
-        private void SpawnTile(GameObject prefab, Transform parent, GridPos pos)
+        private GameObject SpawnTile(GameObject prefab, Transform parent, GridPos pos)
         {
             GameObject tile = Instantiate(prefab, parent);
             tile.transform.localPosition = _visualConfig.GridToLocal(pos);
+            return tile;
+        }
+
+        private GridPos LocalToGrid(Vector3 localPosition)
+        {
+            float cellSize = _visualConfig.CellSize;
+            return new GridPos(Mathf.RoundToInt(localPosition.x / cellSize), Mathf.RoundToInt(localPosition.z / cellSize));
+        }
+
+        private static float Distance(GridPos a, GridPos b)
+        {
+            float dx = a.X - b.X;
+            float dy = a.Y - b.Y;
+            return Mathf.Sqrt(dx * dx + dy * dy);
+        }
+
+        private IEnumerator RevealRoutine(List<PlacedTile> walls, GridPos origin, float delayPerUnit, float riseDuration)
+        {
+            float depth = _visualConfig.CellSize;
+            float total = riseDuration * 2f;
+            float elapsed = 0f;
+            while (elapsed < total)
+            {
+                elapsed += Time.deltaTime;
+                for (int i = 0; i < walls.Count; i++)
+                {
+                    float start = Distance(origin, walls[i].Position) * delayPerUnit;
+                    float progress = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((elapsed - start) / riseDuration));
+                    walls[i].Transform.localPosition = _visualConfig.GridToLocal(walls[i].Position) + Vector3.down * (depth * (1f - progress));
+                }
+
+                yield return null;
+            }
+
+            _revealRoutine = null;
+            CompleteReveal();
+        }
+
+        private IEnumerator GoalFlashRoutine()
+        {
+            _propertyBlock ??= new MaterialPropertyBlock();
+            Color flash = _visualConfig.GoalFlashColor;
+            float elapsed = 0f;
+            while (elapsed < GoalFlashDuration)
+            {
+                elapsed += Time.deltaTime;
+                SetGoalEmission(flash * Mathf.Sin(Mathf.Clamp01(elapsed / GoalFlashDuration) * Mathf.PI));
+                yield return null;
+            }
+
+            SetGoalEmission(Color.black);
+            _goalFlashRoutine = null;
+        }
+
+        private void SetGoalEmission(Color color)
+        {
+            for (int i = 0; i < _goalTiles.Count; i++)
+            {
+                Renderer goalRenderer = _goalTiles[i].Renderer;
+                if (goalRenderer == null)
+                {
+                    continue;
+                }
+
+                goalRenderer.GetPropertyBlock(_propertyBlock);
+                _propertyBlock.SetColor(EmissionColorId, color);
+                goalRenderer.SetPropertyBlock(_propertyBlock);
+            }
         }
 
         private Transform CreateRoot(string rootName, Vector3 localPosition)
@@ -289,6 +480,20 @@ namespace Worldyssey.View
         /// </summary>
         public void Clear()
         {
+            if (_revealRoutine != null)
+            {
+                StopCoroutine(_revealRoutine);
+                _revealRoutine = null;
+            }
+
+            if (_goalFlashRoutine != null)
+            {
+                StopCoroutine(_goalFlashRoutine);
+                _goalFlashRoutine = null;
+            }
+
+            _uniqueWallTiles.Clear();
+            _goalTiles.Clear();
             _mappedBoxViews.Clear();
             _portalBoxViews.Clear();
             _playerView = null;
@@ -309,6 +514,23 @@ namespace Worldyssey.View
             if (_entitiesRoot != null)
             {
                 Destroy(_entitiesRoot.gameObject);
+            }
+        }
+
+        /// <summary>
+        /// 生成后需要再次访问的格子：独有墙（展开动画）和终点（通关闪光）。
+        /// </summary>
+        private readonly struct PlacedTile
+        {
+            public readonly Transform Transform;
+            public readonly GridPos Position;
+            public readonly Renderer Renderer;
+
+            public PlacedTile(Transform transform, GridPos position, Renderer renderer)
+            {
+                Transform = transform;
+                Position = position;
+                Renderer = renderer;
             }
         }
     }

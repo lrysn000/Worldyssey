@@ -31,6 +31,14 @@ namespace Worldyssey.View
             new Color(0.90f, 0.40f, 0.70f),
         };
 
+        [Header("特效")]
+        [Tooltip("可选：通关时在每个终点喷出的粒子预制体，粒子播完后自行销毁")]
+        [SerializeField] private ParticleSystem _celebrationBurstPrefab;
+
+        [Tooltip("通关时终点闪光的颜色（HDR）；终点材质需开启 Emission 才生效")]
+        [ColorUsage(false, true)]
+        [SerializeField] private Color _goalFlashColor = new Color(1f, 0.85f, 0.3f) * 3f;
+
         [Header("布局")]
         [Tooltip("一格在世界空间中的边长")]
         [Min(0.1f)]
@@ -45,6 +53,8 @@ namespace Worldyssey.View
         public EntityView MappedBoxPrefab => _mappedBoxPrefab;
         public PortalBoxView PortalBoxPrefab => _portalBoxPrefab;
         public float CellSize => _cellSize;
+        public ParticleSystem CelebrationBurstPrefab => _celebrationBurstPrefab;
+        public Color GoalFlashColor => _goalFlashColor;
 
         /// <summary>
         /// 网格坐标转换为关卡根节点下的局部坐标。网格 y 对应世界 z。

@@ -11,6 +11,12 @@ namespace Worldyssey.UI
         // 主菜单
         public const string StartGame = "Start";
         public const string Quit = "Quit";
+        public const string Settings = "Settings";
+
+        // 设置
+        public const string SettingsTitle = "Settings";
+        public const string SettingsPlaceholder = "More options coming soon";
+        public const string Close = "Close";
 
         // 选关
         public const string SelectLevelTitle = "Select Level";
@@ -38,6 +44,7 @@ namespace Worldyssey.UI
         public const string PausedTitle = "Paused";
         public const string Resume = "Resume";
         public const string LevelSelect = "Level Select";
+        public const string MainMenu = "Main Menu";
 
         // 结算
         public const string LevelCompleteTitle = "Level Complete";

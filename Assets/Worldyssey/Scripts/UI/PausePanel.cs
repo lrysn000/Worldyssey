@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 暂停菜单：继续、重开、返回选关。
+    /// 暂停菜单：继续、重开、设置、返回选关、返回主菜单。
     /// </summary>
     public class PausePanel : UiPanel
     {
@@ -14,9 +14,17 @@ namespace Worldyssey.UI
         [SerializeField] private Button _restartButton;
         [SerializeField] private Button _levelSelectButton;
 
+        [Tooltip("可选：场景中没有设置面板时留空")]
+        [SerializeField] private Button _settingsButton;
+
+        [Tooltip("可选：返回主菜单")]
+        [SerializeField] private Button _mainMenuButton;
+
         public event Action ResumeRequested;
         public event Action RestartRequested;
         public event Action LevelSelectRequested;
+        public event Action SettingsRequested;
+        public event Action MainMenuRequested;
 
         private void Awake()
         {
@@ -30,6 +38,8 @@ namespace Worldyssey.UI
             AddListener(_resumeButton, HandleResumeClicked);
             AddListener(_restartButton, HandleRestartClicked);
             AddListener(_levelSelectButton, HandleLevelSelectClicked);
+            AddListener(_settingsButton, HandleSettingsClicked);
+            AddListener(_mainMenuButton, HandleMainMenuClicked);
         }
 
         private void OnDisable()
@@ -37,6 +47,8 @@ namespace Worldyssey.UI
             RemoveListener(_resumeButton, HandleResumeClicked);
             RemoveListener(_restartButton, HandleRestartClicked);
             RemoveListener(_levelSelectButton, HandleLevelSelectClicked);
+            RemoveListener(_settingsButton, HandleSettingsClicked);
+            RemoveListener(_mainMenuButton, HandleMainMenuClicked);
         }
 
         /// <summary>
@@ -85,6 +97,16 @@ namespace Worldyssey.UI
         private void HandleLevelSelectClicked()
         {
             LevelSelectRequested?.Invoke();
+        }
+
+        private void HandleSettingsClicked()
+        {
+            SettingsRequested?.Invoke();
+        }
+
+        private void HandleMainMenuClicked()
+        {
+            MainMenuRequested?.Invoke();
         }
     }
 }

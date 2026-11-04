@@ -25,6 +25,8 @@ namespace Worldyssey.View
         [SerializeField] private Vector3 _defaultFocusSize = new Vector3(9f, 1f, 7f);
 
         private Bounds _focus;
+        private Vector3 _focusOffset;
+        private float _zoom = 1f;
         private float _yaw;
         private float _lastAspect;
         private Coroutine _rotateRoutine;
@@ -73,6 +75,33 @@ namespace Worldyssey.View
         }
 
         /// <summary>
+        /// 由调用方的协程 yield：在 <paramref name="duration"/> 秒内把焦点移向 <paramref name="worldPoint"/>，
+        /// 距离缩放到 <paramref name="zoom"/> 倍。用于传送时推近传送箱子。
+        /// </summary>
+        public IEnumerator ZoomToward(Vector3 worldPoint, float zoom, float duration)
+        {
+            return AnimateZoom(worldPoint - _focus.center, zoom, duration);
+        }
+
+        /// <summary>
+        /// 由调用方的协程 yield：在 <paramref name="duration"/> 秒内回到正常取景。
+        /// </summary>
+        public IEnumerator ZoomBack(float duration)
+        {
+            return AnimateZoom(Vector3.zero, 1f, duration);
+        }
+
+        /// <summary>
+        /// 立即回到正常取景，用于打断传送过渡。
+        /// </summary>
+        public void ResetZoom()
+        {
+            _focusOffset = Vector3.zero;
+            _zoom = 1f;
+            ApplyPose();
+        }
+
+        /// <summary>
         /// 立即回到默认朝向，用于进入新关卡。
         /// </summary>
         public void ResetRotation()
@@ -107,6 +136,26 @@ namespace Worldyssey.View
 
             _rotateRoutine = StartCoroutine(RotateRoutine(targetYaw, duration));
             return true;
+        }
+
+        private IEnumerator AnimateZoom(Vector3 targetOffset, float targetZoom, float duration)
+        {
+            Vector3 startOffset = _focusOffset;
+            float startZoom = _zoom;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float eased = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                _focusOffset = Vector3.LerpUnclamped(startOffset, targetOffset, eased);
+                _zoom = Mathf.LerpUnclamped(startZoom, targetZoom, eased);
+                ApplyPose();
+                yield return null;
+            }
+
+            _focusOffset = targetOffset;
+            _zoom = targetZoom;
+            ApplyPose();
         }
 
         private void CompleteRotation()
@@ -152,9 +201,9 @@ namespace Worldyssey.View
             _lastAspect = _camera.aspect;
             Quaternion rotation = Quaternion.Euler(_gameplayConfig.CameraPitch, _yaw, 0f);
             Vector3 forward = rotation * Vector3.forward;
-            float distance = CalculateFitDistance(rotation);
+            float distance = CalculateFitDistance(rotation) * _zoom;
             Transform cameraTransform = _camera.transform;
-            cameraTransform.SetPositionAndRotation(_focus.center - forward * distance, rotation);
+            cameraTransform.SetPositionAndRotation(_focus.center + _focusOffset - forward * distance, rotation);
         }
 
         /// <summary>

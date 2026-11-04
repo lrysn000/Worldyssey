@@ -9,7 +9,8 @@ namespace Worldyssey.View
     /// <summary>
     /// 播放一步的结果，播完前 <see cref="IsPlaying"/> 为 true。
     /// 普通步：转向、移动、推箱同时补间，推动的箱子挤压，到达终点的箱子弹起，撞墙时回弹。
-    /// 传送步：淡出 → 切换世界并放好伙伴 → 淡入。通关步：移动播完后所有箱子依次弹起庆祝。
+    /// 传送步：玩家钻进传送箱子、相机推近、画面染成目标世界颜色 → 切换世界 → 相机拉回、新世界从底座向外展开、玩家走出伙伴箱子。
+    /// 通关步：移动播完后终点闪光、所有箱子依次弹起庆祝。
     /// 面提示也由这里刷新，保证提示变化与画面变化同时发生。
     /// </summary>
     public class StepPlayer : MonoBehaviour
@@ -18,9 +19,13 @@ namespace Worldyssey.View
         [SerializeField] private WorldTransition _worldTransition;
         [SerializeField] private GameplayConfig _gameplayConfig;
 
+        [Tooltip("可选：传送时推近和拉回的相机")]
+        [SerializeField] private CameraRig _cameraRig;
+
         private readonly List<EntityView> _animatingViews = new List<EntityView>(4);
         private readonly List<EntityView> _pendingPops = new List<EntityView>(2);
         private Coroutine _playRoutine;
+        private Coroutine _cameraRoutine;
         private LevelRules _pendingRules;
         private LevelState _pendingTeleportState;
 
@@ -55,7 +60,7 @@ namespace Worldyssey.View
             {
                 _pendingRules = rules;
                 _pendingTeleportState = result.State;
-                _playRoutine = StartCoroutine(TeleportRoutine());
+                _playRoutine = StartCoroutine(TeleportRoutine(FindTargetWorld(result)));
                 return;
             }
 
@@ -82,6 +87,17 @@ namespace Worldyssey.View
                 _playRoutine = null;
             }
 
+            if (_cameraRoutine != null)
+            {
+                StopCoroutine(_cameraRoutine);
+                _cameraRoutine = null;
+            }
+
+            if (_cameraRig != null)
+            {
+                _cameraRig.ResetZoom();
+            }
+
             if (_pendingTeleportState != null)
             {
                 ApplyTeleportedState();
@@ -96,8 +112,23 @@ namespace Worldyssey.View
             _pendingPops.Clear();
             if (_levelView != null)
             {
+                _levelView.CompleteReveal();
                 _levelView.StopAllEffects();
             }
+        }
+
+        private static int FindTargetWorld(StepResult result)
+        {
+            IReadOnlyList<StepEvent> events = result.Events;
+            for (int i = 0; i < events.Count; i++)
+            {
+                if (events[i] is TeleportedEvent teleported)
+                {
+                    return teleported.ToWorld;
+                }
+            }
+
+            return result.State.PlayerWorld;
         }
 
         private static bool ContainsTeleport(StepResult result)
@@ -197,6 +228,7 @@ namespace Worldyssey.View
             if (isLevelSolved)
             {
                 // 庆祝期间仍算播放中，LevelSession 会等它播完才弹结算
+                _levelView.PlayGoalCelebration();
                 int boxCount = _levelView.MappedBoxViewCount;
                 for (int i = 0; i < boxCount; i++)
                 {
@@ -220,21 +252,55 @@ namespace Worldyssey.View
             }
         }
 
-        private IEnumerator TeleportRoutine()
+        private IEnumerator TeleportRoutine(int targetWorld)
         {
-            if (_worldTransition != null)
+            // 传送前后玩家都站在同一格、面朝底座，所以底座位置可以从结果状态算出
+            LevelState state = _pendingTeleportState;
+            GridPos pedestal = state.PlayerPosition + state.PlayerFacing;
+            Vector3 intoBox = _levelView.DirectionToLocal(state.PlayerFacing);
+            Vector3 pedestalWorld = _levelView.GridToWorld(pedestal) + Vector3.up * (_levelView.CellSize * 0.5f);
+            float enterDuration = _gameplayConfig.TeleportEnterDuration;
+            float exitDuration = _gameplayConfig.TeleportExitDuration;
+            EntityView player = _levelView.PlayerView;
+
+            // 前半段：钻进箱子、相机推近、画面染成目标世界颜色
+            player.PlayVanish(intoBox, enterDuration);
+            if (_cameraRig != null)
             {
-                yield return _worldTransition.FadeTo(1f, _gameplayConfig.TeleportFadeOutDuration);
+                _cameraRoutine = StartCoroutine(_cameraRig.ZoomToward(pedestalWorld, _gameplayConfig.TeleportCameraZoom, enterDuration));
             }
 
-            // 画面全黑时切换世界：伙伴生成或瞬移都直接落位，玩家看不到中间过程
+            if (_worldTransition != null)
+            {
+                _worldTransition.SetColor(_levelView.GetWorldColor(targetWorld));
+                yield return _worldTransition.FadeTo(1f, enterDuration);
+            }
+            else
+            {
+                yield return Wait(enterDuration);
+            }
+
+            // 画面被颜色充满时切换世界：伙伴生成或瞬移都直接落位，玩家看不到中间过程
             ApplyTeleportedState();
 
-            if (_worldTransition != null)
+            // 后半段：相机拉回、新世界从底座向外展开、玩家走出伙伴箱子
+            _levelView.PlayWorldReveal(targetWorld, pedestal, exitDuration);
+            player.PlayEmerge(intoBox, exitDuration);
+            if (_cameraRig != null)
             {
-                yield return _worldTransition.FadeTo(0f, _gameplayConfig.TeleportFadeInDuration);
+                _cameraRoutine = StartCoroutine(_cameraRig.ZoomBack(exitDuration));
             }
 
+            if (_worldTransition != null)
+            {
+                yield return _worldTransition.FadeTo(0f, exitDuration);
+            }
+            else
+            {
+                yield return Wait(exitDuration);
+            }
+
+            _cameraRoutine = null;
             _playRoutine = null;
         }
 

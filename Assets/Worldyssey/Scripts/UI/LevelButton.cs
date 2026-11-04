@@ -2,6 +2,7 @@ using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Worldyssey.Data;
 
 namespace Worldyssey.UI
 {
@@ -16,6 +17,9 @@ namespace Worldyssey.UI
         [SerializeField] private Button _button;
         [SerializeField] private TMP_Text _nameText;
         [SerializeField] private TMP_Text _detailText;
+
+        [Tooltip("可选：底图上的 ThemedGraphic。设置后高亮通过切换主题角色实现，不再写死颜色")]
+        [SerializeField] private ThemedGraphic _themedImage;
 
         private int _index;
         private Action<int> _onClicked;
@@ -100,6 +104,12 @@ namespace Worldyssey.UI
         /// </summary>
         public void SetHighlighted(bool isHighlighted)
         {
+            if (_themedImage != null)
+            {
+                _themedImage.SetRole(isHighlighted ? UiColorRole.Accent : UiColorRole.InnerFrame);
+                return;
+            }
+
             if (_button != null && _button.image != null)
             {
                 _button.image.color = isHighlighted ? HighlightedColor : NormalColor;

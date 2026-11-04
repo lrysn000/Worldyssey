@@ -21,13 +21,17 @@ namespace Worldyssey.Data
         [SerializeField] private AnimationCurve _moveCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
         [Header("世界切换")]
-        [Tooltip("传送时画面淡出的时长（秒）")]
+        [Tooltip("传送前半段：玩家钻进传送箱子、相机推近、画面被目标世界颜色充满（秒）")]
         [Min(0f)]
-        [SerializeField] private float _teleportFadeOutDuration = 0.15f;
+        [SerializeField] private float _teleportEnterDuration = 0.3f;
 
-        [Tooltip("传送时画面淡入的时长（秒）")]
+        [Tooltip("传送后半段：相机拉回、新世界从底座向外展开、玩家走出伙伴箱子（秒）")]
         [Min(0f)]
-        [SerializeField] private float _teleportFadeInDuration = 0.15f;
+        [SerializeField] private float _teleportExitDuration = 0.4f;
+
+        [Tooltip("传送时相机推近后的距离比例，1 为不推近")]
+        [Range(0.2f, 1f)]
+        [SerializeField] private float _teleportCameraZoom = 0.6f;
 
         [Header("提示")]
         [Tooltip("传送失败等提示在 HUD 上停留的时长（秒）")]
@@ -59,6 +63,19 @@ namespace Worldyssey.Data
         [Min(0f)]
         [SerializeField] private float _celebrationStagger = 0.08f;
 
+        [Header("撤销回溯")]
+        [Tooltip("撤销时画面褪色的时长（秒）")]
+        [Min(0f)]
+        [SerializeField] private float _rewindFadeInDuration = 0.06f;
+
+        [Tooltip("最后一次撤销后保持褪色的时长（秒）；连续撤销时会不断重新计时")]
+        [Min(0f)]
+        [SerializeField] private float _rewindHoldDuration = 0.3f;
+
+        [Tooltip("褪色恢复的时长（秒）")]
+        [Min(0f)]
+        [SerializeField] private float _rewindFadeOutDuration = 0.35f;
+
         [Header("相机")]
         [Tooltip("相机俯角（度），90 为正上方俯视")]
         [Range(20f, 90f)]
@@ -81,8 +98,9 @@ namespace Worldyssey.Data
         public float TurnDuration => _turnDuration;
         public AnimationCurve MoveCurve => _moveCurve;
         public float HoldRepeatDelay => _holdRepeatDelay;
-        public float TeleportFadeOutDuration => _teleportFadeOutDuration;
-        public float TeleportFadeInDuration => _teleportFadeInDuration;
+        public float TeleportEnterDuration => _teleportEnterDuration;
+        public float TeleportExitDuration => _teleportExitDuration;
+        public float TeleportCameraZoom => _teleportCameraZoom;
         public float HintDuration => _hintDuration;
         public float BumpDistance => _bumpDistance;
         public float BumpDuration => _bumpDuration;
@@ -90,6 +108,9 @@ namespace Worldyssey.Data
         public float PopHeight => _popHeight;
         public float PopDuration => _popDuration;
         public float CelebrationStagger => _celebrationStagger;
+        public float RewindFadeInDuration => _rewindFadeInDuration;
+        public float RewindHoldDuration => _rewindHoldDuration;
+        public float RewindFadeOutDuration => _rewindFadeOutDuration;
         public float CameraPitch => _cameraPitch;
         public float CameraMargin => _cameraMargin;
         public float ViewRotateDuration => _viewRotateDuration;

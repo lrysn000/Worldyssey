@@ -26,6 +26,9 @@ namespace Worldyssey.Gameplay
         [Tooltip("可选：负责取景和旋转视角的相机。为空时不取景、不能旋转，方向键按网格方向走")]
         [SerializeField] private CameraRig _cameraRig;
 
+        [Tooltip("可选：撤销时画面褪色的回溯效果")]
+        [SerializeField] private RewindEffect _rewindEffect;
+
         private InputCommandScheduler _commandScheduler;
         private PlaySession _session;
         private LevelData _currentLevel;
@@ -190,6 +193,11 @@ namespace Worldyssey.Gameplay
             }
 
             _currentLevel = level;
+            if (_rewindEffect != null)
+            {
+                _rewindEffect.ResetImmediately();
+            }
+
             SubscribeSession();
             _levelView.Build(_session.Rules.Map, _session.State);
             _levelView.UpdateFaceHints(_session.Rules, _session.State);
@@ -223,6 +231,11 @@ namespace Worldyssey.Gameplay
             _isInputEnabled = false;
             _commandScheduler.Reset();
             _levelView.Clear();
+            if (_rewindEffect != null)
+            {
+                _rewindEffect.ResetImmediately();
+            }
+
             StateChanged?.Invoke();
         }
 
@@ -247,7 +260,10 @@ namespace Worldyssey.Gameplay
             }
 
             InterruptPlayback();
-            _session.Undo();
+            if (_session.Undo() && _rewindEffect != null)
+            {
+                _rewindEffect.Trigger();
+            }
         }
 
         /// <summary>重开，打断正在播放的动画。输入关闭时无效。供 HUD 按钮和按键调用。</summary>

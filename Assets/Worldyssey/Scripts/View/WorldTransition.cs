@@ -1,15 +1,18 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Worldyssey.View
 {
     /// <summary>
-    /// 世界切换的过渡：控制一个全屏遮罩的透明度。M8 再替换为正式效果。
+    /// 世界切换的过渡：控制一个全屏遮罩的颜色和透明度。传送时遮罩染成目标世界的代表色。
     /// </summary>
     public class WorldTransition : MonoBehaviour
     {
         [Tooltip("全屏黑色遮罩上的 CanvasGroup")]
         [SerializeField] private CanvasGroup _overlay;
+
+        private Graphic _overlayGraphic;
 
         private void Awake()
         {
@@ -19,7 +22,21 @@ namespace Worldyssey.View
                 return;
             }
 
+            // 遮罩图像与 CanvasGroup 在同一物体上，由生成工具保证
+            _overlayGraphic = _overlay.GetComponent<Graphic>();
             SetClear();
+        }
+
+        /// <summary>
+        /// 设置遮罩颜色（不影响透明度，透明度由 <see cref="FadeTo"/> 控制）。
+        /// </summary>
+        public void SetColor(Color color)
+        {
+            if (_overlayGraphic != null)
+            {
+                color.a = 1f;
+                _overlayGraphic.color = color;
+            }
         }
 
         /// <summary>

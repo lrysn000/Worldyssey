@@ -27,6 +27,13 @@ namespace Worldyssey.UI
         [SerializeField] private TMP_Text _statusText;
         [SerializeField] private TMP_Text _hintText;
 
+        [Header("文字底板（可选）")]
+        [Tooltip("通关文字的底板，有文字时才显示")]
+        [SerializeField] private GameObject _statusBackground;
+
+        [Tooltip("传送失败提示的底板，有提示时才显示")]
+        [SerializeField] private GameObject _hintBackground;
+
         [Header("按钮")]
         [SerializeField] private Button _undoButton;
         [SerializeField] private Button _restartButton;
@@ -195,6 +202,11 @@ namespace Worldyssey.UI
             {
                 _statusText.text = session.IsSolved ? UiText.Solved : string.Empty;
             }
+
+            if (_statusBackground != null)
+            {
+                _statusBackground.SetActive(session.IsSolved);
+            }
         }
 
         private string BuildConflictText(LevelMap map)
@@ -219,6 +231,11 @@ namespace Worldyssey.UI
             if (_hintText != null)
             {
                 _hintText.text = message;
+            }
+
+            if (_hintBackground != null)
+            {
+                _hintBackground.SetActive(!string.IsNullOrEmpty(message));
             }
         }
 

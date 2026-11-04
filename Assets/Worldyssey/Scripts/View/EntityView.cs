@@ -20,10 +20,13 @@ namespace Worldyssey.View
         private Vector3 _bumpOffset;
         private Vector3 _popOffset;
         private Vector3 _scaleMultiplier = Vector3.one;
+        private Vector3 _appearOffset;
+        private float _appearScale = 1f;
         private Coroutine _tween;
         private Coroutine _bump;
         private Coroutine _pop;
         private Coroutine _squash;
+        private Coroutine _appear;
 
         public bool IsTweening => _tween != null;
 
@@ -128,6 +131,30 @@ namespace Worldyssey.View
         }
 
         /// <summary>
+        /// 朝 <paramref name="localOffset"/> 移动并缩小到消失，用于玩家钻进传送箱子。结束后保持消失，直到出现或复原。
+        /// </summary>
+        public void PlayVanish(Vector3 localOffset, float duration)
+        {
+            StartAppearRoutine(Vector3.zero, localOffset, 1f, 0f, 0f, duration);
+        }
+
+        /// <summary>
+        /// 从 <paramref name="localOffset"/> 处由小放大并回到原位，用于玩家走出伙伴箱子。
+        /// </summary>
+        public void PlayEmerge(Vector3 localOffset, float duration)
+        {
+            StartAppearRoutine(localOffset, Vector3.zero, 0f, 1f, 0f, duration);
+        }
+
+        /// <summary>
+        /// 等待 <paramref name="delay"/> 后原地由小放大，用于新世界的传送箱子依次出现。
+        /// </summary>
+        public void PlayAppear(float delay, float duration)
+        {
+            StartAppearRoutine(Vector3.zero, Vector3.zero, 0f, 1f, delay, duration);
+        }
+
+        /// <summary>
         /// 立即停止全部表现效果并复原，用于撤销、重开等需要画面立刻对齐状态的场合。
         /// </summary>
         public void StopEffects()
@@ -135,10 +162,32 @@ namespace Worldyssey.View
             StopRoutine(ref _bump);
             StopRoutine(ref _squash);
             StopRoutine(ref _pop);
+            StopRoutine(ref _appear);
             _bumpOffset = Vector3.zero;
             _popOffset = Vector3.zero;
             _scaleMultiplier = Vector3.one;
+            _appearOffset = Vector3.zero;
+            _appearScale = 1f;
             Apply();
+        }
+
+        private void StartAppearRoutine(Vector3 fromOffset, Vector3 toOffset, float fromScale, float toScale, float delay, float duration)
+        {
+            StopRoutine(ref _appear);
+
+            // 先立即应用起始状态，避免等待期间先闪出原样再缩回去
+            _appearOffset = fromOffset;
+            _appearScale = fromScale;
+            Apply();
+            if (!CanPlayEffect(duration))
+            {
+                _appearOffset = toOffset;
+                _appearScale = toScale;
+                Apply();
+                return;
+            }
+
+            _appear = StartCoroutine(AppearRoutine(fromOffset, toOffset, fromScale, toScale, delay, duration));
         }
 
         private bool CanPlayEffect(float duration)
@@ -159,9 +208,9 @@ namespace Worldyssey.View
 
         private void Apply()
         {
-            transform.localPosition = _position + _bumpOffset + _popOffset;
+            transform.localPosition = _position + _bumpOffset + _popOffset + _appearOffset;
             transform.localRotation = Quaternion.Euler(0f, _yaw, 0f);
-            transform.localScale = Vector3.Scale(_baseScale, _scaleMultiplier);
+            transform.localScale = Vector3.Scale(_baseScale, _scaleMultiplier) * _appearScale;
         }
 
         private IEnumerator TweenRoutine(float duration, AnimationCurve curve)
@@ -245,6 +294,32 @@ namespace Worldyssey.View
             _popOffset = Vector3.zero;
             Apply();
             _pop = null;
+        }
+
+        private IEnumerator AppearRoutine(Vector3 fromOffset, Vector3 toOffset, float fromScale, float toScale, float delay, float duration)
+        {
+            float waited = 0f;
+            while (waited < delay)
+            {
+                waited += Time.deltaTime;
+                yield return null;
+            }
+
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float eased = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                _appearOffset = Vector3.LerpUnclamped(fromOffset, toOffset, eased);
+                _appearScale = Mathf.LerpUnclamped(fromScale, toScale, eased);
+                Apply();
+                yield return null;
+            }
+
+            _appearOffset = toOffset;
+            _appearScale = toScale;
+            Apply();
+            _appear = null;
         }
     }
 }

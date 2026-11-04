@@ -8,7 +8,8 @@ using Worldyssey.UI;
 namespace Worldyssey.Gameplay
 {
     /// <summary>
-    /// 界面流程状态机：主菜单 → 选关 → 游戏中 ⇄ 暂停 → 结算；以及主菜单 → 关卡编辑器 ⇄ 试玩。负责切换面板、开关游戏输入、读写存档。
+    /// 界面流程状态机：主菜单 → 选关 → 游戏中 ⇄ 暂停 → 结算；以及主菜单 → 关卡编辑器 ⇄ 试玩。主菜单和暂停可以打开设置，关闭后回到原处。
+    /// 负责切换面板、开关游戏输入、读写存档。
     /// 关卡规则和对局状态不在这里，分别在 Core 和 <see cref="LevelSession"/>。
     /// </summary>
     public class GameFlow : MonoBehaviour
@@ -32,6 +33,12 @@ namespace Worldyssey.Gameplay
         [Tooltip("可选：没有关卡编辑器的场景留空，主菜单不显示编辑器入口")]
         [SerializeField] private LevelEditorPanel _levelEditorPanel;
 
+        [Tooltip("可选：没有设置面板的场景留空，主菜单和暂停的设置按钮不会生效")]
+        [SerializeField] private SettingsPanel _settingsPanel;
+
+        [Tooltip("可选：界面主题控制器，用来决定设置面板跟随世界还是用中性主题")]
+        [SerializeField] private UiThemeController _uiThemeController;
+
         private readonly List<LevelSelectItem> _builtInItems = new List<LevelSelectItem>();
         private readonly List<LevelSelectItem> _customItems = new List<LevelSelectItem>();
         private readonly List<string> _catalogIds = new List<string>();
@@ -40,6 +47,7 @@ namespace Worldyssey.Gameplay
         private SaveService _saveService;
         private ProgressTracker _progress;
         private GameFlowState _state;
+        private GameFlowState _settingsReturnState;
         private LevelData _currentLevel;
         private string _currentRecordKey;
         private int _currentCatalogIndex = NoCatalogIndex;
@@ -105,6 +113,14 @@ namespace Worldyssey.Gameplay
                 _levelEditorPanel.TestPlayRequested += HandleTestPlayRequested;
                 _levelEditorPanel.BackRequested += HandleEditorBack;
             }
+
+            _mainMenuPanel.SettingsRequested += HandleSettingsRequested;
+            _pausePanel.SettingsRequested += HandleSettingsRequested;
+            _pausePanel.MainMenuRequested += HandleMainMenuFromPause;
+            if (_settingsPanel != null)
+            {
+                _settingsPanel.CloseRequested += HandleSettingsClosed;
+            }
         }
 
         private void Start()
@@ -138,6 +154,14 @@ namespace Worldyssey.Gameplay
             {
                 _levelEditorPanel.TestPlayRequested -= HandleTestPlayRequested;
                 _levelEditorPanel.BackRequested -= HandleEditorBack;
+            }
+
+            _mainMenuPanel.SettingsRequested -= HandleSettingsRequested;
+            _pausePanel.SettingsRequested -= HandleSettingsRequested;
+            _pausePanel.MainMenuRequested -= HandleMainMenuFromPause;
+            if (_settingsPanel != null)
+            {
+                _settingsPanel.CloseRequested -= HandleSettingsClosed;
             }
         }
 
@@ -254,11 +278,19 @@ namespace Worldyssey.Gameplay
         private void SetPanels(GameFlowState state)
         {
             _state = state;
-            bool isInLevel = state == GameFlowState.Playing || state == GameFlowState.Paused || state == GameFlowState.Result;
-            _mainMenuPanel.SetVisible(state == GameFlowState.MainMenu);
+
+            // 设置面板盖在打开它的界面上，原界面保持可见
+            GameFlowState underlying = state == GameFlowState.Settings ? _settingsReturnState : state;
+            bool isInLevel = underlying == GameFlowState.Playing || underlying == GameFlowState.Paused || underlying == GameFlowState.Result;
+            _mainMenuPanel.SetVisible(underlying == GameFlowState.MainMenu);
             _levelSelectPanel.SetVisible(state == GameFlowState.LevelSelect);
             _hudPanel.SetVisible(isInLevel);
-            _pausePanel.SetVisible(state == GameFlowState.Paused);
+            _pausePanel.SetVisible(underlying == GameFlowState.Paused);
+            if (_settingsPanel != null)
+            {
+                _settingsPanel.SetVisible(state == GameFlowState.Settings);
+            }
+
             _resultPanel.SetVisible(state == GameFlowState.Result);
             if (_levelEditorPanel != null)
             {
@@ -330,6 +362,44 @@ namespace Worldyssey.Gameplay
             else if (_state == GameFlowState.Paused)
             {
                 SetPanels(GameFlowState.Playing);
+            }
+            else if (_state == GameFlowState.Settings)
+            {
+                // Esc 在设置里表示返回，回到打开设置的界面，而不是直接回到游戏
+                HandleSettingsClosed();
+            }
+        }
+
+        private void HandleMainMenuFromPause()
+        {
+            // 关卡内进度不存档，直接结束关卡回主菜单
+            if (_state == GameFlowState.Paused)
+            {
+                ShowMainMenu();
+            }
+        }
+
+        private void HandleSettingsRequested()
+        {
+            if (_settingsPanel == null || (_state != GameFlowState.MainMenu && _state != GameFlowState.Paused))
+            {
+                return;
+            }
+
+            _settingsReturnState = _state;
+            if (_uiThemeController != null)
+            {
+                _uiThemeController.SetSettingsFollowsWorld(_state == GameFlowState.Paused);
+            }
+
+            SetPanels(GameFlowState.Settings);
+        }
+
+        private void HandleSettingsClosed()
+        {
+            if (_state == GameFlowState.Settings)
+            {
+                SetPanels(_settingsReturnState);
             }
         }
 
