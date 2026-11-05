@@ -7,7 +7,7 @@ using UnityEngine.UI;
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 编辑器网格中的一格：外框（标记问题）、地形底色、实体色块和文字。把指针事件转交给 <see cref="EditorGridView"/>。
+    /// 编辑器网格中的一格：外框（标记问题）、地形底色、实体图标和角标文字。把指针事件转交给 <see cref="EditorGridView"/>。
     /// 被绘制时弹一下，给鼠标操作一个手感反馈。
     /// </summary>
     public class EditorGridCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
@@ -45,6 +45,12 @@ namespace Worldyssey.UI
             transform.localScale = Vector3.one;
         }
 
+        /// <summary>只读时外框不接收鼠标：不能绘制，鼠标指针也不会显示为可点击。</summary>
+        public void SetInteractable(bool isInteractable)
+        {
+            _frame.raycastTarget = isInteractable;
+        }
+
         public void Bind(EditorGridView owner, Core.GridPos position)
         {
             _owner = owner;
@@ -52,14 +58,23 @@ namespace Worldyssey.UI
         }
 
         /// <summary>
-        /// 设置显示内容。<paramref name="entityColor"/> 的 alpha 为 0 时隐藏实体色块。
+        /// 设置显示内容。<paramref name="entityColor"/> 的 alpha 为 0 时隐藏实体；<paramref name="entityIcon"/> 为空时实体显示为色块。
+        /// <paramref name="entityAngle"/> 为图标绕 Z 轴的角度，用来表示玩家朝向。
         /// </summary>
-        public void Render(Color frameColor, Color terrainColor, Color entityColor, string label)
+        public void Render(Color frameColor, Color terrainColor, Color entityColor, Sprite entityIcon, float entityAngle, string label)
         {
             _frame.color = frameColor;
             _terrain.color = terrainColor;
             _entity.enabled = entityColor.a > 0f;
             _entity.color = entityColor;
+            if (_entity.sprite != entityIcon)
+            {
+                _entity.sprite = entityIcon;
+                _entity.type = Image.Type.Simple;
+                _entity.preserveAspect = true;
+            }
+
+            _entity.rectTransform.localEulerAngles = new Vector3(0f, 0f, entityAngle);
             _label.text = label;
         }
 

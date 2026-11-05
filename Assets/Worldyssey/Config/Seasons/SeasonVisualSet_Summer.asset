@@ -24,7 +24,7 @@ MonoBehaviour:
   _grassPerCellMin: 5
   _grassPerCellMax: 10
   _grassEdgeMargin: 0.03
-  _grassScaleRange: {x: 0.2, y: 0.2}
+  _grassScaleRange: {x: 0.25, y: 0.25}
   _rimLowPrefabs:
   - {fileID: 4246081301102589422, guid: 6aadd5284244ca14f967628e264e2eaf, type: 3}
   - {fileID: 3167163605490744536, guid: 95ca891e9b7c61948bbf40778b8003fa, type: 3}

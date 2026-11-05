@@ -6,18 +6,12 @@ using Worldyssey.Data;
 namespace Worldyssey.View
 {
     /// <summary>
-    /// 关卡相机：围绕关卡中心保持固定俯角，自动推拉到恰好完整看到整个关卡；支持每次 90° 旋转视角。
+    /// 关卡相机：围绕关卡中心保持固定俯角，自动推拉到恰好完整看到整个关卡；支持每次 90° 旋转视角，
+    /// 以及按住鼠标拖动平移（平移量限制在关卡范围内，换关卡时清零）。
     /// 旋转只影响画面，规则不知道它的存在；输入换算见 <see cref="ViewRotation"/>。
     /// </summary>
     public class CameraRig : MonoBehaviour
     {
-        // 包围盒 8 个角的符号组合，用于逐角计算所需距离
-        private static readonly Vector3[] CornerSigns =
-        {
-            new Vector3(-1f, -1f, -1f), new Vector3(1f, -1f, -1f), new Vector3(-1f, 1f, -1f), new Vector3(1f, 1f, -1f),
-            new Vector3(-1f, -1f, 1f), new Vector3(1f, -1f, 1f), new Vector3(-1f, 1f, 1f), new Vector3(1f, 1f, 1f),
-        };
-
         [SerializeField] private Camera _camera;
         [SerializeField] private GameplayConfig _gameplayConfig;
 
@@ -28,6 +22,7 @@ namespace Worldyssey.View
         private Vector3 _focusOffset;
         private float _zoom = 1f;
         private float _yaw;
+        private readonly CameraPanOffset _pan = new CameraPanOffset();
         private float _lastAspect;
         private Coroutine _rotateRoutine;
 
@@ -38,6 +33,9 @@ namespace Worldyssey.View
 
         /// <summary>被控制的相机。</summary>
         public Camera ViewCamera => _camera;
+
+        /// <summary>正常取景时才能拖动：没在旋转，也没在推近（传送、入场的相机动画期间缩放或偏移不是默认值）。</summary>
+        public bool CanPan => _rotateRoutine == null && _focusOffset == Vector3.zero && Mathf.Approximately(_zoom, 1f);
 
         /// <summary>当前视角的朝向（俯角加旋转）。</summary>
         public Quaternion CurrentRotation => Quaternion.Euler(_gameplayConfig != null ? _gameplayConfig.CameraPitch : 0f, _yaw, 0f);
@@ -59,8 +57,9 @@ namespace Worldyssey.View
 
         private void LateUpdate()
         {
-            // 窗口比例变化（拖动窗口、切全屏）时重新取景；只比较一个浮点数，不分配内存
-            if (_camera != null && !Mathf.Approximately(_camera.aspect, _lastAspect))
+            // 平移回中过渡中，或窗口比例变化（拖动窗口、切全屏）时重新取景；只比较一个浮点数，不分配内存
+            bool isPanReturning = _pan.StepReturn(Time.deltaTime);
+            if (isPanReturning || (_camera != null && !Mathf.Approximately(_camera.aspect, _lastAspect)))
             {
                 ApplyPose();
             }
@@ -77,12 +76,13 @@ namespace Worldyssey.View
         public void Frame(Bounds levelBounds)
         {
             _focus = levelBounds;
+            _pan.Clear();
             ApplyPose();
         }
 
         /// <summary>
         /// 由调用方的协程 yield：在 <paramref name="duration"/> 秒内把焦点移向 <paramref name="worldPoint"/>，
-        /// 距离缩放到 <paramref name="zoom"/> 倍。用于传送时推近传送箱子。
+        /// 距离缩放到 <paramref name="zoom"/> 倍。用于传送时推近传送箱子。偏移相对关卡中心：按键传送时平移量同时在回中，结束时正好对准目标。
         /// </summary>
         public IEnumerator ZoomToward(Vector3 worldPoint, float zoom, float duration)
         {
@@ -118,6 +118,7 @@ namespace Worldyssey.View
                 return;
             }
 
+            _pan.Clear();
             _focusOffset = worldPoint - _focus.center;
             float fitDistance = CalculateFitDistance(CurrentRotation);
             _zoom = fitDistance > 0f ? distance / fitDistance : 1f;
@@ -146,6 +147,28 @@ namespace Worldyssey.View
             _focusOffset = Vector3.zero;
             _zoom = 1f;
             ApplyPose();
+        }
+
+        /// <summary>开始拖动：记下鼠标下方地面上的点，之后 <see cref="UpdatePan"/> 让这个点始终跟着鼠标。</summary>
+        public void BeginPan(Vector2 screenPosition)
+        {
+            bool hasPoint = CameraFraming.TryGetGroundPoint(_camera, screenPosition, _focus.min.y, out Vector3 point);
+            _pan.Grab(hasPoint, point);
+        }
+
+        /// <summary>拖动中每帧调用：让抓住的地面点回到鼠标下方。平移量限制在关卡范围内，焦点不会离开地图。</summary>
+        public void UpdatePan(Vector2 screenPosition)
+        {
+            if (CameraFraming.TryGetGroundPoint(_camera, screenPosition, _focus.min.y, out Vector3 hit) && _pan.Drag(hit, _focus.extents))
+            {
+                ApplyPose();
+            }
+        }
+
+        /// <summary>平滑回到关卡中心（时长见 GameplayConfig），并结束当前拖动。</summary>
+        public void ReturnPanToCenter()
+        {
+            _pan.StartReturn(_gameplayConfig != null ? _gameplayConfig.PanReturnDuration : 0f);
         }
 
         /// <summary>
@@ -264,45 +287,14 @@ namespace Worldyssey.View
             // 顶部留给 HUD：相机沿自身向上平移，关卡在画面里下移到剩余区域的中央。
             // 推近（传送截图、推向箱子）时按缩放比例减弱，贴近目标时目标仍在画面正中，与截图机位一致
             float tanHalfVertical = Mathf.Tan(_camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
-            float shift = distance * tanHalfVertical * GetTopReserve() * Mathf.Clamp01(_zoom);
+            float shift = distance * tanHalfVertical * _gameplayConfig.CameraTopReserve * Mathf.Clamp01(_zoom);
             Transform cameraTransform = _camera.transform;
-            cameraTransform.SetPositionAndRotation(_focus.center + _focusOffset - forward * distance + up * shift, rotation);
+            cameraTransform.SetPositionAndRotation(_focus.center + _pan.Value + _focusOffset - forward * distance + up * shift, rotation);
         }
 
-        private float GetTopReserve()
-        {
-            return Mathf.Clamp(_gameplayConfig.CameraTopReserve, 0f, 0.4f);
-        }
-
-        /// <summary>
-        /// 计算让包围盒（含边距）的 8 个角都落在视锥内所需的最小距离。
-        /// 对每个角：横向偏移 / tan(半水平视角) 与纵向偏移 / tan(半垂直视角) 取大者，再减去该角在视线方向上的深度。
-        /// 顶部预留区不能放关卡，纵向可用的半视角相应缩小。
-        /// </summary>
         private float CalculateFitDistance(Quaternion rotation)
         {
-            Vector3 right = rotation * Vector3.right;
-            Vector3 up = rotation * Vector3.up;
-            Vector3 forward = rotation * Vector3.forward;
-            float tanHalfVertical = Mathf.Tan(_camera.fieldOfView * 0.5f * Mathf.Deg2Rad);
-            float tanHalfHorizontal = tanHalfVertical * _camera.aspect;
-            tanHalfVertical *= 1f - GetTopReserve();
-
-            float margin = _gameplayConfig.CameraMargin;
-            Vector3 extents = _focus.extents + new Vector3(margin, 0f, margin);
-            float required = 0f;
-            for (int i = 0; i < CornerSigns.Length; i++)
-            {
-                Vector3 offset = Vector3.Scale(CornerSigns[i], extents);
-                float x = Mathf.Abs(Vector3.Dot(offset, right));
-                float y = Mathf.Abs(Vector3.Dot(offset, up));
-                float depth = Vector3.Dot(offset, forward);
-                float needed = Mathf.Max(x / tanHalfHorizontal, y / tanHalfVertical) - depth;
-                required = Mathf.Max(required, needed);
-            }
-
-            // 不能贴近到近裁剪面以内
-            return Mathf.Max(required, _camera.nearClipPlane + extents.magnitude);
+            return CameraFraming.FitDistance(_camera, rotation, _focus.extents, _gameplayConfig.CameraMargin, _gameplayConfig.CameraTopReserve);
         }
     }
 }

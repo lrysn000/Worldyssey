@@ -47,6 +47,14 @@ namespace Worldyssey.UI
         public const string Locked = "Locked";
         public const string NotCleared = "Not cleared";
         public const string BestStepsFormat = "Best: {0}";
+        public const string NextLevelTag = "NEW";
+        public const string NoLevels = "No levels";
+        public const string LockedHint = "Clear the previous level to unlock";
+        public const string ClearedProgressFormat = "Cleared {0} / {1}";
+        public const string PlayLevel = "Play";
+        public const string EditLevel = "Edit";
+        public const string DeleteLevel = "Delete";
+        public const string DeleteLevelConfirmFormat = "Delete \"{0}\"?\nThis cannot be undone.";
 
         // HUD
         public const string StepCountFormat = "Steps: {0}";

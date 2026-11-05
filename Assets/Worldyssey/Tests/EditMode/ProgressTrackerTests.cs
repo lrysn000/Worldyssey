@@ -92,5 +92,16 @@ namespace Worldyssey.Tests
             Assert.Throws<System.ArgumentException>(() => _tracker.RecordCompletion("", 1));
             Assert.Throws<System.ArgumentOutOfRangeException>(() => _tracker.RecordCompletion("a", -1));
         }
+
+        [Test]
+        public void RemoveRecord_ForgetsCompletion()
+        {
+            _tracker.RecordCompletion("a", 20);
+
+            Assert.IsTrue(_tracker.RemoveRecord("a"));
+
+            Assert.IsFalse(_tracker.IsCompleted("a"));
+            Assert.IsFalse(_tracker.RemoveRecord("a"), "已删除的记录不能再删");
+        }
     }
 }

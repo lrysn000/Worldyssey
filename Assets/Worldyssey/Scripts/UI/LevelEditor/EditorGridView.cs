@@ -15,16 +15,23 @@ namespace Worldyssey.UI
     public class EditorGridView : MonoBehaviour
     {
         private static readonly Color Hidden = new Color(0f, 0f, 0f, 0f);
-        private static readonly string[] FacingLabels = { "@^", "@>", "@v", "@<" };
-        private const string BoxLabel = "B";
         private const string PortalLabelPrefix = "P";
 
         [SerializeField] private RectTransform _gridArea;
         [SerializeField] private EditorGridCell _cellPrefab;
+
+        [Tooltip("只读：只显示不响应鼠标，用于选关页的小地图")]
+        [SerializeField] private bool _isReadOnly;
         [SerializeField] private EditorGridPalette _palette;
 
         [Tooltip("季节色：独有墙和传送箱子按世界主题着色")]
         [SerializeField] private WorldPalette _worldPalette;
+
+        [Header("实体图标（可选，不设置时显示色块）")]
+        [Tooltip("尖端朝上的玩家图标，按朝向旋转")]
+        [SerializeField] private Sprite _playerIcon;
+        [SerializeField] private Sprite _boxIcon;
+        [SerializeField] private Sprite _portalIcon;
 
         [Tooltip("可选：绘制时格子弹跳的幅度和时长。不设置则不弹")]
         [SerializeField] private UiMotionConfig _motionConfig;
@@ -98,7 +105,7 @@ namespace Worldyssey.UI
 
         internal void HandleCellDown(EditorGridCell cell, PointerEventData.InputButton button)
         {
-            if (button != PointerEventData.InputButton.Left && button != PointerEventData.InputButton.Right)
+            if (_isReadOnly || (button != PointerEventData.InputButton.Left && button != PointerEventData.InputButton.Right))
             {
                 return;
             }
@@ -150,6 +157,7 @@ namespace Worldyssey.UI
                 cell.RectTransform.anchorMin = new Vector2(0.5f, 0.5f);
                 cell.RectTransform.anchorMax = new Vector2(0.5f, 0.5f);
                 cell.gameObject.SetActive(false);
+                cell.SetInteractable(!_isReadOnly);
                 _cells.Add(cell);
             }
         }
@@ -197,17 +205,21 @@ namespace Worldyssey.UI
             Color terrain = TerrainColor(draft, world, pos);
 
             Color entity = Hidden;
+            Sprite icon = null;
+            float angle = 0f;
             string label = string.Empty;
             int portal = draft.FindPortal(world, pos);
             if (world == draft.StartWorld && pos == draft.PlayerPosition)
             {
+                // 朝向按 上、右、下、左 排列，图标尖端朝上，顺时针每档转 90°（UI 中顺时针为负角度）
                 entity = _palette.Player;
-                label = FacingLabels[(int)draft.PlayerFacing];
+                icon = _playerIcon;
+                angle = -90f * (int)draft.PlayerFacing;
             }
             else if (draft.FindMappedBox(pos) >= 0)
             {
                 entity = _palette.MappedBox;
-                label = BoxLabel;
+                icon = _boxIcon;
             }
             else if (portal >= 0)
             {
@@ -215,10 +227,11 @@ namespace Worldyssey.UI
                 DraftPair pair = draft.Pairs[pairIndex];
                 int target = pair.WorldA == world ? pair.WorldB : pair.WorldA;
                 entity = SeasonColor(draft, target, _palette.PortalBoxFallback);
+                icon = _portalIcon;
                 label = PortalLabelPrefix + pairIndex;
             }
 
-            cell.Render(frame, terrain, entity, label);
+            cell.Render(frame, terrain, entity, icon, angle, label);
         }
 
         private Color TerrainColor(LevelDraft draft, int world, GridPos pos)

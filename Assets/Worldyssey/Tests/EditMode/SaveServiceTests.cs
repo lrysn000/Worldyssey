@@ -154,6 +154,27 @@ namespace Worldyssey.Tests
         }
 
         [Test]
+        public void DeleteCustomLevel_RemovesFile()
+        {
+            string path = _service.SaveCustomLevel(new LevelDataBuilder { Id = "gone", DisplayName = "Gone" }.Build());
+
+            Assert.IsTrue(_service.DeleteCustomLevel(path));
+
+            Assert.IsFalse(File.Exists(path));
+            Assert.AreEqual(0, _service.LoadCustomLevels(new List<string>()).Count);
+            Assert.IsFalse(_service.DeleteCustomLevel(path), "再次删除时文件已不存在");
+        }
+
+        [Test]
+        public void DeleteCustomLevel_RejectsFilesOutsideLevelFolder()
+        {
+            _service.Save(new SaveData());
+
+            Assert.Throws<System.ArgumentException>(() => _service.DeleteCustomLevel(_service.SaveFilePath));
+            Assert.IsTrue(File.Exists(_service.SaveFilePath), "存档文件不应被删除");
+        }
+
+        [Test]
         public void ToFileName_ReplacesInvalidCharacters()
         {
             Assert.AreEqual("a_b", SaveService.ToFileName("a/b"));

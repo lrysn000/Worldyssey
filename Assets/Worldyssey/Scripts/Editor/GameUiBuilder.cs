@@ -57,7 +57,8 @@ namespace Worldyssey.EditorTools
                 return;
             }
 
-            LevelButton levelButtonPrefab = GetOrCreateLevelButtonPrefab();
+            // 关卡编辑器的列表也用这个预制体，先确保它存在
+            GetOrCreateLevelButtonPrefab();
             EnsureEventSystem();
 
             // 游戏逻辑物体
@@ -74,7 +75,7 @@ namespace Worldyssey.EditorTools
             WorldTransition worldTransition = CreateWorldFade(canvas);
             HudPanel hud = CreateHud(canvas, levelSession, gameplayConfig);
             MainMenuPanel mainMenu = CreateMainMenu(canvas);
-            LevelSelectPanel levelSelect = CreateLevelSelect(canvas, levelButtonPrefab);
+            LevelSelectPanel levelSelect = CreateLevelSelect(canvas);
             PausePanel pause = CreatePause(canvas);
             ResultPanel result = CreateResult(canvas);
 
@@ -203,22 +204,15 @@ namespace Worldyssey.EditorTools
             return panel;
         }
 
-        private static LevelSelectPanel CreateLevelSelect(Transform canvas, LevelButton levelButtonPrefab)
+        /// <summary>
+        /// 选关界面只生成带返回键的空壳，正式布局由 Worldyssey/Setup/Rebuild Level Select UI 生成。
+        /// </summary>
+        private static LevelSelectPanel CreateLevelSelect(Transform canvas)
         {
             RectTransform root = CreateFullscreen("LevelSelect", canvas, MenuBackground, true);
             var panel = root.gameObject.AddComponent<LevelSelectPanel>();
             CreateText(root, "Title", UiText.SelectLevelTitle, 64f, TextAlignmentOptions.Center, Center, new Vector2(0f, 440f), new Vector2(1200f, 90f));
-            CreateText(root, "BuiltInHeader", UiText.BuiltInLevelsHeader, 40f, TextAlignmentOptions.Center, Center, new Vector2(0f, 340f), new Vector2(1200f, 60f));
-            Transform builtInList = CreateGrid(root, "BuiltInList", new Vector2(0f, 170f));
-            CreateText(root, "CustomHeader", UiText.CustomLevelsHeader, 40f, TextAlignmentOptions.Center, Center, new Vector2(0f, -10f), new Vector2(1200f, 60f));
-            Transform customList = CreateGrid(root, "CustomList", new Vector2(0f, -180f));
-            TMP_Text noCustom = CreateText(root, "NoCustomLevels", UiText.NoCustomLevels, 30f, TextAlignmentOptions.Center, Center, new Vector2(0f, -90f), new Vector2(1200f, 50f));
             Button back = CreateButton(root, "BackButton", UiText.Back, Center, new Vector2(0f, -440f), MenuButtonSize);
-
-            SetReference(panel, "_levelButtonPrefab", levelButtonPrefab);
-            SetReference(panel, "_builtInListRoot", builtInList);
-            SetReference(panel, "_customListRoot", customList);
-            SetReference(panel, "_noCustomLevelsText", noCustom);
             SetReference(panel, "_backButton", back);
             return panel;
         }

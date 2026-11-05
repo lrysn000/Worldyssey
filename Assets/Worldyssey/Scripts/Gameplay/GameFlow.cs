@@ -100,6 +100,8 @@ namespace Worldyssey.Gameplay
             _mainMenuPanel.QuitRequested += HandleQuitRequested;
             _levelSelectPanel.BuiltInLevelChosen += HandleBuiltInLevelChosen;
             _levelSelectPanel.CustomLevelChosen += HandleCustomLevelChosen;
+            _levelSelectPanel.CustomLevelEditRequested += HandleCustomLevelEditRequested;
+            _levelSelectPanel.CustomLevelDeleteRequested += HandleCustomLevelDeleteRequested;
             _levelSelectPanel.BackRequested += HandleLevelSelectBack;
             _hudPanel.PauseRequested += HandlePauseToggle;
             _pausePanel.ResumeRequested += HandleResumeRequested;
@@ -142,6 +144,8 @@ namespace Worldyssey.Gameplay
             _mainMenuPanel.QuitRequested -= HandleQuitRequested;
             _levelSelectPanel.BuiltInLevelChosen -= HandleBuiltInLevelChosen;
             _levelSelectPanel.CustomLevelChosen -= HandleCustomLevelChosen;
+            _levelSelectPanel.CustomLevelEditRequested -= HandleCustomLevelEditRequested;
+            _levelSelectPanel.CustomLevelDeleteRequested -= HandleCustomLevelDeleteRequested;
             _levelSelectPanel.BackRequested -= HandleLevelSelectBack;
             _hudPanel.PauseRequested -= HandlePauseToggle;
             _pausePanel.ResumeRequested -= HandleResumeRequested;
@@ -193,6 +197,7 @@ namespace Worldyssey.Gameplay
         {
             RefreshCatalogIds();
             _builtInItems.Clear();
+            bool hasNext = false;
             IReadOnlyList<LevelAsset> levels = _catalog.Levels;
             for (int i = 0; i < levels.Count; i++)
             {
@@ -203,7 +208,12 @@ namespace Worldyssey.Gameplay
 
                 LevelData level = levels[i].Level;
                 bool isLocked = !_progress.IsUnlocked(_catalogIds, i);
-                _builtInItems.Add(new LevelSelectItem(level.DisplayName, isLocked, GetBestSteps(ProgressTracker.BuiltInKey(level.Id))));
+                int best = GetBestSteps(ProgressTracker.BuiltInKey(level.Id));
+
+                // 第一个已解锁但未通关的关卡标为“下一关”
+                bool isNext = !hasNext && !isLocked && best == LevelSelectItem.NoBestSteps;
+                hasNext |= isNext;
+                _builtInItems.Add(new LevelSelectItem(level, isLocked, best, isNext));
             }
 
             var problems = new List<string>();
@@ -217,7 +227,7 @@ namespace Worldyssey.Gameplay
             for (int i = 0; i < _customLevels.Count; i++)
             {
                 LevelData level = _customLevels[i].Level;
-                _customItems.Add(new LevelSelectItem(level.DisplayName, false, GetBestSteps(ProgressTracker.CustomKey(level.Id))));
+                _customItems.Add(new LevelSelectItem(level, false, GetBestSteps(ProgressTracker.CustomKey(level.Id)), false));
             }
 
             _levelSelectPanel.Populate(_builtInItems, _customItems);
@@ -398,6 +408,47 @@ namespace Worldyssey.Gameplay
 
             LevelData level = _customLevels[customIndex].Level;
             PlayLevel(level, ProgressTracker.CustomKey(level.Id), NoCatalogIndex, false);
+        }
+
+        private void HandleCustomLevelEditRequested(int customIndex)
+        {
+            if (_levelEditorPanel == null || customIndex < 0 || customIndex >= _customLevels.Count)
+            {
+                return;
+            }
+
+            if (_levelEditorPanel.OpenLevel(_customLevels[customIndex].Level))
+            {
+                ShowLevelEditor();
+            }
+        }
+
+        /// <summary>删除自建关卡文件和它的通关记录，然后刷新列表。删除前的确认由选关页负责。</summary>
+        private void HandleCustomLevelDeleteRequested(int customIndex)
+        {
+            if (customIndex < 0 || customIndex >= _customLevels.Count)
+            {
+                return;
+            }
+
+            CustomLevelEntry entry = _customLevels[customIndex];
+            try
+            {
+                _saveService.DeleteCustomLevel(entry.FilePath);
+            }
+            catch (System.Exception exception) when (exception is System.IO.IOException || exception is System.UnauthorizedAccessException
+                || exception is System.ArgumentException)
+            {
+                Debug.LogError($"[{nameof(GameFlow)}] 删除自建关卡失败（{entry.FilePath}）：{exception.Message}", this);
+                return;
+            }
+
+            if (_progress.RemoveRecord(ProgressTracker.CustomKey(entry.Level.Id)))
+            {
+                SaveProgress();
+            }
+
+            RefreshLevelSelect();
         }
 
         private void HandleLevelSelectBack()

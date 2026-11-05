@@ -225,6 +225,35 @@ namespace Worldyssey.Core
         }
 
         /// <summary>
+        /// 删除一个自建关卡文件。只接受自建关卡目录内的 JSON 文件，防止误删其他文件；文件已不存在时返回 false。
+        /// IO 失败时抛出异常，由调用方记录。
+        /// </summary>
+        public bool DeleteCustomLevel(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException("文件路径不能为空", nameof(filePath));
+            }
+
+            string fullPath = Path.GetFullPath(filePath);
+            string directory = Path.GetFullPath(CustomLevelDirectory);
+            bool isInDirectory = string.Equals(Path.GetDirectoryName(fullPath), directory, StringComparison.OrdinalIgnoreCase);
+            bool isLevelFile = string.Equals(Path.GetExtension(fullPath), CustomLevelExtension, StringComparison.OrdinalIgnoreCase);
+            if (!isInDirectory || !isLevelFile)
+            {
+                throw new ArgumentException($"不是自建关卡文件：{filePath}", nameof(filePath));
+            }
+
+            if (!File.Exists(fullPath))
+            {
+                return false;
+            }
+
+            File.Delete(fullPath);
+            return true;
+        }
+
+        /// <summary>
         /// 读取自建关卡目录下的全部 JSON，按文件名排序。无法解析或校验有错误的文件会被跳过，
         /// 原因追加到 <paramref name="problems"/>。目录不存在时返回空列表。
         /// </summary>

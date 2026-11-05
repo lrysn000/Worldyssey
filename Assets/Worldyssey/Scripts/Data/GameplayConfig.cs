@@ -143,6 +143,10 @@ namespace Worldyssey.Data
         [Range(0f, 0.4f)]
         [SerializeField] private float _cameraTopReserve = 0.12f;
 
+        [Tooltip("拖动看地图后，按键盘操作时相机回到中心的时长（秒）")]
+        [Min(0f)]
+        [SerializeField] private float _panReturnDuration = 0.25f;
+
         [Tooltip("旋转视角 90° 的时长（秒），期间不能操作")]
         [Min(0f)]
         [SerializeField] private float _viewRotateDuration = 0.25f;
@@ -185,6 +189,7 @@ namespace Worldyssey.Data
         public float CameraPitch => _cameraPitch;
         public float CameraMargin => _cameraMargin;
         public float CameraTopReserve => _cameraTopReserve;
+        public float PanReturnDuration => _panReturnDuration;
         public float ViewRotateDuration => _viewRotateDuration;
     }
 }

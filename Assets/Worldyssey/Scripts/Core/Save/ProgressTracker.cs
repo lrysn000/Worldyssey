@@ -79,6 +79,15 @@ namespace Worldyssey.Core
         }
 
         /// <summary>
+        /// 删除一条通关记录（例如自建关卡被删除时）。没有该记录时返回 false。
+        /// </summary>
+        public bool RemoveRecord(string levelKey)
+        {
+            LevelRecord record = FindRecord(levelKey);
+            return record != null && _data.RecordList.Remove(record);
+        }
+
+        /// <summary>
         /// 线性解锁：第一关始终解锁，其余关卡在前一关通关后解锁。
         /// </summary>
         public bool IsUnlocked(IReadOnlyList<string> orderedLevelIds, int index)

@@ -41,6 +41,41 @@ namespace Worldyssey.UI
             _saveService = saveService;
         }
 
+        /// <summary>
+        /// 打开一个已有关卡继续编辑（从选关页的“编辑”进入）。面板未显示时也可以调用，显示时直接展示这一关。
+        /// 返回是否成功；失败时保留原来的草稿。
+        /// </summary>
+        public bool OpenLevel(LevelData level)
+        {
+            LevelDraft draft;
+            try
+            {
+                draft = LevelDraft.FromLevelData(level);
+            }
+            catch (ArgumentException exception)
+            {
+                Debug.LogError($"[{nameof(LevelEditorPanel)}] 打开关卡 '{level.Id}' 失败：{exception.Message}", this);
+                return false;
+            }
+
+            if (_model == null)
+            {
+                _model = new LevelEditorModel(draft);
+            }
+            else
+            {
+                _model.Load(draft);
+            }
+
+            if (isActiveAndEnabled)
+            {
+                RefreshAll();
+            }
+
+            _actionBar.SetStatus(string.Format(UiText.StatusOpenedFormat, draft.DisplayName));
+            return true;
+        }
+
         private void Awake()
         {
             _hasReferences = CheckReference(_grid, nameof(_grid))

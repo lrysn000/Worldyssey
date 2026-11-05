@@ -42,6 +42,9 @@ namespace Worldyssey.Gameplay
 
         public bool HasLevel => _session != null;
 
+        /// <summary>游戏输入是否开启。暂停、结算、关卡转场期间为 false。</summary>
+        public bool IsInputEnabled => _isInputEnabled;
+
         public string LevelDisplayName => _currentLevel != null ? _currentLevel.DisplayName : string.Empty;
 
         /// <summary>玩家当前所在世界的名称。</summary>

@@ -18,7 +18,7 @@ namespace Worldyssey.EditorTools
         private const string MenuPath = "Worldyssey/Setup/Rebuild Level Editor UI";
         private const string UndoName = "Rebuild Level Editor UI";
         private const string GridPalettePath = ProjectPaths.Config + "/EditorGridPalette.asset";
-        private const string BrushFolder = ProjectPaths.Textures + "/UI/EditorBrushes";
+        internal const string BrushFolder = ProjectPaths.Textures + "/UI/EditorBrushes";
 
         // 与 EditorTool 枚举顺序一致
         private static readonly string[] BrushNames =
@@ -125,6 +125,9 @@ namespace Worldyssey.EditorTools
             GameUiBuilder.SetReference(grid, "_palette", GetOrCreateGridPalette());
             GameUiBuilder.SetReference(grid, "_worldPalette", worldPalette);
             GameUiBuilder.SetReference(grid, "_motionConfig", motion);
+            GameUiBuilder.SetReference(grid, "_playerIcon", UiStyleKit.LoadIconSprite(BrushFolder + "/Grid_Player.png"));
+            GameUiBuilder.SetReference(grid, "_boxIcon", UiStyleKit.LoadIconSprite(BrushFolder + "/Brush_Box.png"));
+            GameUiBuilder.SetReference(grid, "_portalIcon", UiStyleKit.LoadIconSprite(BrushFolder + "/Brush_Portal.png"));
 
             EditorPairList pairList = BuildPairSection(sideCard, layout, out TMP_Text issuesHeader);
             EditorActionBar actionBar = BuildActionBar(sideCard, centerCard, layout, top, issuesHeader, motion);
@@ -249,7 +252,7 @@ namespace Worldyssey.EditorTools
             return icons;
         }
 
-        private static EditorGridPalette GetOrCreateGridPalette()
+        internal static EditorGridPalette GetOrCreateGridPalette()
         {
             var palette = AssetDatabase.LoadAssetAtPath<EditorGridPalette>(GridPalettePath);
             if (palette != null)

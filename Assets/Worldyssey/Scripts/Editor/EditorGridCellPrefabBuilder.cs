@@ -29,7 +29,8 @@ namespace Worldyssey.EditorTools
             GameObject contents = PrefabUtility.LoadPrefabContents(CellPrefabPath);
             var cell = contents.GetComponent<EditorGridCell>();
             var serialized = new SerializedObject(cell);
-            string[] imageFields = { "_frame", "_terrain", "_entity" };
+            // 实体图像运行时换成图标，这里只给外框和地形换圆角素材
+            string[] imageFields = { "_frame", "_terrain" };
             for (int i = 0; i < imageFields.Length; i++)
             {
                 var image = UiThemeSceneSetup.GetReference<Image>(serialized, imageFields[i]);
@@ -41,11 +42,26 @@ namespace Worldyssey.EditorTools
                 }
             }
 
-            var label = UiThemeSceneSetup.GetReference<TMP_Text>(serialized, "_label");
-            if (label != null && context.Font != null)
+            var entity = UiThemeSceneSetup.GetReference<Image>(serialized, "_entity");
+            if (entity != null)
             {
-                label.font = context.Font;
+                entity.sprite = null;
+                entity.type = Image.Type.Simple;
+                entity.preserveAspect = true;
+            }
+
+            // 文字只剩传送箱子的配对编号，放在右下角做角标，不挡图标
+            var label = UiThemeSceneSetup.GetReference<TMP_Text>(serialized, "_label");
+            if (label != null)
+            {
+                label.alignment = TextAlignmentOptions.BottomRight;
+                label.fontSizeMax = 18f;
+                label.margin = new Vector4(0f, 0f, 4f, 2f);
                 label.fontStyle = FontStyles.Bold;
+                if (context.Font != null)
+                {
+                    label.font = context.Font;
+                }
             }
 
             PrefabUtility.SaveAsPrefabAsset(contents, CellPrefabPath);
