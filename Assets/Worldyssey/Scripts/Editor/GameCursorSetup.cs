@@ -16,6 +16,7 @@ namespace Worldyssey.EditorTools
         private const string MenuPath = "Worldyssey/Setup/Setup Game Cursor";
         private const string CursorFolder = ProjectPaths.Textures + "/UI/Cursors";
         private const string CursorSetPath = ProjectPaths.Config + "/CursorSet.asset";
+        private static readonly Vector2 CursorHotspot = new Vector2(2f, 2f);
 
         [MenuItem(MenuPath)]
         public static void Setup()
@@ -32,6 +33,9 @@ namespace Worldyssey.EditorTools
             serialized.FindProperty("_normal").objectReferenceValue = LoadCursor("Cursor_Normal");
             serialized.FindProperty("_hover").objectReferenceValue = LoadCursor("Cursor_Hover");
             serialized.FindProperty("_pressed").objectReferenceValue = LoadCursor("Cursor_Pressed");
+
+            // 像素指针的箭头尖端在左上角第一个像素（放大 4 倍后约为 2,2）
+            serialized.FindProperty("_hotspot").vector2Value = CursorHotspot;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(cursorSet);
             AssetDatabase.SaveAssets();
@@ -74,7 +78,8 @@ namespace Worldyssey.EditorTools
             }
 
             bool isReady = importer.textureType == TextureImporterType.Cursor && importer.isReadable && !importer.mipmapEnabled
-                && importer.textureCompression == TextureImporterCompression.Uncompressed && importer.alphaIsTransparency;
+                && importer.textureCompression == TextureImporterCompression.Uncompressed && importer.alphaIsTransparency
+                && importer.filterMode == FilterMode.Point;
             if (!isReady)
             {
                 importer.textureType = TextureImporterType.Cursor;
@@ -83,6 +88,7 @@ namespace Worldyssey.EditorTools
                 importer.alphaIsTransparency = true;
                 importer.textureCompression = TextureImporterCompression.Uncompressed;
                 importer.npotScale = TextureImporterNPOTScale.None;
+                importer.filterMode = FilterMode.Point;
                 importer.SaveAndReimport();
             }
 

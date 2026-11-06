@@ -35,6 +35,19 @@ namespace Worldyssey.Data
             return _neutralTheme;
         }
 
+        /// <summary>
+        /// 主题对应的季节编号；中性主题或不在本组里时返回 -1。用于界面装饰按当前主题选季节素材。
+        /// </summary>
+        public int IndexOfSeasonTheme(UiTheme theme)
+        {
+            if (theme == null || theme == _neutralTheme || _worldThemes == null)
+            {
+                return -1;
+            }
+
+            return System.Array.IndexOf(_worldThemes, theme);
+        }
+
         private void OnValidate()
         {
             if (_neutralTheme == null)

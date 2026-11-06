@@ -73,6 +73,10 @@ namespace Worldyssey.EditorTools
             TMP_Text levelName = CreateText(root.transform, "Name", "Level", 22f, TextAlignmentOptions.MidlineLeft, TopLeft, new Vector2(18f, -82f), new Vector2(184f, 32f), UiColorRole.Text, true, null);
             SetSingleLine(levelName, 14f, 22f);
             TMP_Text status = CreateText(root.transform, "Status", string.Empty, 20f, TextAlignmentOptions.MidlineLeft, BottomLeft, new Vector2(18f, 14f), new Vector2(184f, 30f), UiColorRole.Text, false, null);
+
+            // 卡片宽度由卡片墙按每行 4 张分配，名字和状态文字横向拉伸，跟着卡片变宽
+            StretchHorizontally(levelName.rectTransform, 18f);
+            StretchHorizontally(status.rectTransform, 18f);
             Image statusIcon = CreateImage(root.transform, "StatusIcon", null, TopRight, new Vector2(-16f, -16f), 36f);
             ThemedGraphic statusTheme = UiStyleKit.Theme(statusIcon, UiColorRole.Accent, null, _context);
 
@@ -200,10 +204,18 @@ namespace Worldyssey.EditorTools
             return image;
         }
 
+        private static void StretchHorizontally(RectTransform rect, float margin)
+        {
+            rect.anchorMin = new Vector2(0f, rect.anchorMin.y);
+            rect.anchorMax = new Vector2(1f, rect.anchorMax.y);
+            rect.offsetMin = new Vector2(margin, rect.offsetMin.y);
+            rect.offsetMax = new Vector2(-margin, rect.offsetMax.y);
+        }
+
         private static void SetSingleLine(TMP_Text text, float minSize, float maxSize)
         {
             text.enableWordWrapping = false;
-            text.overflowMode = TextOverflowModes.Ellipsis;
+            text.overflowMode = TextOverflowModes.Truncate;
             text.enableAutoSizing = true;
             text.fontSizeMin = minSize;
             text.fontSizeMax = maxSize;

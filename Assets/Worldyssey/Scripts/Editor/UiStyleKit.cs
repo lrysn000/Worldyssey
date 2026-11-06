@@ -9,7 +9,7 @@ using Worldyssey.UI;
 namespace Worldyssey.EditorTools
 {
     /// <summary>
-    /// 界面换皮工具共用的样式方法：Honeti 圆角素材、主题着色组件、字体。
+    /// 界面换皮工具共用的样式方法：像素风素材与字体（来自 <see cref="UiSkin"/>）、主题着色组件。
     /// </summary>
     internal static class UiStyleKit
     {
@@ -17,35 +17,48 @@ namespace Worldyssey.EditorTools
         internal const float Padding = 24f;
         internal const float HeaderHeight = 96f;
 
+        // 自制像素图标与两套像素素材一致：16 像素 = 1 单位
+        private const float IconPixelsPerUnit = 16f;
+
         internal const string WorldIconFolder = ProjectPaths.Textures + "/UI/WorldIcons";
 
         // 与 WorldTheme 的数值顺序一致：春、夏、秋、冬
         private static readonly string[] WorldIconNames = { "WorldIcon_Spring", "WorldIcon_Summer", "WorldIcon_Autumn", "WorldIcon_Winter" };
 
-        private const string PanelSpritePath = ProjectPaths.ThirdParty + "/Honeti/UltimateFlatGUI/ThemeCommon/Textures/Panels/UniversalPanel20.png";
-        private const string FontSearch = "t:TMP_FontAsset Poppins";
+        // 画布的 Reference Pixels Per Unit（Unity 默认 100），九宫格边框的显示大小以它为基准
+        private const float CanvasReferencePixelsPerUnit = 100f;
+
+        // 当前换皮使用的像素比例，Context 创建时更新；SetSliced 按它计算边框大小
+        private static int s_pixelScale = 4;
 
         /// <summary>
-        /// 一次换皮共用的素材：编辑器预览用的主题、面板素材、字体（可为空）。
+        /// 一次换皮共用的素材：编辑器预览用的主题、界面套件（素材、字体，可为空时退回默认）。
         /// </summary>
         internal sealed class Context
         {
             public readonly UiTheme Preview;
+            public readonly UiSkin Skin;
             public readonly Sprite PanelSprite;
+            public readonly Sprite ButtonSprite;
             public readonly TMP_FontAsset Font;
+            public readonly TMP_FontAsset TitleFont;
 
             public Context(UiTheme preview)
             {
                 Preview = preview;
-                PanelSprite = AssetDatabase.LoadAssetAtPath<Sprite>(PanelSpritePath);
-                if (PanelSprite == null)
+                string[] guids = AssetDatabase.FindAssets("t:" + nameof(UiSkin));
+                Skin = guids.Length > 0 ? AssetDatabase.LoadAssetAtPath<UiSkin>(AssetDatabase.GUIDToAssetPath(guids[0])) : null;
+                if (Skin == null)
                 {
-                    Debug.LogWarning($"[{nameof(UiStyleKit)}] 找不到面板素材 {PanelSpritePath}，改用纯色方块");
+                    Debug.LogWarning($"[{nameof(UiStyleKit)}] 项目中没有 {nameof(UiSkin)}，先运行 Worldyssey/UI/Apply Pixel UI Skin 生成；暂时使用纯色方块和默认字体");
+                    return;
                 }
 
-                // 字体是可选的：项目里有 Poppins 的 TMP 字体资源就用，没有就保留默认字体
-                string[] guids = AssetDatabase.FindAssets(FontSearch);
-                Font = guids.Length > 0 ? AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(AssetDatabase.GUIDToAssetPath(guids[0])) : null;
+                PanelSprite = Skin.Panel;
+                ButtonSprite = Skin.Button != null ? Skin.Button : Skin.Panel;
+                Font = Skin.BodyFont;
+                TitleFont = Skin.TitleFont != null ? Skin.TitleFont : Skin.BodyFont;
+                s_pixelScale = Skin.UiPixelScale;
             }
         }
 
@@ -90,22 +103,72 @@ namespace Worldyssey.EditorTools
             return themed;
         }
 
+        /// <summary>
+        /// 文字着色并换字体。像素字体不能用合成的粗体（笔画会糊），所以“加粗”改用标题字体。
+        /// </summary>
         internal static void StyleText(TMP_Text text, UiColorRole role, UiThemeScope scope, Context context, bool isBold)
         {
             Theme(text, role, scope, context);
-            if (context.Font != null)
+            ApplyFont(text, context, isBold);
+        }
+
+        internal static void ApplyFont(TMP_Text text, Context context, bool isTitle)
+        {
+            TMP_FontAsset font = isTitle ? context.TitleFont : context.Font;
+            if (font != null)
             {
-                text.font = context.Font;
+                text.font = font;
+                text.fontStyle = FontStyles.Normal;
+            }
+            else
+            {
+                text.fontStyle = isTitle ? FontStyles.Bold : FontStyles.Normal;
             }
 
-            text.fontStyle = isBold ? FontStyles.Bold : FontStyles.Normal;
+            // 像素字体没有省略号“…”，TMP 会去默认的 SDF 字体里借这个字，运行时生成的备用材质在退出游戏时被销毁，
+            // 文字随后刷新就会报 MissingReferenceException（而且省略号的字体也对不上），所以统一改为直接截断
+            if (font != null && text.overflowMode == TextOverflowModes.Ellipsis)
+            {
+                text.overflowMode = TextOverflowModes.Truncate;
+            }
+
+            if (font != null && context.Skin != null && context.Skin.IsFontSizeSnapped)
+            {
+                SnapFontSize(text, font, context.Skin.MinTextScale);
+            }
+        }
+
+        /// <summary>
+        /// 像素字体只有在设计尺寸（生成字体时的取样尺寸）的整数倍下，每个字形像素才正好对应整数个屏幕像素，笔画粗细一致。
+        /// 自动缩放会算出任意字号，所以关掉，改用它原来的上限并取整；单行文字放不下时直接截断。
+        /// </summary>
+        private static void SnapFontSize(TMP_Text text, TMP_FontAsset font, int minScale)
+        {
+            float native = font.faceInfo.pointSize;
+            if (native <= 0f)
+            {
+                return;
+            }
+
+            float size = text.enableAutoSizing ? text.fontSizeMax : text.fontSize;
+            if (text.enableAutoSizing)
+            {
+                text.enableAutoSizing = false;
+                if (!text.enableWordWrapping)
+                {
+                    text.overflowMode = TextOverflowModes.Truncate;
+                }
+            }
+
+            int multiple = Mathf.Max(minScale, Mathf.RoundToInt(size / native));
+            text.fontSize = multiple * native;
         }
 
         internal static void StyleButton(Button button, UiColorRole role, UiThemeScope scope, Context context)
         {
             if (button.targetGraphic is Image image)
             {
-                SetSliced(image, context.PanelSprite);
+                SetSliced(image, context.ButtonSprite);
                 Theme(image, role, scope, context);
             }
 
@@ -177,7 +240,11 @@ namespace Worldyssey.EditorTools
             return texts;
         }
 
-        internal static void SetSliced(Image image, Sprite sprite)
+        /// <summary>
+        /// 换成九宫格素材，并让素材的 1 个像素显示为 <paramref name="pixelScale"/> 个界面单位（0 表示用套件的默认比例），
+        /// 所有面板的边框粗细一致。
+        /// </summary>
+        internal static void SetSliced(Image image, Sprite sprite, int pixelScale = 0)
         {
             if (sprite == null)
             {
@@ -187,6 +254,12 @@ namespace Worldyssey.EditorTools
             Undo.RecordObject(image, UndoName);
             image.sprite = sprite;
             image.type = Image.Type.Sliced;
+            image.pixelsPerUnitMultiplier = PixelMultiplier(sprite, pixelScale > 0 ? pixelScale : s_pixelScale);
+        }
+
+        internal static float PixelMultiplier(Sprite sprite, int pixelScale)
+        {
+            return CanvasReferencePixelsPerUnit / (sprite.pixelsPerUnit * Mathf.Max(1, pixelScale));
         }
 
         /// <summary>
@@ -214,12 +287,19 @@ namespace Worldyssey.EditorTools
                 return null;
             }
 
-            if (importer.textureType != TextureImporterType.Sprite || importer.mipmapEnabled || !importer.alphaIsTransparency)
+            // 像素图标：点过滤、不压缩，放大时边缘保持锐利
+            bool isReady = importer.textureType == TextureImporterType.Sprite && !importer.mipmapEnabled && importer.alphaIsTransparency
+                && importer.filterMode == FilterMode.Point && importer.textureCompression == TextureImporterCompression.Uncompressed
+                && Mathf.Approximately(importer.spritePixelsPerUnit, IconPixelsPerUnit);
+            if (!isReady)
             {
                 importer.textureType = TextureImporterType.Sprite;
                 importer.spriteImportMode = SpriteImportMode.Single;
                 importer.mipmapEnabled = false;
                 importer.alphaIsTransparency = true;
+                importer.filterMode = FilterMode.Point;
+                importer.textureCompression = TextureImporterCompression.Uncompressed;
+                importer.spritePixelsPerUnit = IconPixelsPerUnit;
                 importer.SaveAndReimport();
             }
 

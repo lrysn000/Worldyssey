@@ -13,9 +13,6 @@ namespace Worldyssey.EditorTools
     {
         private const string CellPrefabPath = ProjectPaths.UiPrefabs + "/P_EditorGridCell.prefab";
 
-        // 网格格子的圆角缩小倍数：格子只有几十像素，用面板素材原本的圆角会太圆
-        private const float CellCornerMultiplier = 4f;
-
         /// <summary>
         /// 网格格子预制体：没有就新建；已有就只把外框、地形、实体换成小圆角素材，文字和结构不动。
         /// </summary>
@@ -36,9 +33,8 @@ namespace Worldyssey.EditorTools
                 var image = UiThemeSceneSetup.GetReference<Image>(serialized, imageFields[i]);
                 if (image != null && context.PanelSprite != null)
                 {
-                    image.sprite = context.PanelSprite;
-                    image.type = Image.Type.Sliced;
-                    image.pixelsPerUnitMultiplier = CellCornerMultiplier;
+                    // 格子只有几十像素，用小一号的像素比例，否则边框会占满格子
+                    UiStyleKit.SetSliced(image, context.PanelSprite, context.Skin.SmallPixelScale);
                 }
             }
 
@@ -57,11 +53,7 @@ namespace Worldyssey.EditorTools
                 label.alignment = TextAlignmentOptions.BottomRight;
                 label.fontSizeMax = 18f;
                 label.margin = new Vector4(0f, 0f, 4f, 2f);
-                label.fontStyle = FontStyles.Bold;
-                if (context.Font != null)
-                {
-                    label.font = context.Font;
-                }
+                UiStyleKit.ApplyFont(label, context, true);
             }
 
             PrefabUtility.SaveAsPrefabAsset(contents, CellPrefabPath);

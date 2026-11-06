@@ -143,6 +143,9 @@ namespace Worldyssey.EditorTools
             grid.spacing = new Vector2(24f, 24f);
             grid.padding = new RectOffset(8, 8, 8, 8);
             grid.childAlignment = TextAnchor.UpperLeft;
+
+            // 每行固定 4 张，卡片宽度随卡片区宽度伸缩
+            content.gameObject.AddComponent<GridColumnFitter>();
             var fitter = content.gameObject.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 

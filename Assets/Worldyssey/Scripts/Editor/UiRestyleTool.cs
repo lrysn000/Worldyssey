@@ -50,7 +50,7 @@ namespace Worldyssey.EditorTools
             RestyleLevelButtonPrefab(context);
 
             EditorSceneManager.MarkSceneDirty(gameFlow.gameObject.scene);
-            string fontNote = context.Font != null ? $"字体 {context.Font.name}" : "未找到 Poppins 字体资源，保留默认字体";
+            string fontNote = context.Font != null ? $"字体 {context.Font.name}" : "未设置界面套件字体，保留默认字体";
             Debug.Log($"[{nameof(UiRestyleTool)}] 界面换皮完成（{fontNote}），记得保存场景", gameFlow);
         }
 

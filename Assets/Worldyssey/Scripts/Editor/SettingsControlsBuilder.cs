@@ -17,11 +17,6 @@ namespace Worldyssey.EditorTools
     {
         private const string MenuPath = "Worldyssey/Setup/Build Settings Controls (Current Scene)";
         private const string UndoName = "Build Settings Controls";
-        private const string HonetiTextures = ProjectPaths.ThirdParty + "/Honeti/UltimateFlatGUI/ThemeCommon/Textures";
-        private const string SliderTrackPath = HonetiTextures + "/Bars/SliderBg.png";
-        private const string SliderHandlePath = HonetiTextures + "/Bars/SliderHandle.png";
-        private const string CheckIconPath = HonetiTextures + "/Icons/64/check.png";
-        private const string ArrowIconPath = HonetiTextures + "/Icons/64/arrow_down.png";
 
         private const float RowHeight = 64f;
         private const float RowGap = 16f;
@@ -61,9 +56,9 @@ namespace Worldyssey.EditorTools
             var resources = new DefaultControls.Resources
             {
                 standard = context.PanelSprite,
-                background = LoadSprite(SliderTrackPath) ?? context.PanelSprite,
-                knob = LoadSprite(SliderHandlePath),
-                checkmark = LoadSprite(CheckIconPath),
+                background = context.Skin != null && context.Skin.SliderTrack != null ? context.Skin.SliderTrack : context.PanelSprite,
+                knob = context.Skin != null ? context.Skin.SliderHandle : null,
+                checkmark = context.Skin != null ? context.Skin.CheckIcon : null,
             };
 
             float y = 0f;
@@ -148,7 +143,7 @@ namespace Worldyssey.EditorTools
             {
                 standard = context.PanelSprite,
                 background = context.PanelSprite,
-                dropdown = LoadSprite(ArrowIconPath),
+                dropdown = context.Skin != null ? context.Skin.ArrowDownIcon : null,
                 checkmark = resources.checkmark,
                 knob = context.PanelSprite,
             };
@@ -213,17 +208,6 @@ namespace Worldyssey.EditorTools
             {
                 Undo.DestroyObjectImmediate(placeholder.gameObject);
             }
-        }
-
-        private static Sprite LoadSprite(string path)
-        {
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
-            if (sprite == null)
-            {
-                Debug.LogWarning($"[{nameof(SettingsControlsBuilder)}] 找不到素材 {path}，改用默认样式");
-            }
-
-            return sprite;
         }
     }
 }

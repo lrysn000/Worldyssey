@@ -247,11 +247,7 @@ namespace Worldyssey.EditorTools
             text.enableAutoSizing = true;
             text.fontSizeMin = 14f;
             text.fontSizeMax = 22f;
-            text.fontStyle = FontStyles.Bold;
-            if (_context.Font != null)
-            {
-                text.font = _context.Font;
-            }
+            UiStyleKit.ApplyFont(text, _context, true);
 
             return button;
         }

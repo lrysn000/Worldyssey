@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 674d5ae314bdf8342a2559d22d96c3e2, type: 3}
   m_Name: UiTheme_Spring
   m_EditorClassIdentifier: 
-  _header: {r: 0.84, g: 0.42, b: 0.55, a: 1}
-  _panelBackground: {r: 0.99, g: 0.93, b: 0.95, a: 1}
-  _innerFrame: {r: 1, g: 1, b: 1, a: 1}
-  _accent: {r: 0.9, g: 0.48, b: 0.6, a: 1}
-  _text: {r: 0.3, g: 0.2, b: 0.24, a: 1}
+  _header: {r: 0.6745098, g: 0.4392157, b: 0.47843137, a: 1}
+  _panelBackground: {r: 0.9647059, g: 0.91764706, b: 0.9019608, a: 1}
+  _innerFrame: {r: 0.9882353, g: 0.9647059, b: 0.95686275, a: 1}
+  _accent: {r: 0.76862746, g: 0.5411765, b: 0.57254905, a: 1}
+  _text: {r: 0.3764706, g: 0.22745098, b: 0.25882354, a: 1}
   _headerText: {r: 1, g: 1, b: 1, a: 1}
-  _icon: {r: 0.78, g: 0.38, b: 0.5, a: 1}
-  _worldPalette: {fileID: 11400000, guid: e155b111138d382499b32829a361925d, type: 2}
+  _icon: {r: 0.6745098, g: 0.4392157, b: 0.47843137, a: 1}
+  _worldPalette: {fileID: 0}
   _paletteWorld: 0
   _functionalPalette: {fileID: 11400000, guid: 65b18ade6a2c6a2468810981935babd8, type: 2}

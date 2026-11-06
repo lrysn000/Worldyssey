@@ -13,7 +13,7 @@ namespace Worldyssey.Data
         [SerializeField] private Texture2D _pressed;
 
         [Tooltip("点击判定点在贴图中的像素位置（左上角为原点），对准箭头尖端")]
-        [SerializeField] private Vector2 _hotspot = new Vector2(4f, 3f);
+        [SerializeField] private Vector2 _hotspot = new Vector2(2f, 2f);
 
         [Tooltip("勾选后由 Unity 绘制指针：任何尺寸都能正常显示，但比系统指针慢一帧。系统指针显示偏小或模糊时再勾选")]
         [SerializeField] private bool _useSoftwareCursor;

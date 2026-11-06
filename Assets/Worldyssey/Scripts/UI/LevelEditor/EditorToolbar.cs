@@ -14,6 +14,9 @@ namespace Worldyssey.UI
     /// </summary>
     public class EditorToolbar : MonoBehaviour
     {
+        /// <summary>选中四角括号子物体的名字，由界面生成工具创建。</summary>
+        public const string SelectCornersName = "SelectCorners";
+
         private static readonly Color FallbackNormalColor = new Color(0.22f, 0.24f, 0.30f, 1f);
         private static readonly Color FallbackSelectedColor = new Color(0.30f, 0.50f, 0.85f, 1f);
 
@@ -24,6 +27,9 @@ namespace Worldyssey.UI
 
         // 每个按钮上所有着色组件：底板、图标、文字。Awake 时取一次，切换画笔时只改角色
         private ThemedGraphic[][] _themedParts;
+
+        // 每个按钮上可选的选中四角括号（名为 SelectCorners 的子物体），选中时显示
+        private GameObject[] _selectCorners;
 
         public event Action<EditorTool> ToolSelected;
 
@@ -86,6 +92,11 @@ namespace Worldyssey.UI
                 }
 
                 bool isSelected = i == (int)tool;
+                if (_selectCorners[i] != null)
+                {
+                    _selectCorners[i].SetActive(isSelected);
+                }
+
                 ThemedGraphic[] parts = _themedParts[i];
                 if (parts.Length == 0)
                 {
@@ -108,9 +119,27 @@ namespace Worldyssey.UI
         private void CacheThemedParts()
         {
             _themedParts = new ThemedGraphic[_toolButtons.Length][];
+            _selectCorners = new GameObject[_toolButtons.Length];
             for (int i = 0; i < _toolButtons.Length; i++)
             {
-                _themedParts[i] = _toolButtons[i] != null ? _toolButtons[i].GetComponentsInChildren<ThemedGraphic>(true) : new ThemedGraphic[0];
+                Button button = _toolButtons[i];
+                Transform corners = button != null ? button.transform.Find(SelectCornersName) : null;
+                _selectCorners[i] = corners != null ? corners.gameObject : null;
+
+                // 四角括号自己保持强调色，不参与选中时的颜色角色切换
+                var parts = new System.Collections.Generic.List<ThemedGraphic>();
+                if (button != null)
+                {
+                    foreach (ThemedGraphic part in button.GetComponentsInChildren<ThemedGraphic>(true))
+                    {
+                        if (corners == null || !part.transform.IsChildOf(corners))
+                        {
+                            parts.Add(part);
+                        }
+                    }
+                }
+
+                _themedParts[i] = parts.ToArray();
             }
         }
 

@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 832f7e75660270e4bbd8fb0b35170054, type: 3}
   m_Name: UiFunctionalPalette
   m_EditorClassIdentifier: 
-  _confirm: {r: 0.3, g: 0.72, b: 0.47, a: 1}
-  _cancel: {r: 0.93, g: 0.42, b: 0.36, a: 1}
-  _disabled: {r: 0.7, g: 0.72, b: 0.75, a: 1}
+  _confirm: {r: 0.4392157, g: 0.627451, b: 0.39215687, a: 1}
+  _cancel: {r: 0.74509805, g: 0.39215687, b: 0.3529412, a: 1}
+  _disabled: {r: 0.6666667, g: 0.65882355, b: 0.6431373, a: 1}

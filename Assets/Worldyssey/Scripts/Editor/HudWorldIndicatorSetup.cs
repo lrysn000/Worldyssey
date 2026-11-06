@@ -20,10 +20,9 @@ namespace Worldyssey.EditorTools
         private const string MenuPath = "Worldyssey/Setup/Build HUD World Indicator";
         private const string IndicatorName = "WorldIndicator";
         private const string InfoCardName = "InfoCard";
-        private const string ConflictMarkPath = ProjectPaths.ThirdParty + "/Honeti/UltimateFlatGUI/ThemeCommon/Textures/Icons/64/x.png";
         private const int SlotCount = 4;
 
-        private const float InfoWidth = 400f;
+        private const float InfoWidth = 560f;
         private const float InfoHeight = 132f;
         private const float IndicatorWidth = 360f;
         private const float IndicatorHeight = 160f;
@@ -133,10 +132,10 @@ namespace Worldyssey.EditorTools
             RectTransform row = GameUiBuilder.CreateRect("Icons", card);
             GameUiBuilder.Place(row, TopCenter, new Vector2(0f, -16f), new Vector2(IndicatorWidth - UiStyleKit.Padding * 2f, IconRowHeight));
 
-            Sprite conflictMark = AssetDatabase.LoadAssetAtPath<Sprite>(ConflictMarkPath);
+            Sprite conflictMark = context.Skin != null ? context.Skin.CrossIcon : null;
             if (conflictMark == null)
             {
-                Debug.LogWarning($"[{nameof(HudWorldIndicatorSetup)}] 找不到叉号素材 {ConflictMarkPath}，冲突标记会显示为方块，可在场景里手动替换");
+                Debug.LogWarning($"[{nameof(HudWorldIndicatorSetup)}] 界面套件里没有叉号图标，冲突标记会显示为方块，可在 UiSkin 里设置后重新运行");
             }
 
             var slots = new Object[SlotCount];

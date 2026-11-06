@@ -12,11 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 674d5ae314bdf8342a2559d22d96c3e2, type: 3}
   m_Name: UiTheme_Neutral
   m_EditorClassIdentifier: 
-  _header: {r: 0.33, g: 0.39, b: 0.47, a: 1}
-  _panelBackground: {r: 0.93, g: 0.94, b: 0.95, a: 1}
-  _innerFrame: {r: 1, g: 1, b: 1, a: 1}
-  _accent: {r: 0.38, g: 0.55, b: 0.75, a: 1}
-  _text: {r: 0.2, g: 0.23, b: 0.28, a: 1}
+  _header: {r: 0.4392157, g: 0.40784314, b: 0.3764706, a: 1}
+  _panelBackground: {r: 0.93333334, g: 0.9137255, b: 0.8862745, a: 1}
+  _innerFrame: {r: 0.98039216, g: 0.96862745, b: 0.9490196, a: 1}
+  _accent: {r: 0.5019608, g: 0.54901963, b: 0.5882353, a: 1}
+  _text: {r: 0.27450982, g: 0.24313726, b: 0.21960784, a: 1}
   _headerText: {r: 1, g: 1, b: 1, a: 1}
-  _icon: {r: 0.3, g: 0.34, b: 0.4, a: 1}
+  _icon: {r: 0.4392157, g: 0.40784314, b: 0.3764706, a: 1}
+  _worldPalette: {fileID: 0}
+  _paletteWorld: 0
   _functionalPalette: {fileID: 11400000, guid: 65b18ade6a2c6a2468810981935babd8, type: 2}
