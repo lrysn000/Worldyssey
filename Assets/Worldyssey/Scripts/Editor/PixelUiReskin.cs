@@ -49,6 +49,14 @@ namespace Worldyssey.EditorTools
             int panels = PixelUiDecorator.DecorateScene(context, themeSet);
             AddPixelCanvasScalers();
 
+            // 编辑器网格：格子预制体补上地形图标层，场景里的网格（编辑器和选关小地图）接上图标
+            EditorGridCellPrefabBuilder.GetOrUpdate(context);
+            foreach (EditorGridView grid in Object.FindObjectsOfType<EditorGridView>(true))
+            {
+                EditorGridIcons.Assign(grid);
+                EditorGridIcons.EnsureCoordinateText(grid, context);
+            }
+
             EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
             Selection.activeObject = skin;
             Debug.Log($"[{nameof(PixelUiReskin)}] 像素风换皮完成：场景中更新 {changed} 处、装饰面板 {panels} 个，预制体 {prefabs} 个。素材、字体、像素比例在 UiSkin 里调整后可再次运行，记得保存场景", skin);

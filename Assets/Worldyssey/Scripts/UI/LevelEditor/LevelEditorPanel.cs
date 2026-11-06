@@ -4,6 +4,7 @@ using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using Worldyssey.Core;
 using Worldyssey.Gameplay;
 
@@ -127,6 +128,28 @@ namespace Worldyssey.UI
             RefreshAll();
         }
 
+        private void Update()
+        {
+            // 快捷键：Tab / Shift+Tab 切换世界，Ctrl+S 保存。在输入框里打字或打开对话框时不响应
+            Keyboard keyboard = Keyboard.current;
+            if (!_hasReferences || _model == null || keyboard == null || _openDialog.IsVisible || IsTypingInInputField())
+            {
+                return;
+            }
+
+            if (keyboard.tabKey.wasPressedThisFrame && _model.Draft.WorldCount > 1)
+            {
+                int count = _model.Draft.WorldCount;
+                int step = keyboard.shiftKey.isPressed ? -1 : 1;
+                Present(_model.SelectWorld((_model.CurrentWorld + step + count) % count));
+            }
+
+            if (keyboard.ctrlKey.isPressed && keyboard.sKey.wasPressedThisFrame)
+            {
+                HandleSave();
+            }
+        }
+
         private void OnDisable()
         {
             if (!_hasReferences)
@@ -166,17 +189,22 @@ namespace Worldyssey.UI
 
         private void HandleStrokeStarted(GridPos pos, bool isErase)
         {
-            Present(_model.BeginStroke(pos, isErase));
+            // 按住 Shift 开始的一笔画直线（横向或纵向）
+            bool isLine = Keyboard.current != null && Keyboard.current.shiftKey.isPressed;
+            Present(_model.BeginStroke(pos, isErase, isLine));
+            _grid.SetLineLength(_model.LineLength);
         }
 
         private void HandleStrokeContinued(GridPos pos)
         {
             Present(_model.ContinueStroke(pos));
+            _grid.SetLineLength(_model.LineLength);
         }
 
         private void HandleStrokeEnded()
         {
             _model.EndStroke();
+            _grid.SetLineLength(0);
         }
 
         private void HandleToolSelected(EditorTool tool)
@@ -375,6 +403,7 @@ namespace Worldyssey.UI
         {
             RefreshGrid();
             _toolbar.SetSelected(_model.Tool);
+            _grid.SetBrush(_model.Tool, _model.SelectedPair);
             _header.Render(_model.Draft, _model.CurrentWorld);
             _pairList.Render(_model.Draft, _model.SelectedPair, _model.TargetWorld);
         }

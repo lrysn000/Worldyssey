@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Worldyssey.Core
 {
@@ -11,8 +12,13 @@ namespace Worldyssey.Core
         public const int NoPair = -1;
 
         private readonly DraftHistory _history = new DraftHistory();
+        private readonly List<GridPos> _lineCells = new List<GridPos>();
         private bool _isStrokeErase;
         private bool _hasStrokeChanged;
+
+        // 画直线：按下时的草稿和起点。拖动时每次都从这份草稿重画整条线，终点移回来时多画的格子会消失
+        private LevelDraft _lineBase;
+        private GridPos _lineStart;
 
         public LevelEditorModel(LevelDraft draft)
         {
@@ -52,21 +58,41 @@ namespace Worldyssey.Core
             return EditorFeedback.AllChanged;
         }
 
-        public EditorFeedback BeginStroke(GridPos pos, bool isErase)
+        /// <summary>当前这一笔是否在画直线。</summary>
+        public bool IsDrawingLine => _lineBase != null;
+
+        /// <summary>正在画的直线有多少格，不在画直线时为 0。</summary>
+        public int LineLength => _lineBase != null ? _lineCells.Count : 0;
+
+        /// <summary>
+        /// 开始一笔。<paramref name="isLine"/> 为 true 时画直线：拖动时从起点到当前格锁定横向或纵向，整条线随鼠标更新；
+        /// 玩家和传送箱子只放一次，不支持直线，按普通一笔处理。
+        /// </summary>
+        public EditorFeedback BeginStroke(GridPos pos, bool isErase, bool isLine = false)
         {
             _history.Push(Draft);
             _isStrokeErase = isErase;
             _hasStrokeChanged = false;
+            EditorTool tool = isErase ? EditorTool.Eraser : Tool;
+            if (isLine && !IsSingleShot(tool))
+            {
+                _lineBase = Draft.Clone();
+                _lineStart = pos;
+                return ApplyLine(pos);
+            }
+
             return ApplyStroke(pos, true);
         }
 
         public EditorFeedback ContinueStroke(GridPos pos)
         {
-            return ApplyStroke(pos, false);
+            return _lineBase != null ? ApplyLine(pos) : ApplyStroke(pos, false);
         }
 
         public void EndStroke()
         {
+            _lineBase = null;
+
             // 什么都没改的一笔不留撤销记录
             if (!_hasStrokeChanged)
             {
@@ -234,8 +260,7 @@ namespace Worldyssey.Core
             EditorTool tool = _isStrokeErase ? EditorTool.Eraser : Tool;
 
             // 玩家和传送箱子是“放置一次”的操作，拖动经过其他格子时不重复执行
-            bool isSingleShot = tool == EditorTool.Player || tool == EditorTool.PortalBox;
-            if (isSingleShot && !isFirstCell)
+            if (IsSingleShot(tool) && !isFirstCell)
             {
                 return EditorFeedback.None;
             }
@@ -255,6 +280,28 @@ namespace Worldyssey.Core
             }
 
             return tool == EditorTool.PortalBox ? EditorFeedback.PortalRejected : EditorFeedback.None;
+        }
+
+        /// <summary>从按下时的草稿重画整条直线到 <paramref name="end"/>。</summary>
+        private EditorFeedback ApplyLine(GridPos end)
+        {
+            EditorTool tool = _isStrokeErase ? EditorTool.Eraser : Tool;
+            Draft = _lineBase.Clone();
+            GridLine.Collect(_lineStart, end, _lineCells);
+            bool hasChanged = false;
+            for (int i = 0; i < _lineCells.Count; i++)
+            {
+                hasChanged |= Draft.Apply(tool, CurrentWorld, _lineCells[i], SelectedPair);
+            }
+
+            _hasStrokeChanged = hasChanged;
+            Revalidate();
+            return EditorFeedback.GridChanged;
+        }
+
+        private static bool IsSingleShot(EditorTool tool)
+        {
+            return tool == EditorTool.Player || tool == EditorTool.PortalBox;
         }
 
         /// <summary>

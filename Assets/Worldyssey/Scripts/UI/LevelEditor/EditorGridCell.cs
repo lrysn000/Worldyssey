@@ -7,14 +7,20 @@ using UnityEngine.UI;
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 编辑器网格中的一格：外框（标记问题）、地形底色、实体图标和角标文字。把指针事件转交给 <see cref="EditorGridView"/>。
+    /// 编辑器网格中的一格：外框（标记问题）、地形底色和地形图标、实体图标和角标文字。把指针事件转交给 <see cref="EditorGridView"/>。
     /// 被绘制时弹一下，给鼠标操作一个手感反馈。
     /// </summary>
-    public class EditorGridCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerUpHandler
+    public class EditorGridCell : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler, IPointerUpHandler
     {
         [SerializeField] private Image _frame;
         [SerializeField] private Image _terrain;
+        [Tooltip("可选：地形图标（墙、独有墙、底座、终点），叠在地形底色上")]
+        [SerializeField] private Image _terrainIcon;
+
         [SerializeField] private Image _entity;
+
+        [Tooltip("可选：其他世界在这一格的独有墙或传送箱子，画在角上的淡色小图标")]
+        [SerializeField] private Image _ghost;
         [SerializeField] private TMP_Text _label;
 
         private EditorGridView _owner;
@@ -57,25 +63,24 @@ namespace Worldyssey.UI
             Position = position;
         }
 
-        /// <summary>
-        /// 设置显示内容。<paramref name="entityColor"/> 的 alpha 为 0 时隐藏实体；<paramref name="entityIcon"/> 为空时实体显示为色块。
-        /// <paramref name="entityAngle"/> 为图标绕 Z 轴的角度，用来表示玩家朝向。
-        /// </summary>
-        public void Render(Color frameColor, Color terrainColor, Color entityColor, Sprite entityIcon, float entityAngle, string label)
+        /// <summary>设置显示内容，见 <see cref="EditorCellVisual"/>。</summary>
+        public void Render(in EditorCellVisual visual)
         {
-            _frame.color = frameColor;
-            _terrain.color = terrainColor;
-            _entity.enabled = entityColor.a > 0f;
-            _entity.color = entityColor;
-            if (_entity.sprite != entityIcon)
+            _frame.color = visual.Frame;
+            _terrain.color = visual.Terrain;
+            SetIcon(_terrainIcon, visual.TerrainIcon, visual.TerrainIconColor);
+            SetIcon(_ghost, visual.GhostIcon, visual.GhostColor);
+            _entity.enabled = visual.Entity.a > 0f;
+            _entity.color = visual.Entity;
+            if (_entity.sprite != visual.EntityIcon)
             {
-                _entity.sprite = entityIcon;
+                _entity.sprite = visual.EntityIcon;
                 _entity.type = Image.Type.Simple;
                 _entity.preserveAspect = true;
             }
 
-            _entity.rectTransform.localEulerAngles = new Vector3(0f, 0f, entityAngle);
-            _label.text = label;
+            _entity.rectTransform.localEulerAngles = new Vector3(0f, 0f, visual.EntityAngle);
+            _label.text = visual.Label;
         }
 
         /// <summary>
@@ -114,12 +119,32 @@ namespace Worldyssey.UI
             }
         }
 
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (_owner != null)
+            {
+                _owner.HandleCellExit(this);
+            }
+        }
+
         public void OnPointerUp(PointerEventData eventData)
         {
             if (_owner != null)
             {
                 _owner.HandleCellUp();
             }
+        }
+
+        private static void SetIcon(Image image, Sprite sprite, Color color)
+        {
+            if (image == null)
+            {
+                return;
+            }
+
+            image.enabled = sprite != null;
+            image.sprite = sprite;
+            image.color = color;
         }
 
         private IEnumerator PopRoutine(float startScale, float duration)

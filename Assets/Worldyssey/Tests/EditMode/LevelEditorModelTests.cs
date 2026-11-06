@@ -14,6 +14,37 @@ namespace Worldyssey.Tests
         }
 
         [Test]
+        public void LineStroke_FollowsMouseAndShrinksBack()
+        {
+            _model.SelectTool(EditorTool.MappedBox);
+
+            _model.BeginStroke(new GridPos(2, 2), false, true);
+            _model.ContinueStroke(new GridPos(5, 3));
+            Assert.AreEqual(4, _model.Draft.MappedBoxes.Count, "锁定到横向，从 x=2 到 x=5");
+
+            _model.ContinueStroke(new GridPos(3, 2));
+            _model.EndStroke();
+
+            Assert.AreEqual(2, _model.Draft.MappedBoxes.Count, "终点移回来后多画的格子消失");
+            Assert.IsFalse(_model.IsDrawingLine);
+            Assert.AreEqual(1, _model.UndoCount, "一整条线是一步撤销");
+            _model.Undo();
+            Assert.AreEqual(0, _model.Draft.MappedBoxes.Count);
+        }
+
+        [Test]
+        public void LineStroke_WithPlayerTool_PlacesOnce()
+        {
+            _model.SelectTool(EditorTool.Player);
+
+            _model.BeginStroke(new GridPos(2, 2), false, true);
+            _model.ContinueStroke(new GridPos(4, 2));
+            _model.EndStroke();
+
+            Assert.AreEqual(new GridPos(2, 2), _model.Draft.PlayerPosition);
+        }
+
+        [Test]
         public void Stroke_AcrossCells_IsOneUndoStep()
         {
             _model.SelectTool(EditorTool.MappedBox);

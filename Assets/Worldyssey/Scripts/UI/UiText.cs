@@ -102,6 +102,8 @@ namespace Worldyssey.UI
         public const string Cancel = "Cancel";
         public const string NoIssues = "No issues";
         public const string IssuesCountFormat = "Issues ({0})";
+        public const string EditorCoordinateFormat = "X {0}  Y {1}";
+        public const string EditorLineFormat = "X {0}  Y {1}  Len {2}";
         public const string ToolGroupTerrain = "Terrain";
         public const string ToolGroupWorld = "This World";
         public const string ToolGroupObjects = "Objects";

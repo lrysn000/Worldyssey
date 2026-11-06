@@ -20,20 +20,21 @@ namespace Worldyssey.UI
         private Coroutine _fadeRoutine;
 
         /// <summary>当前（渐变结束后）的主题。</summary>
-        public UiTheme Theme => _theme;
+        public UiTheme Theme
+        {
+            get
+            {
+                EnsureInitialTheme();
+                return _theme;
+            }
+        }
 
         /// <summary>颜色发生了变化，子元素需要重新取色。</summary>
         public event Action ColorsChanged;
 
         private void Awake()
         {
-            // 控制器可能在面板首次激活之前就设置了主题，此时不能用初始主题覆盖
-            if (_theme == null)
-            {
-                _theme = _initialTheme;
-                _fromTheme = _initialTheme;
-            }
-
+            EnsureInitialTheme();
             if (_theme == null)
             {
                 Debug.LogError($"[{nameof(UiThemeScope)}] {name} 缺少引用：{nameof(_initialTheme)}", this);
@@ -62,6 +63,7 @@ namespace Worldyssey.UI
                 return;
             }
 
+            EnsureInitialTheme();
             if (theme == _theme && _fadeRoutine == null)
             {
                 return;
@@ -90,6 +92,7 @@ namespace Worldyssey.UI
         /// </summary>
         public bool TryGetColor(UiColorRole role, out Color color)
         {
+            EnsureInitialTheme();
             if (_theme == null)
             {
                 color = default;
@@ -99,6 +102,20 @@ namespace Worldyssey.UI
             Color target = _theme.GetColor(role);
             color = _blend >= 1f || _fromTheme == null ? target : Color.Lerp(_fromTheme.GetColor(role), target, _blend);
             return true;
+        }
+
+        /// <summary>
+        /// 没有主题时先用初始主题。不能只放在 Awake 里：同一场景里子物体的 Awake/OnEnable 可能早于本组件的 Awake，
+        /// 那时子元素取不到色，会一直保留场景里存下的旧颜色，直到面板下次重新显示才刷新。
+        /// 已经有主题时不覆盖，控制器可能在面板首次激活之前就设置过主题。
+        /// </summary>
+        private void EnsureInitialTheme()
+        {
+            if (_theme == null && _initialTheme != null)
+            {
+                _theme = _initialTheme;
+                _fromTheme = _initialTheme;
+            }
         }
 
         private IEnumerator FadeRoutine(float duration)

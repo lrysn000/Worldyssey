@@ -25,8 +25,17 @@ namespace Worldyssey.EditorTools
         private const float InfoWidth = 560f;
         private const float InfoHeight = 132f;
         private const float IndicatorWidth = 360f;
-        private const float IndicatorHeight = 160f;
-        private const float IconRowHeight = 88f;
+        private const float IndicatorHeight = 144f;
+
+        // 图标行顶部留出像素边框和季节装饰的位置；当前图标切换时会放大弹回（UiMotionConfig.WorldPopScale），
+        // 尺寸按放大后的大小留余量，免得弹出时顶出卡片上沿
+        private const float IconRowTop = 28f;
+        private const float IconRowHeight = 64f;
+        private const float CurrentIconSize = 56f;
+        private const float OtherIconSize = 36f;
+        private const float WorldNameTop = 98f;
+        private const float WorldNameHeight = 32f;
+        private const float WorldNameFontSize = 22f;
 
         // 旧 HUD 留下的物体：世界名、冲突、通关文字和通关底板
         private static readonly string[] ObsoleteNames = { "WorldName", "Conflict", "Status", "statusTextBackground" };
@@ -74,6 +83,7 @@ namespace Worldyssey.EditorTools
                 indicator = CreateIndicator(hud.transform, icons, scope, context);
             }
 
+            LayoutIndicator(indicator, scope, context);
             LinkIndicator(indicator, hud, icons);
         }
 
@@ -130,7 +140,7 @@ namespace Worldyssey.EditorTools
             var indicator = card.gameObject.AddComponent<WorldIndicatorPanel>();
 
             RectTransform row = GameUiBuilder.CreateRect("Icons", card);
-            GameUiBuilder.Place(row, TopCenter, new Vector2(0f, -16f), new Vector2(IndicatorWidth - UiStyleKit.Padding * 2f, IconRowHeight));
+            GameUiBuilder.Place(row, TopCenter, new Vector2(0f, -IconRowTop), new Vector2(IndicatorWidth - UiStyleKit.Padding * 2f, IconRowHeight));
 
             Sprite conflictMark = context.Skin != null ? context.Skin.CrossIcon : null;
             if (conflictMark == null)
@@ -146,11 +156,35 @@ namespace Worldyssey.EditorTools
 
             UiThemeSceneSetup.SetReferenceArray(indicator, "_slots", slots);
 
-            TMP_Text worldName = GameUiBuilder.CreateText(card, "WorldName", "World", 30f, TextAlignmentOptions.Center, TopCenter,
-                new Vector2(0f, -108f), new Vector2(IndicatorWidth - UiStyleKit.Padding * 2f, 40f));
+            TMP_Text worldName = GameUiBuilder.CreateText(card, "WorldName", "World", WorldNameFontSize, TextAlignmentOptions.Center, TopCenter,
+                new Vector2(0f, -WorldNameTop), new Vector2(IndicatorWidth - UiStyleKit.Padding * 2f, WorldNameHeight));
             UiStyleKit.StyleText(worldName, UiColorRole.Header, scope, context, true);
             GameUiBuilder.SetReference(indicator, "_worldNameText", worldName);
             return indicator;
+        }
+
+        /// <summary>已有的指示器也按当前常量重新排版，改尺寸后重跑菜单即可生效。</summary>
+        private static void LayoutIndicator(WorldIndicatorPanel indicator, UiThemeScope scope, UiStyleKit.Context context)
+        {
+            var card = (RectTransform)indicator.transform;
+            Undo.RecordObject(card, UiStyleKit.UndoName);
+            GameUiBuilder.Place(card, TopCenter, new Vector2(0f, -UiStyleKit.Padding), new Vector2(IndicatorWidth, IndicatorHeight));
+
+            float innerWidth = IndicatorWidth - UiStyleKit.Padding * 2f;
+            var row = card.Find("Icons") as RectTransform;
+            if (row != null)
+            {
+                Undo.RecordObject(row, UiStyleKit.UndoName);
+                GameUiBuilder.Place(row, TopCenter, new Vector2(0f, -IconRowTop), new Vector2(innerWidth, IconRowHeight));
+            }
+
+            var serialized = new SerializedObject(indicator);
+            serialized.FindProperty("_currentIconSize").floatValue = CurrentIconSize;
+            serialized.FindProperty("_otherIconSize").floatValue = OtherIconSize;
+            serialized.ApplyModifiedProperties();
+
+            UiRestyleTool.PlaceText(serialized, "_worldNameText", TopCenter, new Vector2(0f, -WorldNameTop), new Vector2(innerWidth, WorldNameHeight),
+                WorldNameFontSize, UiColorRole.Header, true, scope, context);
         }
 
         private static WorldIconSlot CreateSlot(Transform row, int index, Sprite icon, Sprite conflictMark)

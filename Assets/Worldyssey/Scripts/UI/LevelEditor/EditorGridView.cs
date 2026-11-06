@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using Worldyssey.Core;
@@ -10,13 +11,10 @@ namespace Worldyssey.UI
     /// <summary>
     /// 关卡编辑器的俯视网格：显示当前世界的全部内容，用外框标出校验问题，并把鼠标绘制转成笔画事件。
     /// 左键用当前画笔，右键总是橡皮擦；按住拖动连续绘制，一次按下到松开为一笔。
-    /// 配色来自 <see cref="EditorGridPalette"/>；独有墙用当前世界的季节色，传送箱子用目标世界的季节色。
+    /// 每格显示什么由 <see cref="EditorCellPainter"/> 计算；鼠标悬停时预览当前画笔的效果（<see cref="EditorGridHover"/>）。
     /// </summary>
     public class EditorGridView : MonoBehaviour
     {
-        private static readonly Color Hidden = new Color(0f, 0f, 0f, 0f);
-        private const string PortalLabelPrefix = "P";
-
         [SerializeField] private RectTransform _gridArea;
         [SerializeField] private EditorGridCell _cellPrefab;
 
@@ -27,11 +25,23 @@ namespace Worldyssey.UI
         [Tooltip("季节色：独有墙和传送箱子按世界主题着色")]
         [SerializeField] private WorldPalette _worldPalette;
 
+        [Header("地形图标（可选）：叠在地形色块上，空地不显示")]
+        [SerializeField] private Sprite _wallIcon;
+        [SerializeField] private Sprite _uniqueWallIcon;
+        [SerializeField] private Sprite _pedestalIcon;
+        [SerializeField] private Sprite _goalIcon;
+
         [Header("实体图标（可选，不设置时显示色块）")]
         [Tooltip("尖端朝上的玩家图标，按朝向旋转")]
         [SerializeField] private Sprite _playerIcon;
         [SerializeField] private Sprite _boxIcon;
         [SerializeField] private Sprite _portalIcon;
+
+        [Tooltip("按 EditorTool 顺序排列的画笔图标，用于悬停预览")]
+        [SerializeField] private Sprite[] _toolIcons = new Sprite[0];
+
+        [Tooltip("可选：显示悬停格子坐标的文字")]
+        [SerializeField] private TMP_Text _coordinateText;
 
         [Tooltip("可选：绘制时格子弹跳的幅度和时长。不设置则不弹")]
         [SerializeField] private UiMotionConfig _motionConfig;
@@ -39,6 +49,14 @@ namespace Worldyssey.UI
         private readonly List<EditorGridCell> _cells = new List<EditorGridCell>();
         private readonly bool[] _errorCells = new bool[LevelLimits.MaxWidth * LevelLimits.MaxHeight];
         private readonly bool[] _warningCells = new bool[LevelLimits.MaxWidth * LevelLimits.MaxHeight];
+        private EditorCellPainter _painter;
+        private EditorGridHover _hover;
+        private EditorGridCell _hoveredCell;
+        private LevelDraft _draft;
+        private int _world;
+        private EditorTool _brush;
+        private int _selectedPair = -1;
+        private int _lineLength;
         private bool _isStroking;
         private int _width;
 
@@ -55,7 +73,10 @@ namespace Worldyssey.UI
             if (_gridArea == null || _cellPrefab == null || _palette == null || _worldPalette == null)
             {
                 Debug.LogError($"[{nameof(EditorGridView)}] {name} 缺少网格区域、格子预制体或配色引用", this);
+                return;
             }
+
+            EnsureHelpers();
         }
 
         private void OnDisable()
@@ -64,16 +85,17 @@ namespace Worldyssey.UI
             EndStroke();
         }
 
-        /// <summary>
-        /// 按草稿内容重绘当前世界。格子按最大尺寸一次性创建，之后只复用。
-        /// </summary>
+        /// <summary>按草稿内容重绘当前世界。格子按最大尺寸一次性创建，之后只复用。</summary>
         public void Render(LevelDraft draft, int world, LevelValidationReport report)
         {
-            if (_gridArea == null || _cellPrefab == null || _palette == null || _worldPalette == null)
+            // 选关页会在面板还没激活（Awake 未执行）时就绘制小地图，所以这里按需创建
+            if (!EnsureHelpers())
             {
                 return;
             }
 
+            _draft = draft;
+            _world = world;
             EnsureCells();
             _width = draft.Width;
             MarkIssues(draft, world, report);
@@ -101,6 +123,23 @@ namespace Worldyssey.UI
             {
                 _cells[i].gameObject.SetActive(false);
             }
+
+            RefreshHover();
+        }
+
+        /// <summary>当前画笔和选中的配对，用于悬停预览。</summary>
+        public void SetBrush(EditorTool tool, int selectedPair)
+        {
+            _brush = tool;
+            _selectedPair = selectedPair;
+            RefreshHover();
+        }
+
+        /// <summary>正在画的直线长度（格），大于 1 时坐标文字里显示长度。</summary>
+        public void SetLineLength(int length)
+        {
+            _lineLength = length;
+            RefreshHover();
         }
 
         internal void HandleCellDown(EditorGridCell cell, PointerEventData.InputButton button)
@@ -117,10 +156,21 @@ namespace Worldyssey.UI
 
         internal void HandleCellEnter(EditorGridCell cell)
         {
+            _hoveredCell = cell;
+            RefreshHover();
             if (_isStroking)
             {
                 PopCell(cell);
                 StrokeContinued?.Invoke(cell.Position);
+            }
+        }
+
+        internal void HandleCellExit(EditorGridCell cell)
+        {
+            if (_hoveredCell == cell)
+            {
+                _hoveredCell = null;
+                RefreshHover();
             }
         }
 
@@ -198,71 +248,52 @@ namespace Worldyssey.UI
             }
         }
 
+        private bool EnsureHelpers()
+        {
+            if (_gridArea == null || _cellPrefab == null || _palette == null || _worldPalette == null)
+            {
+                return false;
+            }
+
+            if (_painter == null)
+            {
+                var icons = new EditorGridIconSet(_wallIcon, _uniqueWallIcon, _pedestalIcon, _goalIcon, _playerIcon, _boxIcon, _portalIcon);
+                _painter = new EditorCellPainter(_palette, _worldPalette, icons);
+            }
+
+            if (_hover == null && !_isReadOnly)
+            {
+                _hover = new EditorGridHover(_gridArea, _coordinateText);
+            }
+
+            return true;
+        }
+
         private void RenderCell(EditorGridCell cell, LevelDraft draft, int world, GridPos pos)
         {
             int index = pos.Y * _width + pos.X;
             Color frame = _errorCells[index] ? _palette.ErrorFrame : _warningCells[index] ? _palette.WarningFrame : _palette.Frame;
-            Color terrain = TerrainColor(draft, world, pos);
-
-            Color entity = Hidden;
-            Sprite icon = null;
-            float angle = 0f;
-            string label = string.Empty;
-            int portal = draft.FindPortal(world, pos);
-            if (world == draft.StartWorld && pos == draft.PlayerPosition)
-            {
-                // 朝向按 上、右、下、左 排列，图标尖端朝上，顺时针每档转 90°（UI 中顺时针为负角度）
-                entity = _palette.Player;
-                icon = _playerIcon;
-                angle = -90f * (int)draft.PlayerFacing;
-            }
-            else if (draft.FindMappedBox(pos) >= 0)
-            {
-                entity = _palette.MappedBox;
-                icon = _boxIcon;
-            }
-            else if (portal >= 0)
-            {
-                int pairIndex = draft.Portals[portal].Pair;
-                DraftPair pair = draft.Pairs[pairIndex];
-                int target = pair.WorldA == world ? pair.WorldB : pair.WorldA;
-                entity = SeasonColor(draft, target, _palette.PortalBoxFallback);
-                icon = _portalIcon;
-                label = PortalLabelPrefix + pairIndex;
-            }
-
-            cell.Render(frame, terrain, entity, icon, angle, label);
+            cell.Render(_painter.Paint(draft, world, pos, frame));
         }
 
-        private Color TerrainColor(LevelDraft draft, int world, GridPos pos)
+        private void RefreshHover()
         {
-            SharedCell shared = draft.GetSharedCell(pos);
-            if (shared == SharedCell.Wall)
+            if (_hover == null)
             {
-                return _palette.SharedWall;
+                return;
             }
 
-            if (draft.IsUniqueWall(world, pos))
+            if (_hoveredCell == null || _draft == null || !_hoveredCell.gameObject.activeSelf)
             {
-                return SeasonColor(draft, world, _palette.UniqueWallFallback);
+                _hover.Hide();
+                return;
             }
 
-            switch (shared)
-            {
-                case SharedCell.Pedestal:
-                    return _palette.Pedestal;
-                case SharedCell.Goal:
-                    return _palette.Goal;
-                default:
-                    return _palette.Floor;
-            }
-        }
-
-        private Color SeasonColor(LevelDraft draft, int world, Color fallback)
-        {
-            return world >= 0 && world < draft.WorldCount && _worldPalette.TryGetColor((int)draft.GetWorldTheme(world), out Color color)
-                ? color
-                : fallback;
+            int toolIndex = (int)_brush;
+            Sprite icon = toolIndex >= 0 && toolIndex < _toolIcons.Length ? _toolIcons[toolIndex] : null;
+            Color color = _painter.PreviewColor(_draft, _world, _brush, _selectedPair);
+            GridPos pos = _hoveredCell.Position;
+            _hover.Show(_hoveredCell, color, icon, pos.X, pos.Y, _lineLength);
         }
     }
 }

@@ -125,9 +125,8 @@ namespace Worldyssey.EditorTools
             GameUiBuilder.SetReference(grid, "_palette", GetOrCreateGridPalette());
             GameUiBuilder.SetReference(grid, "_worldPalette", worldPalette);
             GameUiBuilder.SetReference(grid, "_motionConfig", motion);
-            GameUiBuilder.SetReference(grid, "_playerIcon", UiStyleKit.LoadIconSprite(BrushFolder + "/Grid_Player.png"));
-            GameUiBuilder.SetReference(grid, "_boxIcon", UiStyleKit.LoadIconSprite(BrushFolder + "/Brush_Box.png"));
-            GameUiBuilder.SetReference(grid, "_portalIcon", UiStyleKit.LoadIconSprite(BrushFolder + "/Brush_Portal.png"));
+            EditorGridIcons.Assign(grid);
+            EditorGridIcons.EnsureCoordinateText(grid, context);
 
             EditorPairList pairList = BuildPairSection(sideCard, layout, out TMP_Text issuesHeader);
             EditorActionBar actionBar = BuildActionBar(sideCard, centerCard, layout, top, issuesHeader, motion);

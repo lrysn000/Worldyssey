@@ -38,6 +38,42 @@ namespace Worldyssey.EditorTools
                 }
             }
 
+            // 地形图标：旧版格子没有，补一层放在地形和实体之间；按比例缩进，格子大小变化时跟着缩放
+            if (UiThemeSceneSetup.GetReference<Image>(serialized, "_terrainIcon") == null)
+            {
+                RectTransform iconRect = GameUiBuilder.CreateRect("TerrainIcon", contents.transform);
+                iconRect.anchorMin = new Vector2(0.2f, 0.2f);
+                iconRect.anchorMax = new Vector2(0.8f, 0.8f);
+                iconRect.offsetMin = Vector2.zero;
+                iconRect.offsetMax = Vector2.zero;
+                var terrain = UiThemeSceneSetup.GetReference<Image>(serialized, "_terrain");
+                iconRect.SetSiblingIndex(terrain != null ? terrain.transform.GetSiblingIndex() + 1 : 0);
+                Image terrainIcon = iconRect.gameObject.AddComponent<Image>();
+                terrainIcon.preserveAspect = true;
+                terrainIcon.raycastTarget = false;
+                terrainIcon.enabled = false;
+                serialized.FindProperty("_terrainIcon").objectReferenceValue = terrainIcon;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            // 其他世界的叠影：角上的小图标，放在实体之上、文字之下，有箱子时也看得到
+            if (UiThemeSceneSetup.GetReference<Image>(serialized, "_ghost") == null)
+            {
+                RectTransform ghostRect = GameUiBuilder.CreateRect("Ghost", contents.transform);
+                ghostRect.anchorMin = new Vector2(0.04f, 0.04f);
+                ghostRect.anchorMax = new Vector2(0.42f, 0.42f);
+                ghostRect.offsetMin = Vector2.zero;
+                ghostRect.offsetMax = Vector2.zero;
+                var labelText = UiThemeSceneSetup.GetReference<TMP_Text>(serialized, "_label");
+                ghostRect.SetSiblingIndex(labelText != null ? labelText.transform.GetSiblingIndex() : contents.transform.childCount - 1);
+                Image ghost = ghostRect.gameObject.AddComponent<Image>();
+                ghost.preserveAspect = true;
+                ghost.raycastTarget = false;
+                ghost.enabled = false;
+                serialized.FindProperty("_ghost").objectReferenceValue = ghost;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
             var entity = UiThemeSceneSetup.GetReference<Image>(serialized, "_entity");
             if (entity != null)
             {

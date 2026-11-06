@@ -38,11 +38,11 @@ namespace Worldyssey.UI
 
         [Tooltip("当前世界图标的边长")]
         [Min(8f)]
-        [SerializeField] private float _currentIconSize = 80f;
+        [SerializeField] private float _currentIconSize = 56f;
 
         [Tooltip("其他世界图标的边长")]
         [Min(8f)]
-        [SerializeField] private float _otherIconSize = 44f;
+        [SerializeField] private float _otherIconSize = 36f;
 
         [Tooltip("图标之间的间距")]
         [Min(0f)]

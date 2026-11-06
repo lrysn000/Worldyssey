@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: StylizeSettings
   m_EditorClassIdentifier: 
   _isPixelationEnabled: 1
-  _pixelHeight: 270
+  _pixelHeight: 216
   _isPixelSnapEnabled: 1
   _shadowTint: {r: 0.55, g: 0.58, b: 0.78, a: 1}
   _shadowThreshold: 0.2

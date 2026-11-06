@@ -179,14 +179,11 @@ namespace Worldyssey.EditorTools
             RectTransform area = GameUiBuilder.CreateRect("MiniMap", card);
             GameUiBuilder.Place(area, TopLeft, position, size);
             var grid = area.gameObject.AddComponent<EditorGridView>();
-            string brushes = LevelEditorUiBuilder.BrushFolder;
             GameUiBuilder.SetReference(grid, "_gridArea", area);
             GameUiBuilder.SetReference(grid, "_cellPrefab", EditorGridCellPrefabBuilder.GetOrUpdate(_context));
             GameUiBuilder.SetReference(grid, "_palette", LevelEditorUiBuilder.GetOrCreateGridPalette());
             GameUiBuilder.SetReference(grid, "_worldPalette", GameUiBuilder.FindAsset<WorldPalette>(null));
-            GameUiBuilder.SetReference(grid, "_playerIcon", UiStyleKit.LoadIconSprite(brushes + "/Grid_Player.png"));
-            GameUiBuilder.SetReference(grid, "_boxIcon", UiStyleKit.LoadIconSprite(brushes + "/Brush_Box.png"));
-            GameUiBuilder.SetReference(grid, "_portalIcon", UiStyleKit.LoadIconSprite(brushes + "/Brush_Portal.png"));
+            EditorGridIcons.Assign(grid);
             var serialized = new SerializedObject(grid);
             serialized.FindProperty("_isReadOnly").boolValue = true;
             serialized.ApplyModifiedPropertiesWithoutUndo();
