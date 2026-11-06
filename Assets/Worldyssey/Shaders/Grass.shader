@@ -42,6 +42,7 @@ Shader "Worldyssey/Grass"
 
             #include "GrassCommon.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+            #include "ToonCommon.hlsl"
 
             struct Attributes
             {
@@ -72,7 +73,7 @@ Shader "Worldyssey/Grass"
                 half heightT = saturate(input.positionOS.y / max(_BendHeight, 0.001));
                 half variation = 1.0 + (GrassColorNoise(positionWS.xz) - 0.5) * 2.0 * _ColorVariation;
                 output.color = lerp(_RootColor, _TipColor, heightT) * variation;
-                output.fogFactor = ComputeFogFactor(output.positionCS.z);
+                output.fogFactor = ToonFogFactor(positionWS);
                 return output;
             }
 
@@ -82,10 +83,10 @@ Shader "Worldyssey/Grass"
                 half3 normalWS = normalize(input.normalWS);
                 Light mainLight = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
 
-                // 草叶很薄、双面渲染，用包裹光照避免背光面一片死黑
-                half diffuse = saturate(dot(normalWS, mainLight.direction)) * 0.6 + 0.4;
-                half3 lighting = mainLight.color * diffuse * mainLight.shadowAttenuation + SampleSH(normalWS);
-                half3 color = MixFog(albedo * lighting, input.fogFactor);
+                // 卡通两档明暗：草叶薄、法线杂乱，按 N·L 分档会满地斑点，所以只按投影分档——
+                // 被墙、箱子挡住的草落在暗面，其余为亮面，和地面的影子边界一致
+                half3 color = ToonShade(albedo, mainLight.shadowAttenuation, mainLight.color, SampleSH(normalWS));
+                color = MixFog(color, input.fogFactor);
                 return half4(color, 1.0);
             }
             ENDHLSL

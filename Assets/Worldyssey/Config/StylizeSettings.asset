@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0bce3b1b11034f4fad4be05a7e3791d, type: 3}
+  m_Name: StylizeSettings
+  m_EditorClassIdentifier: 
+  _isPixelationEnabled: 1
+  _pixelHeight: 240
+  _isPixelSnapEnabled: 1
+  _shadowTint: {r: 0.55, g: 0.58, b: 0.78, a: 1}
+  _shadowThreshold: 0.2
+  _shadowSoftness: 0
+  _ambientInfluence: 0.4
+  _isOutlineEnabled: 1
+  _depthThreshold: 0.3
+  _normalThreshold: 1
+  _normalEdgeBias: {x: 1, y: 1, z: 1}
+  _outerLineDarken: 0.36
+  _innerLineDarken: 0.85
+  _lineSaturation: 0

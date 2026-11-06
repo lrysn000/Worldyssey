@@ -38,9 +38,9 @@ namespace Worldyssey.Data
         [Min(0.05f)]
         [SerializeField] private float _teleportPullBackDuration = 1f;
 
-        [Tooltip("快照外壳的边长（格），比箱子稍大，盖住箱子和刚走出来的玩家")]
-        [Range(1f, 3f)]
-        [SerializeField] private float _snapshotShellSize = 1.3f;
+        [Tooltip("截图最后收进的外壳边长（格），调到和传送箱子模型一样大，截图看起来就是装进了箱子")]
+        [Range(0.5f, 2f)]
+        [SerializeField] private float _snapshotShellSize = 1f;
 
         [Tooltip("截图上叠加的目标季节色强度，0 为不叠加，随外壳一起淡出")]
         [Range(0f, 1f)]
@@ -49,6 +49,18 @@ namespace Worldyssey.Data
         [Tooltip("拉远进行到多少比例时外壳开始淡出（0~1）")]
         [Range(0f, 1f)]
         [SerializeField] private float _snapshotFadeStart = 0.6f;
+
+        [Tooltip("箱子轮廓以外的截图在拉远进行到多少比例时完全淡出（0~1），之后截图只留在箱子上")]
+        [Range(0.05f, 1f)]
+        [SerializeField] private float _snapshotOuterFadeEnd = 0.35f;
+
+        [Tooltip("截图开始淡出时伙伴箱子上下压扁的幅度（0 为不弹），强调“装进了箱子”")]
+        [Range(0f, 0.5f)]
+        [SerializeField] private float _snapshotBoxSquash = 0.15f;
+
+        [Tooltip("箱子压扁回弹的时长（秒）")]
+        [Min(0.01f)]
+        [SerializeField] private float _snapshotBoxSquashDuration = 0.2f;
 
         [Tooltip("拉远进行到多少比例时玩家开始走出箱子（0~1）")]
         [Range(0f, 1f)]
@@ -167,6 +179,9 @@ namespace Worldyssey.Data
         public float SnapshotShellSize => _snapshotShellSize;
         public float SnapshotTintStrength => _snapshotTintStrength;
         public float SnapshotFadeStart => _snapshotFadeStart;
+        public float SnapshotOuterFadeEnd => _snapshotOuterFadeEnd;
+        public float SnapshotBoxSquash => _snapshotBoxSquash;
+        public float SnapshotBoxSquashDuration => _snapshotBoxSquashDuration;
         public float SnapshotEmergeStart => _snapshotEmergeStart;
         public float HintDuration => _hintDuration;
         public float LevelRiseDepth => _levelRiseDepth;

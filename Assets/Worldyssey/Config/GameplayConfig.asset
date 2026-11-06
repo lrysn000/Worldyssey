@@ -40,11 +40,14 @@ MonoBehaviour:
     m_RotationOrder: 4
   _teleportEnterDuration: 0.5
   _teleportExitDuration: 0.7
-  _teleportCameraZoom: 0.8
+  _teleportCameraZoom: 0.9
   _teleportPullBackDuration: 1
-  _snapshotShellSize: 1
+  _snapshotShellSize: 0.8
   _snapshotTintStrength: 0.2
   _snapshotFadeStart: 0.2
+  _snapshotOuterFadeEnd: 0.35
+  _snapshotBoxSquash: 0.15
+  _snapshotBoxSquashDuration: 0.2
   _snapshotEmergeStart: 0.3
   _levelRiseDepth: 10
   _levelRiseDuration: 0.9
@@ -66,5 +69,7 @@ MonoBehaviour:
   _rewindFadeOutDuration: 0.35
   _cameraPitch: 55
   _cameraMargin: 1
+  _cameraTopReserve: 0.12
+  _panReturnDuration: 0.25
   _viewRotateDuration: 0.25
   _holdRepeatDelay: 0.18

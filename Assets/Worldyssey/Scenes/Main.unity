@@ -14075,7 +14075,7 @@ MonoBehaviour:
   m_VolumeTrigger: {fileID: 0}
   m_VolumeFrameworkUpdateModeOption: 2
   m_RenderPostProcessing: 1
-  m_Antialiasing: 0
+  m_Antialiasing: 1
   m_AntialiasingQuality: 2
   m_StopNaN: 0
   m_Dithering: 0
@@ -14137,7 +14137,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:
@@ -14183,6 +14183,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _camera: {fileID: 961739752}
   _gameplayConfig: {fileID: 11400000, guid: e72edc1b95e6fe24f95a3f787eaf345c, type: 2}
+  _stylizeSettings: {fileID: 11400000, guid: ac2545dd81f81d148b3bc09a724ff268, type: 2}
   _defaultFocusSize: {x: 9, y: 1, z: 7}
 --- !u!1 &972256409
 GameObject:

@@ -1,6 +1,7 @@
-// 传送转场的快照外壳：把上一个世界的截图，从“起始机位”投影到伙伴箱子外面的外壳上。
-// 起始机位时外壳铺满画面，每个像素正好对应截图上同一个位置，所以第一帧和截图完全一样；
-// 相机拉远时截图像贴在箱子上一样变小，四周露出新世界。不受雾影响，可整体淡出并叠一层季节色。
+// 传送转场的截图：把上一个世界的截图，从“起始机位”投影到与箱子同大的外壳和正对相机的外圈平面上（见 SnapshotPhoto）。
+// 起始机位时两层合起来铺满画面，每个像素正好对应截图上同一个位置，所以第一帧和截图完全一样；
+// 正交相机下投影方向与视线平行，相机拉远时截图在外壳上整体等比缩小、不会变形。不受雾影响，可整体淡出并叠一层季节色。
+// 始终画在最前面：箱子前半部分和更靠前的物体都不能挡住它。
 Shader "Worldyssey/SnapshotProjection"
 {
     Properties
@@ -16,6 +17,7 @@ Shader "Worldyssey/SnapshotProjection"
         Tags { "RenderType" = "Transparent" "Queue" = "Transparent" "RenderPipeline" = "UniversalPipeline" }
         Blend SrcAlpha OneMinusSrcAlpha
         ZWrite Off
+        ZTest Always
         Cull Back
 
         Pass
