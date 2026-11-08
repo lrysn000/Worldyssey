@@ -55,8 +55,8 @@ namespace Worldyssey.UI
             if (_coordinateText != null)
             {
                 _coordinateText.text = lineLength > 1
-                    ? string.Format(UiText.EditorLineFormat, x, y, lineLength)
-                    : string.Format(UiText.EditorCoordinateFormat, x, y);
+                    ? string.Format(Localization.Translate(UiText.EditorLineFormat), x, y, lineLength)
+                    : string.Format(Localization.Translate(UiText.EditorCoordinateFormat), x, y);
             }
         }
 

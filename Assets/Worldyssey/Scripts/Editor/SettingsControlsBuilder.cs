@@ -15,11 +15,13 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class SettingsControlsBuilder
     {
-        private const string MenuPath = "Worldyssey/Setup/Build Settings Controls (Current Scene)";
+        private const string MenuPath = "Worldyssey/Scene Setup/Build Settings Controls (Current Scene)";
         private const string UndoName = "Build Settings Controls";
 
-        private const float RowHeight = 64f;
-        private const float RowGap = 16f;
+        /// <summary>设置项的行高和行距，补加语言行的工具按同样的间距摆放。</summary>
+        internal const float RowHeight = 64f;
+        internal const float RowGap = 16f;
+        internal const string LanguageDropdownName = "LanguageDropdown";
         private const float LabelWidth = 260f;
         private const float ControlWidth = 360f;
         private const float ControlsColumnX = 680f;
@@ -64,13 +66,15 @@ namespace Worldyssey.EditorTools
             float y = 0f;
             Toggle fullscreen = CreateToggleRow(body, UiText.Fullscreen, y, resources, scope, context);
             y += RowHeight + RowGap;
-            TMP_Dropdown resolution = CreateDropdownRow(body, UiText.Resolution, y, resources, scope, context);
+            TMP_Dropdown resolution = CreateDropdownRow(body, UiText.Resolution, "ResolutionDropdown", y, resources, scope, context);
             y += RowHeight + RowGap;
             Slider master = CreateSliderRow(body, UiText.MasterVolume, y, resources, scope, context);
             y += RowHeight + RowGap;
             Slider music = CreateSliderRow(body, UiText.MusicVolume, y, resources, scope, context);
             y += RowHeight + RowGap;
             Slider sfx = CreateSliderRow(body, UiText.SfxVolume, y, resources, scope, context);
+            y += RowHeight + RowGap;
+            TMP_Dropdown language = CreateDropdownRow(body, UiText.Language, LanguageDropdownName, y, resources, scope, context);
 
             TMP_Text controls = GameUiBuilder.CreateText(body, "Controls", UiText.ControlsHeader, 24f, TextAlignmentOptions.TopLeft, TopLeft,
                 new Vector2(ControlsColumnX, -16f), new Vector2(420f, 470f));
@@ -87,6 +91,7 @@ namespace Worldyssey.EditorTools
             GameUiBuilder.SetReference(panel, "_masterSlider", master);
             GameUiBuilder.SetReference(panel, "_musicSlider", music);
             GameUiBuilder.SetReference(panel, "_sfxSlider", sfx);
+            GameUiBuilder.SetReference(panel, "_languageDropdown", language);
             GameUiBuilder.SetReference(panel, "_controlsText", controls);
             if (inputReader != null)
             {
@@ -136,7 +141,7 @@ namespace Worldyssey.EditorTools
             return slider;
         }
 
-        private static TMP_Dropdown CreateDropdownRow(Transform body, string label, float y, DefaultControls.Resources resources, UiThemeScope scope, UiStyleKit.Context context)
+        private static TMP_Dropdown CreateDropdownRow(Transform body, string label, string controlName, float y, DefaultControls.Resources resources, UiThemeScope scope, UiStyleKit.Context context)
         {
             CreateLabel(body, label, y, scope, context);
             var tmpResources = new TMP_DefaultControls.Resources
@@ -148,7 +153,7 @@ namespace Worldyssey.EditorTools
                 knob = context.PanelSprite,
             };
             GameObject dropdownObject = TMP_DefaultControls.CreateDropdown(tmpResources);
-            RectTransform rect = Attach(dropdownObject, body, "ResolutionDropdown", new Vector2(LabelWidth, -y), new Vector2(ControlWidth, RowHeight - 8f));
+            RectTransform rect = Attach(dropdownObject, body, controlName, new Vector2(LabelWidth, -y), new Vector2(ControlWidth, RowHeight - 8f));
             UiStyleKit.SetSliced(dropdownObject.GetComponent<Image>(), context.PanelSprite);
             UiStyleKit.Theme(dropdownObject.GetComponent<Image>(), UiColorRole.PanelBackground, scope, context);
             StyleDropdownText(rect.Find("Label"), 26f, scope, context);

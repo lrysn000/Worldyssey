@@ -19,7 +19,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class GameUiBuilder
     {
-        private const string MenuPath = "Worldyssey/Setup/Build Game Scene (Logic + UI)";
+        private const string MenuPath = "Worldyssey/Scene Setup/Build Game Scene (Logic + UI)";
         private const string LevelButtonPrefabFolder = ProjectPaths.UiPrefabs;
         private const string LevelButtonPrefabPath = LevelButtonPrefabFolder + "/P_LevelButton.prefab";
         private const string PreferredCatalogName = "LevelCatalog_Tests";
@@ -205,7 +205,7 @@ namespace Worldyssey.EditorTools
         }
 
         /// <summary>
-        /// 选关界面只生成带返回键的空壳，正式布局由 Worldyssey/Setup/Rebuild Level Select UI 生成。
+        /// 选关界面只生成带返回键的空壳，正式布局由 Worldyssey/Scene Setup/Rebuild Level Select UI 生成。
         /// </summary>
         private static LevelSelectPanel CreateLevelSelect(Transform canvas)
         {

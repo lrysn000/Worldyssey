@@ -16,7 +16,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class PixelUiReskin
     {
-        private const string MenuPath = "Worldyssey/UI/Apply Pixel UI Skin";
+        private const string MenuPath = "Worldyssey/Art/UI/Apply Pixel UI Skin";
         private const string UndoName = "Apply Pixel UI Skin";
         // 换皮前的素材：最早的 Honeti 圆角套件，以及上一版像素套件用过的底板
         private static readonly string[] OldKitMarkers =

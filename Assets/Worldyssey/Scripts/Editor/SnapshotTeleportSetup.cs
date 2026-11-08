@@ -11,7 +11,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class SnapshotTeleportSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Setup Snapshot Teleport (Current Scene)";
+        private const string MenuPath = "Worldyssey/Scene Setup/Setup Snapshot Teleport (Current Scene)";
         private const string ShaderName = "Worldyssey/SnapshotProjection";
         private const string MaterialFolder = ProjectPaths.Materials + "/Effects";
         private const string MaterialPath = MaterialFolder + "/M_SnapshotShell.mat";

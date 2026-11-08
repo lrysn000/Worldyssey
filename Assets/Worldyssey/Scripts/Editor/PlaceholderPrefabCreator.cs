@@ -10,7 +10,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class PlaceholderPrefabCreator
     {
-        private const string MenuPath = "Worldyssey/Setup/Create Placeholder Prefabs";
+        private const string MenuPath = "Worldyssey/Scene Setup/Create Placeholder Prefabs";
         private const string PrefabFolder = ProjectPaths.PlaceholderPrefabs;
         private const string ConfigFolder = ProjectPaths.Config;
         private const string ConfigPath = ConfigFolder + "/LevelVisualConfig.asset";

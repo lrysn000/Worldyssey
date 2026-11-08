@@ -9,7 +9,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public class AudioImportRules : AssetPostprocessor
     {
-        private const string MenuPath = "Worldyssey/Setup/Apply Audio Import Settings";
+        private const string MenuPath = "Worldyssey/Content/Apply Audio Import Settings";
         private const string AudioFolder = "Assets/Worldyssey/Audio";
         private const string SfxFolder = AudioFolder + "/SFX/";
         private const string AmbienceFolder = AudioFolder + "/Ambience/";

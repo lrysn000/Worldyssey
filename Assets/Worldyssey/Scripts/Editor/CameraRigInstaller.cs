@@ -12,7 +12,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class CameraRigInstaller
     {
-        private const string MenuPath = "Worldyssey/Setup/Add Camera Rig to Scene";
+        private const string MenuPath = "Worldyssey/Scene Setup/Add Camera Rig to Scene";
 
         [MenuItem(MenuPath)]
         public static void AddCameraRig()

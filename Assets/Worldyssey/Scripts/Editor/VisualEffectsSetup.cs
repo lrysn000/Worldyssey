@@ -13,7 +13,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class VisualEffectsSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Setup Visual Effects (Current Scene)";
+        private const string MenuPath = "Worldyssey/Scene Setup/Setup Visual Effects (Current Scene)";
         private const string MaterialFolder = ProjectPaths.Materials + "/Placeholder";
         private const string PrefabFolder = ProjectPaths.PlaceholderPrefabs;
         private const string ConfigFolder = ProjectPaths.Config;

@@ -10,7 +10,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class RangerPlayerSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Build Ranger Player";
+        private const string MenuPath = "Worldyssey/Content/Build Ranger Player";
         private const string Folder = ProjectPaths.Models + "/Ranger";
         private const string ModelPath = Folder + "/Ranger.fbx";
         private const string GeneralAnimationPath = Folder + "/Animations/Rig_Medium_General.fbx";

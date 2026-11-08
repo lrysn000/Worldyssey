@@ -14,7 +14,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class PaletteUsageReport
     {
-        private const string MenuPath = "Worldyssey/Art/Palette Usage Report";
+        private const string MenuPath = "Worldyssey/Debug/Palette Usage Report";
         private const string EnvironmentFolder = ProjectPaths.EnvironmentPrefabs;
         private const string PaletteKeyword = "Palette";
 

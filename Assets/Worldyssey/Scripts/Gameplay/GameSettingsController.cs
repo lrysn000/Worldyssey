@@ -4,11 +4,12 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Audio;
 using Worldyssey.Core;
+using Worldyssey.UI;
 
 namespace Worldyssey.Gameplay
 {
     /// <summary>
-    /// 持有并应用玩家设置：启动时读取 settings.json 并应用音量和显示模式；设置面板修改时立即生效，关闭面板或退出游戏时保存。
+    /// 持有并应用玩家设置：启动时读取 settings.json 并应用音量、显示模式和界面语言；设置面板修改时立即生效，关闭面板或退出游戏时保存。
     /// 音乐、音效音量通过混音器的暴露参数生效；没有混音器时主音量直接作用于 <see cref="AudioListener.volume"/>，
     /// 音乐、音效音量先保存下来，供以后的音频系统读取（<see cref="VolumesChanged"/>）。
     /// </summary>
@@ -25,6 +26,9 @@ namespace Worldyssey.Gameplay
         [Tooltip("可选：音频混音器，需要暴露 MasterVolume、MusicVolume、SfxVolume 三个参数。留空时主音量直接作用于 AudioListener")]
         [SerializeField] private AudioMixer _mixer;
 
+        [Tooltip("翻译表（CSV，首列英文原文，之后每列一种语言）。留空时界面只显示英文")]
+        [SerializeField] private TextAsset _translationTable;
+
         private SaveService _saveService;
         private SettingsData _data = new SettingsData();
         private bool _isDirty;
@@ -33,6 +37,7 @@ namespace Worldyssey.Gameplay
         public float MusicVolume => _data.MusicVolume;
         public float SfxVolume => _data.SfxVolume;
         public bool IsFullscreen => _data.IsFullscreen;
+        public GameLanguage Language => Localization.FromCode(_data.Language);
 
         /// <summary>音量变化了。以后的音乐、音效播放器订阅它来更新自己的音量。</summary>
         public event Action VolumesChanged;
@@ -48,6 +53,10 @@ namespace Worldyssey.Gameplay
 
             ApplyAudio();
             ApplyScreen();
+
+            // 尽早加载翻译表，界面启用时就能拿到当前语言的文字；晚于界面的部分靠 LanguageChanged 补刷新
+            Localization.LoadTable(_translationTable);
+            Localization.SetLanguage(Language);
         }
 
         private void OnApplicationQuit()
@@ -71,6 +80,14 @@ namespace Worldyssey.Gameplay
         {
             _data.SetSfxVolume(value);
             MarkDirtyAndApplyAudio();
+        }
+
+        /// <summary>切换界面语言，立即生效，关闭设置面板时保存。</summary>
+        public void SetLanguage(GameLanguage language)
+        {
+            _data.SetLanguage(Localization.ToCode(language));
+            _isDirty = true;
+            Localization.SetLanguage(language);
         }
 
         public void SetFullscreen(bool isFullscreen)

@@ -11,7 +11,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class PartnerPullSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Add Partner Pull Effect";
+        private const string MenuPath = "Worldyssey/Scene Setup/Add Partner Pull Effect";
 
         [MenuItem(MenuPath)]
         public static void Setup()

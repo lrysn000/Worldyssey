@@ -13,7 +13,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class MainMenuBackgroundSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Main Menu Scrolling Background";
+        private const string MenuPath = "Worldyssey/Scene Setup/Main Menu Scrolling Background";
         private const string TexturePath = ProjectPaths.Textures + "/UI/MainMenu/FourSeasons_PixelPanorama_v3_Seamless.png";
         private const string BackgroundName = "ScrollingBackground";
         private const int MaxTextureSize = 4096;

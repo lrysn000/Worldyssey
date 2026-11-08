@@ -72,15 +72,15 @@ namespace Worldyssey.UI
         {
             if (_stepsText != null)
             {
-                _stepsText.text = string.Format(UiText.ResultStepsFormat, steps);
+                _stepsText.text = string.Format(Localization.Translate(UiText.ResultStepsFormat), steps);
             }
 
             if (_bestText != null)
             {
                 // 编辑器试玩不记录成绩，传入负数表示不显示最佳步数
-                _bestText.text = isNewBest ? UiText.NewBest
+                _bestText.text = isNewBest ? Localization.Translate(UiText.NewBest)
                     : bestSteps < 0 ? string.Empty
-                    : string.Format(UiText.ResultBestFormat, bestSteps);
+                    : string.Format(Localization.Translate(UiText.ResultBestFormat), bestSteps);
             }
 
             if (_nextButton != null)
@@ -93,6 +93,7 @@ namespace Worldyssey.UI
 
         /// <summary>
         /// 修改“返回”按钮的文字：正常游戏为返回选关，编辑器试玩时为返回编辑器。
+        /// <paramref name="label"/> 是英文原文（UiText），按当前语言显示，切换语言后跟着变。
         /// </summary>
         public void SetExitLabel(string label)
         {
@@ -101,11 +102,7 @@ namespace Worldyssey.UI
                 return;
             }
 
-            TMP_Text text = _levelSelectButton.GetComponentInChildren<TMP_Text>(true);
-            if (text != null)
-            {
-                text.text = label;
-            }
+            LocalizedText.SetSource(_levelSelectButton.GetComponentInChildren<TMP_Text>(true), label);
         }
 
         private void HandleNextClicked()

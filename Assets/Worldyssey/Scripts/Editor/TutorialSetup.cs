@@ -16,8 +16,8 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class TutorialSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Build Tutorial";
-        private const string ResetMenuPath = "Worldyssey/Setup/Reset Tutorial Texts";
+        private const string MenuPath = "Worldyssey/Content/Build Tutorial";
+        private const string ResetMenuPath = "Worldyssey/Content/Reset Tutorial Texts";
         private const string LibraryPath = ProjectPaths.Config + "/TutorialLibrary.asset";
         private const string ArrowPath = ProjectPaths.Textures + "/UI/Tutorial/TutorialArrow.png";
         private const string RootName = "Tutorial";

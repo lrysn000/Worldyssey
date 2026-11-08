@@ -11,7 +11,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class MutedThemeColors
     {
-        private const string MenuPath = "Worldyssey/UI/Apply Muted Theme Colors";
+        private const string MenuPath = "Worldyssey/Art/UI/Apply Muted Theme Colors";
 
         // 标题色、面板底、内框、强调色、正文
         private static readonly (string Key, Color32 Header, Color32 Background, Color32 Inner, Color32 Accent, Color32 Text)[] Palettes =

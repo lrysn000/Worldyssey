@@ -53,6 +53,7 @@ namespace Worldyssey.UI
 
         /// <summary>
         /// 修改“返回”按钮的文字：正常游戏为返回选关，编辑器试玩时为返回编辑器。
+        /// <paramref name="label"/> 是英文原文（UiText），按当前语言显示，切换语言后跟着变。
         /// </summary>
         public void SetExitLabel(string label)
         {
@@ -61,11 +62,7 @@ namespace Worldyssey.UI
                 return;
             }
 
-            TMP_Text text = _levelSelectButton.GetComponentInChildren<TMP_Text>(true);
-            if (text != null)
-            {
-                text.text = label;
-            }
+            LocalizedText.SetSource(_levelSelectButton.GetComponentInChildren<TMP_Text>(true), label);
         }
 
         private static void AddListener(Button button, UnityEngine.Events.UnityAction action)

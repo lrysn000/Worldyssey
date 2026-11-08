@@ -99,12 +99,12 @@ namespace Worldyssey.UI
             IReadOnlyList<LevelIssue> issues = report.Issues;
             if (_issuesHeaderText != null)
             {
-                _issuesHeaderText.text = issues.Count == 0 ? UiText.IssuesHeader : string.Format(UiText.IssuesCountFormat, issues.Count);
+                _issuesHeaderText.text = issues.Count == 0 ? Localization.Translate(UiText.IssuesHeader) : string.Format(Localization.Translate(UiText.IssuesCountFormat), issues.Count);
             }
 
             if (issues.Count == 0)
             {
-                _issuesText.text = UiText.NoIssues;
+                _issuesText.text = Localization.Translate(UiText.NoIssues);
                 return;
             }
 
@@ -112,13 +112,13 @@ namespace Worldyssey.UI
             int shown = Mathf.Min(issues.Count, MaxIssueLines);
             for (int i = 0; i < shown; i++)
             {
-                _issuesBuilder.Append(issues[i].IsError ? UiText.ErrorPrefix : UiText.WarningPrefix);
+                _issuesBuilder.Append(issues[i].IsError ? Localization.Translate(UiText.ErrorPrefix) : Localization.Translate(UiText.WarningPrefix));
                 _issuesBuilder.AppendLine(issues[i].Message);
             }
 
             if (issues.Count > shown)
             {
-                _issuesBuilder.AppendFormat(UiText.MoreIssuesFormat, issues.Count - shown);
+                _issuesBuilder.AppendFormat(Localization.Translate(UiText.MoreIssuesFormat), issues.Count - shown);
             }
 
             _issuesText.text = _issuesBuilder.ToString();

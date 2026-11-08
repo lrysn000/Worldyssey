@@ -15,7 +15,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class LevelSelectUiBuilder
     {
-        private const string MenuPath = "Worldyssey/Setup/Rebuild Level Select UI";
+        private const string MenuPath = "Worldyssey/Scene Setup/Rebuild Level Select UI";
         private const string UndoName = "Rebuild Level Select UI";
         private const float CardsAlpha = 0.75f;
         private const float DetailAlpha = 0.92f;

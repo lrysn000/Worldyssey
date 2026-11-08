@@ -14,7 +14,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class EditorListFixes
     {
-        private const string MenuPath = "Worldyssey/Setup/Fix Editor Text Alignment";
+        private const string MenuPath = "Worldyssey/Scene Setup/Fix Editor Text Alignment";
         private const string TextAreaName = "Text Area";
         private const float ListTextPadding = 12f;
 

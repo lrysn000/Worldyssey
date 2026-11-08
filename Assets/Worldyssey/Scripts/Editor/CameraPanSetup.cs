@@ -11,7 +11,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class CameraPanSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Add Camera Pan";
+        private const string MenuPath = "Worldyssey/Scene Setup/Add Camera Pan";
 
         [MenuItem(MenuPath)]
         public static void Setup()

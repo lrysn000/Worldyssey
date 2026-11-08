@@ -51,7 +51,7 @@ namespace Worldyssey.EditorTools
                 Skin = guids.Length > 0 ? AssetDatabase.LoadAssetAtPath<UiSkin>(AssetDatabase.GUIDToAssetPath(guids[0])) : null;
                 if (Skin == null)
                 {
-                    Debug.LogWarning($"[{nameof(UiStyleKit)}] 项目中没有 {nameof(UiSkin)}，先运行 Worldyssey/UI/Apply Pixel UI Skin 生成；暂时使用纯色方块和默认字体");
+                    Debug.LogWarning($"[{nameof(UiStyleKit)}] 项目中没有 {nameof(UiSkin)}，先运行 Worldyssey/Art/UI/Apply Pixel UI Skin 生成；暂时使用纯色方块和默认字体");
                     return;
                 }
 

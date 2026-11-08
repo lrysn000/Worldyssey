@@ -50,7 +50,7 @@ namespace Worldyssey.Audio
             else if (!_hasWarned)
             {
                 _hasWarned = true;
-                Debug.LogWarning($"[{nameof(UiSoundButton)}] {name} 的父级里没有 {nameof(UiAudio)}，点击不会发声。运行 Worldyssey/Setup/Build UI Sounds", this);
+                Debug.LogWarning($"[{nameof(UiSoundButton)}] {name} 的父级里没有 {nameof(UiAudio)}，点击不会发声。运行 Worldyssey/Content/Build UI Sounds", this);
             }
         }
     }

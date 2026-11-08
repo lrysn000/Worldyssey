@@ -12,7 +12,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class PairListScroll
     {
-        private const string MenuPath = "Worldyssey/Setup/Upgrade Editor Pair List";
+        private const string MenuPath = "Worldyssey/Scene Setup/Upgrade Editor Pair List";
         private const string ScrollName = "PairScroll";
         private const float Spacing = 12f;
         private const int Padding = 8;

@@ -15,7 +15,7 @@ namespace Worldyssey.EditorTools
         /// <summary>图案子物体的名字，PedestalGlowSet 按这个名字找需要发光的渲染器。</summary>
         internal const string PatternChildName = PedestalGlowSet.PatternChildName;
 
-        private const string MenuPath = "Worldyssey/Setup/Add Goal And Pedestal Patterns";
+        private const string MenuPath = "Worldyssey/Scene Setup/Add Goal And Pedestal Patterns";
         private const string TextureFolder = ProjectPaths.Textures + "/Tiles";
         private const string GoalTexturePath = TextureFolder + "/Pattern_Goal.png";
         private const string PedestalTexturePath = TextureFolder + "/Pattern_Pedestal.png";

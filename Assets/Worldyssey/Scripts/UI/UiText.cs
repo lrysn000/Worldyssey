@@ -1,9 +1,9 @@
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 全部界面文案。集中在这里，以后改语言或做本地化只需改这一处。
+    /// 全部界面文案的英文原文，也是翻译表（Localization/Strings.csv）的查找键。
+    /// 显示前一律经 <see cref="Localization.Translate"/> 换成当前语言；改了这里的英文，翻译表第一列要同步改。
     /// </summary>
-    /// <remarks>暂用英文：TextMeshPro 默认字体没有中文字形，中文字体后续统一处理。</remarks>
     public static class UiText
     {
         public const string GameTitle = "WORLDYSSEY";
@@ -23,6 +23,7 @@ namespace Worldyssey.UI
         public const string MasterVolume = "Master Volume";
         public const string MusicVolume = "Music";
         public const string SfxVolume = "Sound Effects";
+        public const string Language = "Language";
         public const string ControlsHeader = "Controls";
         public const string ControlLineFormat = "{0}    {1}";
 

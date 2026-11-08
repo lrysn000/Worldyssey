@@ -169,7 +169,7 @@ namespace Worldyssey.UI
             if (_emptyText != null)
             {
                 _emptyText.gameObject.SetActive(items.Count == 0);
-                _emptyText.text = _isCustomTab ? UiText.NoCustomLevels : UiText.NoLevels;
+                _emptyText.text = _isCustomTab ? Localization.Translate(UiText.NoCustomLevels) : Localization.Translate(UiText.NoLevels);
             }
 
             _selected = -1;
@@ -223,7 +223,7 @@ namespace Worldyssey.UI
             }
 
             _progressText.gameObject.SetActive(!_isCustomTab);
-            _progressText.text = string.Format(UiText.ClearedProgressFormat, LevelSelectSummary.CountCleared(_builtInItems), _builtInItems.Count);
+            _progressText.text = string.Format(Localization.Translate(UiText.ClearedProgressFormat), LevelSelectSummary.CountCleared(_builtInItems), _builtInItems.Count);
         }
 
         private void CacheTabParts()
@@ -293,7 +293,7 @@ namespace Worldyssey.UI
             }
 
             int index = _selected;
-            string message = string.Format(UiText.DeleteLevelConfirmFormat, _customItems[index].DisplayName);
+            string message = string.Format(Localization.Translate(UiText.DeleteLevelConfirmFormat), _customItems[index].DisplayName);
             _confirmDialog.Show(message, () => CustomLevelDeleteRequested?.Invoke(index));
         }
     }

@@ -100,8 +100,8 @@ namespace Worldyssey.UI
             for (int i = 0; i < pairs.Count; i++)
             {
                 LevelButton item = Instantiate(_itemPrefab, _listRoot);
-                string detail = string.Format(UiText.PairDetailFormat, draft.GetWorldName(pairs[i].WorldA), draft.GetWorldName(pairs[i].WorldB));
-                item.Setup(string.Format(UiText.PairTitleFormat, i), detail, i, HandleItemClicked);
+                string detail = string.Format(Localization.Translate(UiText.PairDetailFormat), Localization.Translate(draft.GetWorldName(pairs[i].WorldA)), Localization.Translate(draft.GetWorldName(pairs[i].WorldB)));
+                item.Setup(string.Format(Localization.Translate(UiText.PairTitleFormat), i), detail, i, HandleItemClicked);
                 item.SetIcon(_pairSymbols != null ? _pairSymbols.GetSymbol(i) : null);
                 item.SetHighlighted(i == selectedPair);
                 _items.Add(item);
@@ -110,8 +110,8 @@ namespace Worldyssey.UI
             if (_targetLabel != null)
             {
                 _targetLabel.text = targetWorld >= 0 && targetWorld < draft.WorldCount
-                    ? string.Format(UiText.TargetWorldFormat, draft.GetWorldName(targetWorld))
-                    : string.Format(UiText.TargetWorldFormat, "-");
+                    ? string.Format(Localization.Translate(UiText.TargetWorldFormat), Localization.Translate(draft.GetWorldName(targetWorld)))
+                    : string.Format(Localization.Translate(UiText.TargetWorldFormat), "-");
             }
 
             if (_removeButton != null)

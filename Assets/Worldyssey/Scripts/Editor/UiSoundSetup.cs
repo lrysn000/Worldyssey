@@ -14,7 +14,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class UiSoundSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Build UI Sounds";
+        private const string MenuPath = "Worldyssey/Content/Build UI Sounds";
         private const string UiPrefabFolder = "Assets/Worldyssey/Prefabs/UI";
 
         private static readonly string[] BackKeywords = { "back", "cancel", "close", "resume" };
@@ -26,7 +26,7 @@ namespace Worldyssey.EditorTools
             var sfxPlayer = Object.FindObjectOfType<SfxPlayer>(true);
             if (library == null || sfxPlayer == null)
             {
-                Debug.LogError($"[{nameof(UiSoundSetup)}] 找不到 AudioLibrary 或场景里的 SfxPlayer，先运行 Worldyssey/Setup/Build Audio，未做任何修改");
+                Debug.LogError($"[{nameof(UiSoundSetup)}] 找不到 AudioLibrary 或场景里的 SfxPlayer，先运行 Worldyssey/Content/Build Audio，未做任何修改");
                 return;
             }
 

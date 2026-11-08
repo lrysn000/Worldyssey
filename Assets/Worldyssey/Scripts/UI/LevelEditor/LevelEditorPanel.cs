@@ -73,7 +73,7 @@ namespace Worldyssey.UI
                 RefreshAll();
             }
 
-            _actionBar.SetStatus(string.Format(UiText.StatusOpenedFormat, draft.DisplayName));
+            _actionBar.SetStatus(string.Format(Localization.Translate(UiText.StatusOpenedFormat), draft.DisplayName));
             return true;
         }
 
@@ -287,7 +287,7 @@ namespace Worldyssey.UI
         {
             _model.Load(CreateNewDraft());
             RefreshAll();
-            _actionBar.SetStatus(UiText.StatusNewLevel);
+            _actionBar.SetStatus(Localization.Translate(UiText.StatusNewLevel));
         }
 
         private void HandleOpen()
@@ -301,7 +301,7 @@ namespace Worldyssey.UI
 
             if (_openableLevels.Count == 0)
             {
-                _actionBar.SetStatus(UiText.StatusNoCustomLevels);
+                _actionBar.SetStatus(Localization.Translate(UiText.StatusNoCustomLevels));
                 return;
             }
 
@@ -320,12 +320,12 @@ namespace Worldyssey.UI
             {
                 // 列表里的关卡已通过校验，解析失败说明校验器与 LevelMap 不一致，必须暴露
                 Debug.LogError($"[{nameof(LevelEditorPanel)}] 打开关卡 '{level.Id}' 失败：{exception.Message}", this);
-                _actionBar.SetStatus(UiText.StatusOpenFailed);
+                _actionBar.SetStatus(Localization.Translate(UiText.StatusOpenFailed));
                 return;
             }
 
             RefreshAll();
-            _actionBar.SetStatus(string.Format(UiText.StatusOpenedFormat, _model.Draft.DisplayName));
+            _actionBar.SetStatus(string.Format(Localization.Translate(UiText.StatusOpenedFormat), _model.Draft.DisplayName));
         }
 
         private void HandleOpenCancelled()
@@ -337,14 +337,14 @@ namespace Worldyssey.UI
         {
             if (_model.Report.HasErrors)
             {
-                _actionBar.SetStatus(UiText.StatusFixErrors);
+                _actionBar.SetStatus(Localization.Translate(UiText.StatusFixErrors));
                 return;
             }
 
             if (_saveService == null)
             {
                 Debug.LogError($"[{nameof(LevelEditorPanel)}] {name} 未初始化存档服务，无法保存", this);
-                _actionBar.SetStatus(UiText.StatusSaveFailed);
+                _actionBar.SetStatus(Localization.Translate(UiText.StatusSaveFailed));
                 return;
             }
 
@@ -352,12 +352,12 @@ namespace Worldyssey.UI
             {
                 string path = _saveService.SaveCustomLevel(_model.Draft.ToLevelData());
                 Debug.Log($"[{nameof(LevelEditorPanel)}] 已保存：{path}", this);
-                _actionBar.SetStatus(string.Format(UiText.StatusSavedFormat, _model.Draft.DisplayName));
+                _actionBar.SetStatus(string.Format(Localization.Translate(UiText.StatusSavedFormat), _model.Draft.DisplayName));
             }
             catch (IOException exception)
             {
                 Debug.LogError($"[{nameof(LevelEditorPanel)}] 保存失败：{exception.Message}", this);
-                _actionBar.SetStatus(UiText.StatusSaveFailed);
+                _actionBar.SetStatus(Localization.Translate(UiText.StatusSaveFailed));
             }
         }
 
@@ -365,7 +365,7 @@ namespace Worldyssey.UI
         {
             if (_model.Report.HasErrors)
             {
-                _actionBar.SetStatus(UiText.StatusFixErrors);
+                _actionBar.SetStatus(Localization.Translate(UiText.StatusFixErrors));
                 return;
             }
 
@@ -397,19 +397,19 @@ namespace Worldyssey.UI
                     RefreshAll();
                     break;
                 case EditorFeedback.SelectPairFirst:
-                    _actionBar.SetStatus(UiText.StatusSelectPair);
+                    _actionBar.SetStatus(Localization.Translate(UiText.StatusSelectPair));
                     break;
                 case EditorFeedback.PortalRejected:
-                    _actionBar.SetStatus(UiText.StatusPortalRejected);
+                    _actionBar.SetStatus(Localization.Translate(UiText.StatusPortalRejected));
                     break;
                 case EditorFeedback.PairRejected:
-                    _actionBar.SetStatus(UiText.StatusPairRejected);
+                    _actionBar.SetStatus(Localization.Translate(UiText.StatusPairRejected));
                     break;
                 case EditorFeedback.PairLimitReached:
-                    _actionBar.SetStatus(string.Format(UiText.StatusPairLimitFormat, LevelLimits.MaxPairCount));
+                    _actionBar.SetStatus(string.Format(Localization.Translate(UiText.StatusPairLimitFormat), LevelLimits.MaxPairCount));
                     break;
                 case EditorFeedback.NothingToUndo:
-                    _actionBar.SetStatus(UiText.StatusNothingToUndo);
+                    _actionBar.SetStatus(Localization.Translate(UiText.StatusNothingToUndo));
                     break;
             }
         }

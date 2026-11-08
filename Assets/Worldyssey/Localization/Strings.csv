@@ -1,0 +1,144 @@
+﻿en,zh-Hans
+Start,开始游戏
+Quit,退出
+Settings,设置
+More options coming soon,更多选项即将推出
+Close,关闭
+Fullscreen,全屏
+Resolution,分辨率
+Master Volume,主音量
+Music,音乐
+Sound Effects,音效
+Language,语言
+Controls,操作说明
+Move Up,向上移动
+Move Down,向下移动
+Move Left,向左移动
+Move Right,向右移动
+Enter Portal,进入传送门
+Undo,撤销
+Restart,重新开始
+Rotate View Left,向左旋转视角
+Rotate View Right,向右旋转视角
+Pause,暂停
+Pan Camera,平移镜头
+Drag Mouse,拖动鼠标
+Level Editor,关卡编辑器
+Select Level,选择关卡
+Levels,关卡
+Custom Levels,自建关卡
+No custom levels yet,还没有自建关卡
+Back,返回
+Locked,未解锁
+Not cleared,未通关
+Personal Best: {0},个人最佳：{0}
+NEW,新
+No levels,没有关卡
+Clear the previous level to unlock,通过上一关后解锁
+Cleared {0} / {1},已通关 {0} / {1}
+Play,开始
+Edit,编辑
+Delete,删除
+"Delete ""{0}""?
+This cannot be undone.","删除“{0}”？
+此操作无法撤销。"
+Steps: {0},步数：{0}
+Undo (Z),撤销 (Z)
+Restart (R),重来 (R)
+Pause (Esc),暂停 (Esc)
+Target world is in conflict,目标世界被锁住了
+Exit is blocked on this side,这一侧的出口被挡住了
+Target pedestal is occupied,目标底座上已有箱子
+Paused,已暂停
+Resume,继续
+Level Select,选择关卡
+Main Menu,主菜单
+Level Complete,通关！
+New Personal Best!,刷新个人最佳！
+Next Level,下一关
+Replay,再玩一次
+Back to Editor,返回编辑器
+Tools,工具
+Portal Pairs,传送门配对
+Issues,问题
+Level name,关卡名称
+World {0},世界 {0}
+Target: {0},目标：{0}
+Add Pair,添加配对
+Remove Pair,删除配对
+Pair {0},配对 {0}
+New,新建
+Open,打开
+Save,保存
+Test Play,试玩
+Open Level,打开关卡
+Cancel,取消
+No issues,没有问题
+Issues ({0}),问题（{0}）
+X {0}  Y {1}  Len {2},X {0}  Y {1}  长度 {2}
+Terrain,地形
+This World,本世界
+Objects,物体
+E: ,错误：
+W: ,警告：
+... and {0} more,……还有 {0} 条
+Saved: {0},已保存：{0}
+"Save failed, see console",保存失败，请查看控制台
+Fix errors first,请先修复错误
+Select a pair first,请先选择一个配对
+"This world is not in the pair, or the cell is taken",当前世界不属于这个配对，或者格子已被占用
+Need two different worlds,需要两个不同的世界
+At most {0} pairs,最多 {0} 个配对
+"Could not open level, see console",无法打开关卡，请查看控制台
+Nothing to undo,没有可以撤销的操作
+New level,新关卡
+Opened: {0},已打开：{0}
+No custom levels to open,没有可以打开的自建关卡
+Paint,绘制
+Left Click / Drag,左键点击 / 拖动
+Erase,擦除
+Right Click / Drag,右键点击 / 拖动
+Straight Line,画直线
+Shift + Drag,Shift + 拖动
+Next World,下一个世界
+Previous World,上一个世界
+Previous / Next Pair,上一个 / 下一个配对
+Up / Down,上 / 下
+Floor,地面
+Wall,墙
+Pedestal,底座
+Goal,终点
+Unique Wall,独有墙
+Box,箱子
+Player,玩家
+Portal,传送箱
+Eraser,橡皮擦
+Use [W][A][S][D] or the arrow keys to move.,用 [W][A][S][D] 或方向键移动。
+"Walk into the box to push it. If you aren't facing it, the first press only turns you around.",走向箱子就能推动它。如果没有面朝箱子，第一下只会转身。
+Push the box onto the goal to clear the level.,把箱子推到终点上就能过关。
+This glowing box is a portal. Push it onto the pedestal.,这个发光的箱子是传送箱，把它推上底座。
+Face the portal and press [F] to travel to the world of its color.,面朝传送箱按 [F]，就能前往它颜色对应的世界。
+You are in Summer now. The panel at the top shows which world you are in.,你现在在夏天。屏幕上方的面板会显示你所在的世界。
+"Each world has its own walls. The hedge only grows in Spring, so the way is clear here.",每个世界都有自己的墙。树篱只长在春天，所以这里畅通无阻。
+Every world shares the same wooden boxes. Push one here and it moves in all of them.,所有世界共用同一批木箱。在这里推动它，所有世界里的它都会跟着动。
+You arrive where you stand. Enter from a different side of the pedestal to land somewhere else.,你站在哪里，就会落在哪里。从底座的另一侧进入，就会到达别的位置。
+A return portal formed on your pedestal. Push it onto another pedestal to travel back from there.,你的底座上出现了回程传送箱。把它推到另一个底座上，就能从那里传送回去。
+"Summer is locked: a box is sitting where Summer has a wall, so its portal won't let you in.",夏天被锁住了：有箱子压在夏天的墙所在的格子上，所以传送箱进不去。
+Push the box off that spot to unlock Summer.,把箱子推离那一格，就能解锁夏天。
+"Boxes can pass through other worlds' walls, but that world stays locked while a box is inside one.",箱子可以穿过其他世界的墙，但只要箱子压在墙上，那个世界就会一直被锁住。
+{0} is locked: a box is sitting on one of its walls or portals. Move it away first.,{0}被锁住了：有箱子压在它的墙或传送箱上。先把箱子推开。
+That box is stuck in a corner. Press [Z] to undo.,这个箱子卡在墙角了。按 [Z] 撤销。
+Stuck? Press [R] to start the level over.,卡住了？按 [R] 从头开始。
+Spring,春天
+Summer,夏天
+Autumn,秋天
+Winter,冬天
+Tab,Tab
+Shift + Tab,Shift + Tab
+Ctrl + S,Ctrl + S
+{0} x {1},{0} x {1}
+ *, *
+{0} <-> {1},{0} <-> {1}
+X {0}  Y {1},X {0}  Y {1}
+Volume,音量
+Sound,音效

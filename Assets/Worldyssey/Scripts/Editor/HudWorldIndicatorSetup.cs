@@ -17,7 +17,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class HudWorldIndicatorSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Build HUD World Indicator";
+        private const string MenuPath = "Worldyssey/Scene Setup/Build HUD World Indicator";
         private const string IndicatorName = "WorldIndicator";
         private const string InfoCardName = "InfoCard";
         private const int SlotCount = 4;
@@ -57,7 +57,7 @@ namespace Worldyssey.EditorTools
             var scope = hud != null ? hud.GetComponent<UiThemeScope>() : null;
             if (scope == null)
             {
-                Debug.LogError($"[{nameof(HudWorldIndicatorSetup)}] 找不到 HUD 或它的主题作用域，先运行 Worldyssey/Setup/Restyle UI (Honeti)", gameFlow);
+                Debug.LogError($"[{nameof(HudWorldIndicatorSetup)}] 找不到 HUD 或它的主题作用域，先运行 Worldyssey/Scene Setup/Restyle UI (Honeti)", gameFlow);
                 return;
             }
 

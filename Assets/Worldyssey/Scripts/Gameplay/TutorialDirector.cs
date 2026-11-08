@@ -61,6 +61,7 @@ namespace Worldyssey.Gameplay
             _levelSession.Restarted += HandleRestarted;
             _levelSession.StateChanged += HandleStateChanged;
             _levelSession.LevelCompleted += HandleLevelCompleted;
+            Localization.LanguageChanged += HandleLanguageChanged;
         }
 
         private void OnDisable()
@@ -76,6 +77,7 @@ namespace Worldyssey.Gameplay
             _levelSession.Restarted -= HandleRestarted;
             _levelSession.StateChanged -= HandleStateChanged;
             _levelSession.LevelCompleted -= HandleLevelCompleted;
+            Localization.LanguageChanged -= HandleLanguageChanged;
             Stop();
         }
 
@@ -167,7 +169,7 @@ namespace Worldyssey.Gameplay
             TutorialStep step = _sequence.DisplayedStep;
             if (step != null)
             {
-                _hintPanel.Show(step.Text);
+                _hintPanel.Show(Localization.Translate(step.Text));
             }
             else
             {
@@ -252,6 +254,18 @@ namespace Worldyssey.Gameplay
             {
                 Stop();
             }
+        }
+
+        private void HandleLanguageChanged()
+        {
+            if (!_isActive)
+            {
+                return;
+            }
+
+            // 卡关提示是按旧语言拼好的文字，直接结束它，回到按新语言显示的当前教学步骤
+            _isStuckHintShowing = false;
+            ShowCurrentText();
         }
 
         private void HandleLevelCompleted(int steps)

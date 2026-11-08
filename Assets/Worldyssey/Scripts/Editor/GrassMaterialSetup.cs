@@ -11,7 +11,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class GrassMaterialSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Setup Animated Grass (Current Scene)";
+        private const string MenuPath = "Worldyssey/Scene Setup/Setup Animated Grass (Current Scene)";
         private const string ShaderName = "Worldyssey/Grass";
         private const string MaterialFolder = ProjectPaths.Materials + "/Grass";
         private const string SeasonFolder = ProjectPaths.Seasons;

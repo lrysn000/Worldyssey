@@ -12,7 +12,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class WorldPaletteSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Link World Palette (3D + UI)";
+        private const string MenuPath = "Worldyssey/Scene Setup/Link World Palette (3D + UI)";
         private const string PaletteFolder = ProjectPaths.Config;
         private const string PalettePath = PaletteFolder + "/WorldPalette.asset";
 

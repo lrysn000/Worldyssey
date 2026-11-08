@@ -12,7 +12,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class LevelTransitionSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Setup Level Transition (Current Scene)";
+        private const string MenuPath = "Worldyssey/Scene Setup/Setup Level Transition (Current Scene)";
 
         [MenuItem(MenuPath)]
         public static void Setup()

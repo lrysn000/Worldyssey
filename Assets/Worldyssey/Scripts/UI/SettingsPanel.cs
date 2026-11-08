@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,26 +9,11 @@ using Worldyssey.Gameplay;
 namespace Worldyssey.UI
 {
     /// <summary>
-    /// 设置面板：全屏、分辨率、主音量 / 音乐 / 音效，以及按键提示。改动立即生效，关闭面板时保存。
+    /// 设置面板：全屏、分辨率、主音量 / 音乐 / 音效、界面语言，以及按键提示。改动立即生效，关闭面板时保存。
     /// 按键提示直接读输入资源里的实际绑定，改了按键会自动跟着变。所有设置项都是可选引用，缺了的那项不显示也不报错。
     /// </summary>
     public class SettingsPanel : UiPanel
     {
-        // 按键提示的条目：显示名和对应的输入动作
-        private static readonly (string Label, string Action)[] ControlEntries =
-        {
-            (UiText.ControlMoveUp, InputActionNames.MoveUp),
-            (UiText.ControlMoveDown, InputActionNames.MoveDown),
-            (UiText.ControlMoveLeft, InputActionNames.MoveLeft),
-            (UiText.ControlMoveRight, InputActionNames.MoveRight),
-            (UiText.ControlTeleport, InputActionNames.Teleport),
-            (UiText.ControlUndo, InputActionNames.Undo),
-            (UiText.ControlRestart, InputActionNames.Restart),
-            (UiText.ControlRotateLeft, InputActionNames.RotateViewLeft),
-            (UiText.ControlRotateRight, InputActionNames.RotateViewRight),
-            (UiText.ControlPause, InputActionNames.Pause),
-        };
-
         [SerializeField] private Button _closeButton;
 
         [Header("设置项（可选）")]
@@ -39,6 +23,7 @@ namespace Worldyssey.UI
         [SerializeField] private Slider _masterSlider;
         [SerializeField] private Slider _musicSlider;
         [SerializeField] private Slider _sfxSlider;
+        [SerializeField] private TMP_Dropdown _languageDropdown;
 
         [Header("按键提示（可选）")]
         [SerializeField] private TMP_Text _controlsText;
@@ -46,6 +31,7 @@ namespace Worldyssey.UI
 
         private readonly List<Vector2Int> _resolutions = new List<Vector2Int>();
         private readonly List<string> _resolutionLabels = new List<string>();
+        private readonly List<string> _languageLabels = new List<string>();
 
         /// <summary>点击了关闭按钮。</summary>
         public event Action CloseRequested;
@@ -53,7 +39,7 @@ namespace Worldyssey.UI
         private void Awake()
         {
             CheckReference(_closeButton, nameof(_closeButton));
-            bool hasSettingControls = _fullscreenToggle != null || _resolutionDropdown != null
+            bool hasSettingControls = _fullscreenToggle != null || _resolutionDropdown != null || _languageDropdown != null
                 || _masterSlider != null || _musicSlider != null || _sfxSlider != null;
             if (hasSettingControls)
             {
@@ -68,12 +54,14 @@ namespace Worldyssey.UI
                 _closeButton.onClick.AddListener(HandleCloseClicked);
             }
 
+            Localization.LanguageChanged += HandleLanguageChanged;
             Refresh();
             if (_settings == null)
             {
                 return;
             }
 
+            AddListener(_languageDropdown, HandleLanguageSelected);
             AddListener(_fullscreenToggle, HandleFullscreenChanged);
             AddListener(_resolutionDropdown, HandleResolutionChanged);
             AddListener(_masterSlider, _settings.SetMasterVolume);
@@ -88,11 +76,13 @@ namespace Worldyssey.UI
                 _closeButton.onClick.RemoveListener(HandleCloseClicked);
             }
 
+            Localization.LanguageChanged -= HandleLanguageChanged;
             if (_settings == null)
             {
                 return;
             }
 
+            RemoveListener(_languageDropdown, HandleLanguageSelected);
             RemoveListener(_fullscreenToggle, HandleFullscreenChanged);
             RemoveListener(_resolutionDropdown, HandleResolutionChanged);
             RemoveListener(_masterSlider, _settings.SetMasterVolume);
@@ -119,11 +109,17 @@ namespace Worldyssey.UI
                 }
 
                 RefreshResolutions();
+                RefreshLanguages();
             }
 
+            RefreshControlsText();
+        }
+
+        private void RefreshControlsText()
+        {
             if (_controlsText != null)
             {
-                _controlsText.text = BuildControlsText();
+                _controlsText.text = ControlsGuideText.Build(_inputActions);
             }
         }
 
@@ -154,37 +150,41 @@ namespace Worldyssey.UI
             _resolutionDropdown.SetValueWithoutNotify(_resolutions.IndexOf(current));
         }
 
-        private string BuildControlsText()
+        private void RefreshLanguages()
         {
-            var text = new StringBuilder(UiText.ControlsHeader).Append('\n');
-
-            // 游戏操作的按键从输入资源读取，改键后这里自动跟着变
-            InputActionMap map = _inputActions != null ? _inputActions.FindActionMap(InputActionNames.GameplayMap) : null;
-            if (map != null)
+            if (_languageDropdown == null)
             {
-                foreach ((string label, string actionName) in ControlEntries)
-                {
-                    InputAction action = map.FindAction(actionName);
-                    if (action != null)
-                    {
-                        text.Append('\n').AppendFormat(UiText.ControlLineFormat, label, action.GetBindingDisplayString());
-                    }
-                }
+                return;
             }
 
-            text.Append('\n').AppendFormat(UiText.ControlLineFormat, UiText.ControlPanCamera, UiText.ControlPanCameraBinding);
-            text.Append("\n\n").Append(UiText.EditorControlsHeader).Append('\n');
-            foreach ((string label, string binding) in UiText.EditorControlEntries)
+            // 语言名用各自的语言书写，切换界面语言后也不变，选错了也能认出来切回去
+            _languageLabels.Clear();
+            for (int i = 0; i < Localization.LanguageCount; i++)
             {
-                text.Append('\n').AppendFormat(UiText.ControlLineFormat, label, binding);
+                _languageLabels.Add(Localization.GetNativeName((GameLanguage)i));
             }
 
-            return text.ToString();
+            _languageDropdown.ClearOptions();
+            _languageDropdown.AddOptions(_languageLabels);
+            _languageDropdown.SetValueWithoutNotify((int)_settings.Language);
         }
 
         private void HandleCloseClicked()
         {
             CloseRequested?.Invoke();
+        }
+
+        private void HandleLanguageSelected(int index)
+        {
+            if (index >= 0 && index < Localization.LanguageCount)
+            {
+                _settings.SetLanguage((GameLanguage)index);
+            }
+        }
+
+        private void HandleLanguageChanged()
+        {
+            RefreshControlsText();
         }
 
         private void HandleFullscreenChanged(bool isOn)

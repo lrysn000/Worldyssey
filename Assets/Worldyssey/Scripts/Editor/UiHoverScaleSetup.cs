@@ -14,7 +14,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class UiHoverScaleSetup
     {
-        private const string MenuPath = "Worldyssey/UI/Add Hover Scale To Buttons (Current Scene)";
+        private const string MenuPath = "Worldyssey/Art/UI/Add Hover Scale To Buttons (Current Scene)";
         private const string ConfigPath = ProjectPaths.Config + "/UiMotionConfig.asset";
         private const string LevelButtonPrefabPath = ProjectPaths.UiPrefabs + "/P_LevelButton.prefab";
         private const string UndoName = "Add Hover Scale";

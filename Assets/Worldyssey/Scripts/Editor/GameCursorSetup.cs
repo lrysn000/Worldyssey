@@ -13,7 +13,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class GameCursorSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Setup Game Cursor";
+        private const string MenuPath = "Worldyssey/Scene Setup/Setup Game Cursor";
         private const string CursorFolder = ProjectPaths.Textures + "/UI/Cursors";
         private const string CursorSetPath = ProjectPaths.Config + "/CursorSet.asset";
         private static readonly Vector2 CursorHotspot = new Vector2(2f, 2f);

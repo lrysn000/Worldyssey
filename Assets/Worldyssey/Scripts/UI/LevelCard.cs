@@ -118,20 +118,20 @@ namespace Worldyssey.UI
             {
                 sprite = icons.Locked;
                 role = UiColorRole.Disabled;
-                _statusText.text = UiText.Locked;
+                _statusText.text = Localization.Translate(UiText.Locked);
             }
             else if (item.IsCleared)
             {
                 sprite = icons.Cleared;
                 role = UiColorRole.Confirm;
-                _statusText.text = string.Format(UiText.BestStepsFormat, item.BestSteps);
+                _statusText.text = string.Format(Localization.Translate(UiText.BestStepsFormat), item.BestSteps);
             }
             else
             {
                 // 自建关卡没有“下一关”的概念，未通关时不显示星
                 sprite = item.IsNext ? icons.Next : null;
                 role = UiColorRole.Accent;
-                _statusText.text = item.IsNext ? UiText.NextLevelTag : UiText.NotCleared;
+                _statusText.text = item.IsNext ? Localization.Translate(UiText.NextLevelTag) : Localization.Translate(UiText.NotCleared);
             }
 
             _statusIcon.sprite = sprite;

@@ -16,7 +16,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class StylizeSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Setup Stylized Rendering";
+        private const string MenuPath = "Worldyssey/Scene Setup/Setup Stylized Rendering";
         private const string SettingsPath = ProjectPaths.Config + "/StylizeSettings.asset";
         private const string ShaderName = "Hidden/Worldyssey/Stylize";
 

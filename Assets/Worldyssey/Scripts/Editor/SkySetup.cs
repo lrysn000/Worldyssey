@@ -13,7 +13,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class SkySetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Setup Sky (Current Scene)";
+        private const string MenuPath = "Worldyssey/Scene Setup/Setup Sky (Current Scene)";
         private const string EnvironmentFolder = ProjectPaths.EnvironmentPrefabs;
         private const string MaterialFolder = ProjectPaths.Materials + "/Sky";
         private const string SettingsPath = ProjectPaths.Config + "/SkySettings.asset";

@@ -15,7 +15,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class LevelEditorUiBuilder
     {
-        private const string MenuPath = "Worldyssey/Setup/Rebuild Level Editor UI";
+        private const string MenuPath = "Worldyssey/Scene Setup/Rebuild Level Editor UI";
         private const string UndoName = "Rebuild Level Editor UI";
         private const string GridPalettePath = ProjectPaths.Config + "/EditorGridPalette.asset";
         internal const string BrushFolder = ProjectPaths.Textures + "/UI/EditorBrushes";

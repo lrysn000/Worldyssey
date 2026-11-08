@@ -14,7 +14,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class SettingsControlsScroll
     {
-        private const string MenuPath = "Worldyssey/Setup/Make Settings Controls Scrollable";
+        private const string MenuPath = "Worldyssey/Scene Setup/Make Settings Controls Scrollable";
         private const string ScrollName = "ControlsScroll";
         private const string ScrollbarName = "Scrollbar";
         private const float ScrollSensitivity = 30f;

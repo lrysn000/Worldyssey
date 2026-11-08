@@ -12,7 +12,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class WinterSnowSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Winter Snow";
+        private const string MenuPath = "Worldyssey/Scene Setup/Winter Snow";
 
         [MenuItem(MenuPath)]
         public static void Setup()

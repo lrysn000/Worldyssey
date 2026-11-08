@@ -9,7 +9,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class FloorGridSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Add Floor Grid Lines";
+        private const string MenuPath = "Worldyssey/Scene Setup/Add Floor Grid Lines";
         private const string ShaderName = "Worldyssey/FloorGrid";
         private const string MaterialPath = ProjectPaths.Materials + "/M_FloorGrid.mat";
 

@@ -88,8 +88,8 @@ namespace Worldyssey.UI
         {
             _numberText.text = number.ToString("00");
             _nameText.text = item.DisplayName;
-            _bestText.text = item.IsLocked ? UiText.LockedHint
-                : item.IsCleared ? string.Format(UiText.BestStepsFormat, item.BestSteps) : UiText.NotCleared;
+            _bestText.text = item.IsLocked ? Localization.Translate(UiText.LockedHint)
+                : item.IsCleared ? string.Format(Localization.Translate(UiText.BestStepsFormat), item.BestSteps) : Localization.Translate(UiText.NotCleared);
             _playButton.interactable = !item.IsLocked;
             SetButtonVisible(_editButton, isCustom);
             SetButtonVisible(_deleteButton, isCustom);
@@ -133,7 +133,7 @@ namespace Worldyssey.UI
 
             if (_worldNameText != null)
             {
-                _worldNameText.text = _draft != null ? _draft.GetWorldName(world) : string.Empty;
+                _worldNameText.text = _draft != null ? Localization.Translate(_draft.GetWorldName(world)) : string.Empty;
             }
 
             if (_draft != null)

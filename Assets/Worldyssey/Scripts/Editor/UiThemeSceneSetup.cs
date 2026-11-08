@@ -16,7 +16,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class UiThemeSceneSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Add UI Theme + Settings Panel";
+        private const string MenuPath = "Worldyssey/Scene Setup/Add UI Theme + Settings Panel";
         private const float ButtonRowSpacing = 120f;
 
         private static readonly Vector2 SettingsCardSize = new Vector2(720f, 560f);
@@ -38,7 +38,7 @@ namespace Worldyssey.EditorTools
             if (gameFlow == null || themeSet == null || themeSet.NeutralTheme == null)
             {
                 Debug.LogError($"[{nameof(UiThemeSceneSetup)}] 需要场景中有 {nameof(GameFlow)}（先运行 Build Game Scene），"
-                    + "并且已生成主题资源（先运行 Worldyssey/UI/Create Theme Assets），未做任何修改");
+                    + "并且已生成主题资源（先运行 Worldyssey/Art/UI/Create Theme Assets），未做任何修改");
                 return null;
             }
 

@@ -77,6 +77,7 @@ namespace Worldyssey.UI
 
             _levelSession.StateChanged += HandleStateChanged;
             _levelView.ShownWorldChanged += HandleShownWorldChanged;
+            Localization.LanguageChanged += HandleLanguageChanged;
 
             // HUD 可能在关卡生成之后才显示，显示时补一次
             _shownWorld = _levelView.ShownWorld;
@@ -92,6 +93,7 @@ namespace Worldyssey.UI
 
             _levelSession.StateChanged -= HandleStateChanged;
             _levelView.ShownWorldChanged -= HandleShownWorldChanged;
+            Localization.LanguageChanged -= HandleLanguageChanged;
         }
 
         /// <summary>
@@ -123,6 +125,11 @@ namespace Worldyssey.UI
             Refresh();
         }
 
+        private void HandleLanguageChanged()
+        {
+            Refresh();
+        }
+
         private void HandleShownWorldChanged(int world)
         {
             _shownWorld = world;
@@ -146,7 +153,7 @@ namespace Worldyssey.UI
                 return null;
             }
 
-            _worldNameText.text = map.GetWorldName(_shownWorld);
+            _worldNameText.text = Localization.Translate(map.GetWorldName(_shownWorld));
             int worldCount = Mathf.Min(map.WorldCount, _slots.Length);
 
             // 第一遍算总宽度，第二遍从左到右摆放，整行居中；不需要临时列表

@@ -1,12 +1,13 @@
 using UnityEngine;
 using Worldyssey.Core;
 using Worldyssey.Data;
+using Worldyssey.UI;
 
 namespace Worldyssey.Gameplay
 {
     /// <summary>
     /// 判断什么时候该给卡关提示：想进被锁住的世界（每次都提示）、箱子推进墙角、短时间内反复撤销（每次进关各一次）。
-    /// 只负责判断和生成文字，显示由 <see cref="TutorialDirector"/> 负责。
+    /// 只负责判断和生成（已翻译的）文字，显示由 <see cref="TutorialDirector"/> 负责。
     /// </summary>
     public sealed class StuckHintWatcher
     {
@@ -45,7 +46,7 @@ namespace Worldyssey.Gameplay
                 if (result.Events[i] is MappedBoxPushedEvent pushed && TutorialQueries.IsCorneredOffGoal(map, pushed.To))
                 {
                     _hasShownCornerHint = true;
-                    message = _library.CornerText;
+                    message = Localization.Translate(_library.CornerText);
                     target = TutorialTarget.MappedBox(pushed.BoxIndex);
                     return true;
                 }
@@ -71,7 +72,7 @@ namespace Worldyssey.Gameplay
                 target = TutorialTarget.MappedBox(box);
             }
 
-            message = string.Format(_library.LockedWorldFormat, session.Rules.Map.GetWorldName(world));
+            message = string.Format(Localization.Translate(_library.LockedWorldFormat), Localization.Translate(session.Rules.Map.GetWorldName(world)));
             return true;
         }
 
@@ -92,7 +93,7 @@ namespace Worldyssey.Gameplay
             }
 
             _hasShownUndoHint = true;
-            message = _library.UndoBurstText;
+            message = Localization.Translate(_library.UndoBurstText);
             return true;
         }
     }

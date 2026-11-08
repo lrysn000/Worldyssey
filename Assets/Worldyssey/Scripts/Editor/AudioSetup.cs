@@ -16,7 +16,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class AudioSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Build Audio";
+        private const string MenuPath = "Worldyssey/Content/Build Audio";
         private const string LibraryPath = "Assets/Worldyssey/Config/AudioLibrary.asset";
         private const string AudioFolder = "Assets/Worldyssey/Audio";
         private const string AudioObjectName = "Audio";

@@ -14,7 +14,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class PixelFontGenerator
     {
-        private const string MenuPath = "Worldyssey/UI/Generate Pixel Fonts";
+        private const string MenuPath = "Worldyssey/Art/UI/Generate Pixel Fonts";
         private const string OutputFolder = ProjectPaths.Art + "/Fonts";
         private const string AssetSuffix = " Pixel ";
 

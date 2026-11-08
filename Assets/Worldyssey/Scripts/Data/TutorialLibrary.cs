@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Worldyssey.Data
 {
     /// <summary>
-    /// 全部关卡教学和卡关提示的文字与参数。由 Worldyssey/Setup/Build Tutorial 生成，之后可直接在 Inspector 里改文字。
+    /// 全部关卡教学和卡关提示的文字与参数。由 Worldyssey/Content/Build Tutorial 生成，之后可直接在 Inspector 里改文字。
     /// </summary>
     [CreateAssetMenu(fileName = "TutorialLibrary", menuName = "Worldyssey/Tutorial Library")]
     public class TutorialLibrary : ScriptableObject

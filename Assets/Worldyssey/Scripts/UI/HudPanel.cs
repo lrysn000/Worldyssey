@@ -59,6 +59,7 @@ namespace Worldyssey.UI
                 _levelSession.TeleportFailed += HandleTeleportFailed;
             }
 
+            Localization.LanguageChanged += HandleLanguageChanged;
             AddListener(_undoButton, HandleUndoClicked);
             AddListener(_restartButton, HandleRestartClicked);
             AddListener(_pauseButton, HandlePauseClicked);
@@ -76,6 +77,7 @@ namespace Worldyssey.UI
                 _levelSession.TeleportFailed -= HandleTeleportFailed;
             }
 
+            Localization.LanguageChanged -= HandleLanguageChanged;
             RemoveListener(_undoButton, HandleUndoClicked);
             RemoveListener(_restartButton, HandleRestartClicked);
             RemoveListener(_pauseButton, HandlePauseClicked);
@@ -113,6 +115,11 @@ namespace Worldyssey.UI
         }
 
         private void HandleStateChanged()
+        {
+            Refresh();
+        }
+
+        private void HandleLanguageChanged()
         {
             Refresh();
         }
@@ -170,7 +177,7 @@ namespace Worldyssey.UI
             PlaySession session = _levelSession.Session;
             if (_stepCountText != null)
             {
-                _stepCountText.text = string.Format(UiText.StepCountFormat, session.StepCount);
+                _stepCountText.text = string.Format(Localization.Translate(UiText.StepCountFormat), session.StepCount);
             }
 
             if (_levelNameText != null)
@@ -197,11 +204,11 @@ namespace Worldyssey.UI
             switch (failure)
             {
                 case StepFailure.WorldConflicted:
-                    return UiText.WorldConflictedHint;
+                    return Localization.Translate(UiText.WorldConflictedHint);
                 case StepFailure.ExitBlocked:
-                    return UiText.ExitBlockedHint;
+                    return Localization.Translate(UiText.ExitBlockedHint);
                 case StepFailure.PedestalOccupied:
-                    return UiText.PedestalOccupiedHint;
+                    return Localization.Translate(UiText.PedestalOccupiedHint);
                 default:
                     return string.Empty;
             }

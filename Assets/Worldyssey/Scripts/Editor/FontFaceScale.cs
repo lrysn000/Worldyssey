@@ -11,7 +11,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class FontFaceScale
     {
-        private const string MenuPath = "Worldyssey/UI/Apply SDF Font Scale";
+        private const string MenuPath = "Worldyssey/Art/UI/Apply SDF Font Scale";
         private const string ScaleProperty = "m_FaceInfo.m_Scale";
 
         [MenuItem(MenuPath)]

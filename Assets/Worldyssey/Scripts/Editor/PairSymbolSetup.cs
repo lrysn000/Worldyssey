@@ -16,7 +16,7 @@ namespace Worldyssey.EditorTools
     /// </summary>
     public static class PairSymbolSetup
     {
-        private const string MenuPath = "Worldyssey/Setup/Add Pair Symbols";
+        private const string MenuPath = "Worldyssey/Scene Setup/Add Pair Symbols";
         private const string SymbolFolder = ProjectPaths.Textures + "/UI/PairSymbols";
         private const string SetPath = ProjectPaths.Config + "/PairSymbolSet.asset";
         private const string SymbolChildName = "PairSymbol";

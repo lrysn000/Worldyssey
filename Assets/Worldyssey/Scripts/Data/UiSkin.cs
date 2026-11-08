@@ -5,7 +5,7 @@ namespace Worldyssey.Data
 {
     /// <summary>
     /// 界面套件：所有界面共用的素材和字体（像素风）。只在编辑器生成、换皮界面时读取，颜色仍由主题决定，所以素材都用白色或浅色、可着色的。
-    /// 换素材或字体后重新运行 Worldyssey/UI/Apply Pixel UI Skin 即可，布局不变。
+    /// 换素材或字体后重新运行 Worldyssey/Art/UI/Apply Pixel UI Skin 即可，布局不变。
     /// </summary>
     [CreateAssetMenu(fileName = "UiSkin", menuName = "Worldyssey/UI/Skin")]
     public class UiSkin : ScriptableObject

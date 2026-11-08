@@ -29,11 +29,9 @@ MonoBehaviour:
   _rimLowPrefabs:
   - {fileID: 7005279699740287353, guid: d6fc7c1204f26c745ba3852c9b91c467, type: 3}
   _rimTallPrefabs:
-  - {fileID: 5677682458803599596, guid: 369d256c70cf5834cb5e61d9d498d286, type: 3}
-  - {fileID: 5255093490781614215, guid: bbe218820235dcd43a5b79aec77961b2, type: 3}
-  - {fileID: 3416145695673621212, guid: 96d2705ea7bf9e84bafe1ad787392c61, type: 3}
-  - {fileID: 73071809764193977, guid: ac5a5ed6a1b532b418ba3d5caf3d7b45, type: 3}
-  - {fileID: 2070615289596976189, guid: e174d974c154d1244b16665bb907f784, type: 3}
+  - {fileID: 5736226311672878673, guid: 104c52a394bca7d4e974aa4264e12dff, type: 3}
+  - {fileID: 6902553262026386514, guid: 66712a12cdfe6bc459e1373832c02777, type: 3}
+  - {fileID: 7182740531880081813, guid: d19275a7b85adff46b8b89c16b122d48, type: 3}
   _rimLowChance: 0.5
   _rimTallChance: 0.6
   _rimScaleRange: {x: 0.8, y: 1.2}

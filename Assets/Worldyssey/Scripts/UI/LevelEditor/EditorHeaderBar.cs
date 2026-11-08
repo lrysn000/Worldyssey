@@ -128,7 +128,7 @@ namespace Worldyssey.UI
 
             if (_sizeText != null)
             {
-                _sizeText.text = string.Format(UiText.SizeFormat, draft.Width, draft.Height);
+                _sizeText.text = string.Format(Localization.Translate(UiText.SizeFormat), draft.Width, draft.Height);
             }
 
             for (int i = 0; i < _worldTabs.Length; i++)
@@ -146,7 +146,7 @@ namespace Worldyssey.UI
                     continue;
                 }
 
-                string tabName = draft.GetWorldName(i) + (i == draft.StartWorld ? UiText.StartWorldMark : string.Empty);
+                string tabName = Localization.Translate(draft.GetWorldName(i)) + (i == draft.StartWorld ? Localization.Translate(UiText.StartWorldMark) : string.Empty);
                 Image icon = i < _worldTabIcons.Length ? _worldTabIcons[i] : null;
                 RenderButton(tab, icon, draft.GetWorldTheme(i), i == currentWorld, tabName);
             }
@@ -161,7 +161,7 @@ namespace Worldyssey.UI
 
                 var theme = (WorldTheme)i;
                 Image icon = i < _themeIcons.Length ? _themeIcons[i] : null;
-                RenderButton(_themeButtons[i], icon, theme, theme == currentTheme, WorldThemes.DisplayName(theme));
+                RenderButton(_themeButtons[i], icon, theme, theme == currentTheme, Localization.Translate(WorldThemes.DisplayName(theme)));
             }
         }
 

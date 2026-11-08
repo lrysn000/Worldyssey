@@ -20,7 +20,7 @@ namespace Worldyssey.EditorTools
         /// <summary>传送箱子边长（格）。比底座直径小 0.2，四边中间各露出 0.1。</summary>
         internal const float PortalBoxSize = 0.8f;
 
-        private const string MenuPath = "Worldyssey/Setup/Match Pedestal And Portal Box Size";
+        private const string MenuPath = "Worldyssey/Scene Setup/Match Pedestal And Portal Box Size";
         private const string ModelName = "Model";
 
         [MenuItem(MenuPath)]
