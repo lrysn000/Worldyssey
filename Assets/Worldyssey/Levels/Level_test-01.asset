@@ -29,6 +29,7 @@ MonoBehaviour:
     worlds:
     - name: World 1
       wallRows: []
+      theme: 
     player:
       x: 3
       y: 2

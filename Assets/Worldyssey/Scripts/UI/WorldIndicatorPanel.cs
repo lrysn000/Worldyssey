@@ -94,6 +94,30 @@ namespace Worldyssey.UI
             _levelView.ShownWorldChanged -= HandleShownWorldChanged;
         }
 
+        /// <summary>
+        /// 某个世界的图标，当前没显示时返回 null。供教学箭头指向图标。
+        /// </summary>
+        public RectTransform GetSlotRect(int world)
+        {
+            LevelMap map = _levelSession.HasLevel ? _levelSession.Session.Rules.Map : null;
+            if (map == null || _shownWorld < 0 || world < 0 || world >= Mathf.Min(map.WorldCount, _slots.Length) || !ShouldShow(world))
+            {
+                return null;
+            }
+
+            // 与 Refresh 的摆放顺序一致：按世界编号依次占用显示中的图标位
+            int slotIndex = 0;
+            for (int i = 0; i < world; i++)
+            {
+                if (ShouldShow(i))
+                {
+                    slotIndex++;
+                }
+            }
+
+            return (RectTransform)_slots[slotIndex].transform;
+        }
+
         private void HandleStateChanged()
         {
             Refresh();

@@ -42,6 +42,9 @@ namespace Worldyssey.Gameplay
         [Tooltip("可选：关卡进出场转场。留空时直接进入和离开关卡")]
         [SerializeField] private LevelTransitionPlayer _levelTransition;
 
+        [Tooltip("可选：前几关的教学提示和卡关提示，只在首次通关前出现")]
+        [SerializeField] private TutorialDirector _tutorialDirector;
+
         private readonly List<LevelSelectItem> _builtInItems = new List<LevelSelectItem>();
         private readonly List<LevelSelectItem> _customItems = new List<LevelSelectItem>();
         private readonly List<string> _catalogIds = new List<string>();
@@ -286,6 +289,11 @@ namespace Worldyssey.Gameplay
             _pausePanel.SetExitLabel(exitLabel);
             _resultPanel.SetExitLabel(exitLabel);
             SetPanels(GameFlowState.Playing);
+            if (_tutorialDirector != null)
+            {
+                // 试玩是设计者在调关卡，通关过的关卡玩家已经会了，都不出提示
+                _tutorialDirector.Begin(level.Id, !isTestPlay && !_progress.IsCompleted(recordKey));
+            }
 
             // 编辑器试玩是反复调整关卡的过程，不播放转场
             if (!isTestPlay)

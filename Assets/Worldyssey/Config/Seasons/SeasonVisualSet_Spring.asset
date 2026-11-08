@@ -15,8 +15,7 @@ MonoBehaviour:
   _floorPrefab: {fileID: 1527595513100604, guid: b6fa03512f3fbf54aa0078e44514e63f, type: 3}
   _floorCornerPrefab: {fileID: 1143586474497050, guid: f3e4e0647cdd5d545a0d269998f347a5, type: 3}
   _uniqueWallPrefabs:
-  - {fileID: 6825078121324823328, guid: f063457ad8c04ea42ad27b6a9364bfdb, type: 3}
-  - {fileID: 8207027027677494654, guid: 5024b1bae5eab014db55abd2348fc65d, type: 3}
+  - {fileID: 584866263415657583, guid: d6bd3464c4d38b54680aa40c07341ef3, type: 3}
   _grassMaterial: {fileID: 2100000, guid: 1f987fff8e346424aafd705710a42caf, type: 2}
   _grassPrefabs:
   - {fileID: 1652027893032058, guid: 2de706c632076434cadb942b0125afd1, type: 3}

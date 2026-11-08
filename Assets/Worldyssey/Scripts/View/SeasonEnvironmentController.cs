@@ -13,6 +13,9 @@ namespace Worldyssey.View
     {
         private const int NoSeason = -1;
         private const int DefaultSeason = 0;
+        private static readonly int SnowAmountId = Shader.PropertyToID("_SnowAmount");
+        private static readonly int SnowColorId = Shader.PropertyToID("_SnowColor");
+        private static readonly int SnowParamsId = Shader.PropertyToID("_SnowParams");
 
         [SerializeField] private LevelView _levelView;
         [SerializeField] private LevelVisualConfig _visualConfig;
@@ -157,6 +160,11 @@ namespace Worldyssey.View
             {
                 _sky.ApplySeason(environment, environment.SunRotation);
             }
+
+            // 共享墙在四个世界是同一批物体，积雪只能按当前显示的世界全局切换
+            Shader.SetGlobalFloat(SnowAmountId, environment.SnowAmount);
+            Shader.SetGlobalColor(SnowColorId, environment.SnowColor);
+            Shader.SetGlobalVector(SnowParamsId, environment.SnowParams);
 
             for (int i = 0; i < WorldThemes.Count; i++)
             {

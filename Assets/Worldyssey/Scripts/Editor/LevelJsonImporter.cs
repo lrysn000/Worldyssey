@@ -19,6 +19,11 @@ namespace Worldyssey.EditorTools
         private const string SourceFolder = ProjectPaths.LevelSources;
         private const string LevelFolder = ProjectPaths.Levels;
         private const string TestCatalogPath = LevelFolder + "/LevelCatalog_Tests.asset";
+
+        // 正式的季节关卡：单独的源目录和关卡目录，不影响测试关卡
+        private const string SeasonMenuPath = "Worldyssey/Levels/Import Season Levels";
+        private const string SeasonSourceFolder = SourceFolder + "/Seasons";
+        private const string SeasonCatalogPath = LevelFolder + "/LevelCatalog_Seasons.asset";
         private const string LevelAssetPrefix = "Level_";
 
         [MenuItem(ImportMenuPath)]
@@ -44,13 +49,28 @@ namespace Worldyssey.EditorTools
         [MenuItem(ReimportAllMenuPath)]
         public static void ReimportAllSource()
         {
-            if (!Directory.Exists(SourceFolder))
+            ImportFolder(SourceFolder, TestCatalogPath);
+        }
+
+        /// <summary>
+        /// 导入 Source/Seasons 下的季节关卡，按文件名顺序（1-1、1-2……）生成独立的 LevelCatalog_Seasons。
+        /// </summary>
+        [MenuItem(SeasonMenuPath)]
+        public static void ImportSeasonLevels()
+        {
+            ImportFolder(SeasonSourceFolder, SeasonCatalogPath);
+        }
+
+        /// <summary>导入一个目录下（不含子目录）的全部 JSON，并按文件名顺序重建关卡目录。</summary>
+        private static void ImportFolder(string sourceFolder, string catalogPath)
+        {
+            if (!Directory.Exists(sourceFolder))
             {
-                Debug.LogError($"[{nameof(LevelJsonImporter)}] 找不到目录 {SourceFolder}");
+                Debug.LogError($"[{nameof(LevelJsonImporter)}] 找不到目录 {sourceFolder}");
                 return;
             }
 
-            string[] files = Directory.GetFiles(SourceFolder, "*.json");
+            string[] files = Directory.GetFiles(sourceFolder, "*.json");
             Array.Sort(files, StringComparer.Ordinal);
 
             var imported = new List<LevelAsset>(files.Length);
@@ -63,8 +83,8 @@ namespace Worldyssey.EditorTools
                 }
             }
 
-            WriteCatalog(TestCatalogPath, imported);
-            Debug.Log($"[{nameof(LevelJsonImporter)}] 导入 {imported.Count}/{files.Length} 个关卡，测试目录：{TestCatalogPath}");
+            WriteCatalog(catalogPath, imported);
+            Debug.Log($"[{nameof(LevelJsonImporter)}] 导入 {imported.Count}/{files.Length} 个关卡，关卡目录：{catalogPath}");
         }
 
         /// <summary>

@@ -14,7 +14,11 @@ namespace Worldyssey.EditorTools
     {
         internal const string StatusIconFolder = ProjectPaths.Textures + "/UI/StatusIcons";
         internal const float DetailWidth = 520f;
-        private const string CardPrefabPath = ProjectPaths.UiPrefabs + "/P_LevelCard.prefab";
+        // “Personal Best: 123”在窄卡片上放不下时自动缩小字号，不换行
+        internal const float LevelCardStatusMinSize = 12f;
+        internal const float LevelCardStatusMaxSize = 20f;
+
+        internal const string CardPrefabPath = ProjectPaths.UiPrefabs + "/P_LevelCard.prefab";
         private const float Inset = 32f;
 
         private static readonly Vector2 TopLeft = new Vector2(0f, 1f);
@@ -73,6 +77,7 @@ namespace Worldyssey.EditorTools
             TMP_Text levelName = CreateText(root.transform, "Name", "Level", 22f, TextAlignmentOptions.MidlineLeft, TopLeft, new Vector2(18f, -82f), new Vector2(184f, 32f), UiColorRole.Text, true, null);
             SetSingleLine(levelName, 14f, 22f);
             TMP_Text status = CreateText(root.transform, "Status", string.Empty, 20f, TextAlignmentOptions.MidlineLeft, BottomLeft, new Vector2(18f, 14f), new Vector2(184f, 30f), UiColorRole.Text, false, null);
+            SetSingleLine(status, LevelCardStatusMinSize, LevelCardStatusMaxSize);
 
             // 卡片宽度由卡片墙按每行 4 张分配，名字和状态文字横向拉伸，跟着卡片变宽
             StretchHorizontally(levelName.rectTransform, 18f);
@@ -209,7 +214,7 @@ namespace Worldyssey.EditorTools
             rect.offsetMax = new Vector2(-margin, rect.offsetMax.y);
         }
 
-        private static void SetSingleLine(TMP_Text text, float minSize, float maxSize)
+        internal static void SetSingleLine(TMP_Text text, float minSize, float maxSize)
         {
             text.enableWordWrapping = false;
             text.overflowMode = TextOverflowModes.Truncate;

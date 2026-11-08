@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d877c2280bdc07c48afb5430c203db25, type: 3}
+  m_Name: LevelCatalog_Seasons
+  m_EditorClassIdentifier: 
+  _levels:
+  - {fileID: 11400000, guid: 3f7cc326479af8e4c963bd03a3a50744, type: 2}
+  - {fileID: 11400000, guid: bb22c79a5e7d79b4596b3ef6930b93ee, type: 2}
+  - {fileID: 11400000, guid: 8b7018f7558002f48b646b33c6f8570e, type: 2}
+  - {fileID: 11400000, guid: 9771f4f361ce3524691bc0fb381cfefb, type: 2}
+  - {fileID: 11400000, guid: e1834c309c892db428f658746c93c2cd, type: 2}
+  - {fileID: 11400000, guid: 5af7d220843ffa6439f3b9fe34980a98, type: 2}
+  - {fileID: 11400000, guid: ff544b7d67838ec4c8bf74f0e407f300, type: 2}
+  - {fileID: 11400000, guid: 7e318a8c4c214464a91777bd26cba498, type: 2}
+  - {fileID: 11400000, guid: 34db8a3d67dc9c34fa108bba883bf509, type: 2}
+  - {fileID: 11400000, guid: 090e6536ea1b8da448d7d6be1398dbc3, type: 2}
+  - {fileID: 11400000, guid: ff12848bc4b203146a7583204391df62, type: 2}
+  - {fileID: 11400000, guid: 9879abcd6e5d6694ca9a889415ff9ae6, type: 2}

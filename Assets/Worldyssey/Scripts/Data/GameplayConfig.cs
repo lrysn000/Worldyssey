@@ -66,6 +66,35 @@ namespace Worldyssey.Data
         [Range(0f, 1f)]
         [SerializeField] private float _snapshotEmergeStart = 0.3f;
 
+        [Header("回程箱子合成")]
+        [Tooltip("传送后回程箱子在底座上由碎块合成（新生成时从四周聚拢，被拉过来时从原位置碎开飞来）。" +
+            "拉远进行到多少比例时开始（0~1），与截图淡出同时进行")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _partnerPullStart = 0.55f;
+
+        [Tooltip("被拉过来时，碎块从原位置飞到底座的时长（秒）")]
+        [Min(0.05f)]
+        [SerializeField] private float _partnerPullDuration = 0.45f;
+
+        [Tooltip("被拉过来时飞行弧线最高点比箱子中心高出多少格")]
+        [Range(0f, 3f)]
+        [SerializeField] private float _partnerPullArcHeight = 1f;
+
+        [Tooltip("新生成时，碎块从四周聚拢到中心的时长（秒）")]
+        [Min(0.05f)]
+        [SerializeField] private float _assembleDuration = 0.35f;
+
+        [Tooltip("新生成时碎块出发的环半径（格）")]
+        [Range(0.3f, 3f)]
+        [SerializeField] private float _assembleRadius = 1.1f;
+
+        [Tooltip("新生成时碎块出发的高度，相对箱子中心（格）")]
+        [Range(0f, 2f)]
+        [SerializeField] private float _assembleHeight = 0.5f;
+
+        [Tooltip("碎块大小相对整个箱子的比例：x 为出发时，y 为合成前一刻")]
+        [SerializeField] private Vector2 _assemblePieceScale = new Vector2(0.35f, 0.55f);
+
         [Header("关卡进出场")]
         [Tooltip("入场时整座岛从多深的地方升起（米），云海在岛下方，岛会从云里冒出来")]
         [Min(0f)]
@@ -183,6 +212,13 @@ namespace Worldyssey.Data
         public float SnapshotBoxSquash => _snapshotBoxSquash;
         public float SnapshotBoxSquashDuration => _snapshotBoxSquashDuration;
         public float SnapshotEmergeStart => _snapshotEmergeStart;
+        public float PartnerPullStart => _partnerPullStart;
+        public float PartnerPullDuration => _partnerPullDuration;
+        public float PartnerPullArcHeight => _partnerPullArcHeight;
+        public float AssembleDuration => _assembleDuration;
+        public float AssembleRadius => _assembleRadius;
+        public float AssembleHeight => _assembleHeight;
+        public Vector2 AssemblePieceScale => _assemblePieceScale;
         public float HintDuration => _hintDuration;
         public float LevelRiseDepth => _levelRiseDepth;
         public float LevelRiseDuration => _levelRiseDuration;

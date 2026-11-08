@@ -53,11 +53,20 @@ namespace Worldyssey.Gameplay
         /// <summary>步数、状态或通关情况发生变化，或者关卡被加载、结束。</summary>
         public event Action StateChanged;
 
+        /// <summary>执行了一次移动或传送尝试（含只转身、撞墙等失败），在表现层开始播放之后发出。供教学等系统观察玩家的操作。</summary>
+        public event Action<StepResult> StepApplied;
+
         /// <summary>按了传送但无法进入，参数为原因。面前没有传送箱子时不触发。</summary>
         public event Action<StepFailure> TeleportFailed;
 
         /// <summary>关卡完成且最后一步的动画已播完，参数为通关步数。</summary>
         public event Action<int> LevelCompleted;
+
+        /// <summary>成功撤销了一步。没有可撤销的步骤时不触发。</summary>
+        public event Action Undone;
+
+        /// <summary>关卡回到了初始状态（按键、暂停菜单或结算界面的重玩）。</summary>
+        public event Action Restarted;
 
         private void Awake()
         {
@@ -263,10 +272,17 @@ namespace Worldyssey.Gameplay
             }
 
             InterruptPlayback();
-            if (_session.Undo() && _rewindEffect != null)
+            if (!_session.Undo())
+            {
+                return;
+            }
+
+            if (_rewindEffect != null)
             {
                 _rewindEffect.Trigger();
             }
+
+            Undone?.Invoke();
         }
 
         /// <summary>重开，打断正在播放的动画。输入关闭时无效。供 HUD 按钮和按键调用。</summary>
@@ -297,6 +313,7 @@ namespace Worldyssey.Gameplay
             InterruptPlayback();
             _isCompletionPending = false;
             _session.Restart();
+            Restarted?.Invoke();
         }
 
         /// <summary>指定世界当前是否处于冲突，供 HUD 显示。</summary>
@@ -398,6 +415,7 @@ namespace Worldyssey.Gameplay
             // 按住方向键顶着墙时不反复回弹，只有真正按下的那一次回弹
             _stepPlayer.Play(result, _session.Rules, !_isRepeatCommand);
             _isRepeatCommand = false;
+            StepApplied?.Invoke(result);
 
             if (IsTeleportRejection(result.Failure))
             {

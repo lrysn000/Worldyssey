@@ -27,6 +27,7 @@ namespace Worldyssey.View
         private readonly List<Transform> _worldTileRoots = new List<Transform>();
         private readonly List<List<PlacedTile>> _uniqueWallTiles = new List<List<PlacedTile>>();
         private readonly List<PlacedTile> _goalTiles = new List<PlacedTile>();
+        private readonly PedestalGlowSet _pedestalGlows = new PedestalGlowSet();
         private MaterialPropertyBlock _propertyBlock;
         private Coroutine _revealRoutine;
         private Coroutine _goalFlashRoutine;
@@ -330,21 +331,29 @@ namespace Worldyssey.View
         }
 
         /// <summary>
-        /// 根据规则刷新当前世界中、停在底座上的传送箱子的四面提示；其余箱子的提示隐藏。
+        /// 根据规则刷新当前世界中、停在底座上的传送箱子的四面提示和底座发光；其余箱子的提示隐藏、底座熄灭。
         /// </summary>
         public void UpdateFaceHints(LevelRules rules, LevelState state)
         {
             IReadOnlyList<Direction> directions = LevelRules.Directions;
+            _pedestalGlows.ResetTargets();
             for (int i = 0; i < _portalBoxViews.Count; i++)
             {
+                PortalBoxState box = state.PortalBoxes[i];
+                bool isShown = box.World == state.PlayerWorld && rules.IsPortalOnPedestal(state, i);
+                if (isShown)
+                {
+                    // 底座亮起箱子通往的世界的颜色：既表示“可以传送了”，也表示去哪
+                    Color worldColor = GetWorldColor(rules.Map.GetPortalWorld(LevelMap.GetPartnerIndex(i)));
+                    _pedestalGlows.Light(box.Position, worldColor * _visualConfig.PedestalGlowIntensity);
+                }
+
                 PortalFaceHint hint = _portalBoxViews[i].FaceHint;
                 if (hint == null)
                 {
                     continue;
                 }
 
-                PortalBoxState box = state.PortalBoxes[i];
-                bool isShown = box.World == state.PlayerWorld && rules.IsPortalOnPedestal(state, i);
                 hint.SetVisible(isShown);
                 if (!isShown)
                 {
@@ -356,6 +365,8 @@ namespace Worldyssey.View
                     hint.SetStatus(directions[d], rules.GetFaceStatus(state, i, directions[d]));
                 }
             }
+
+            _pedestalGlows.Commit();
         }
 
         private void ShowWorld(int world)
@@ -401,7 +412,7 @@ namespace Worldyssey.View
 
                     if (map.IsPedestal(pos))
                     {
-                        SpawnTile(_visualConfig.PedestalPrefab, _sharedTilesRoot, pos);
+                        _pedestalGlows.Add(pos, SpawnTile(_visualConfig.PedestalPrefab, _sharedTilesRoot, pos));
                     }
 
                     for (int world = 0; world < map.WorldCount; world++)
@@ -435,8 +446,11 @@ namespace Worldyssey.View
             {
                 PortalBoxView portalView = Instantiate(_visualConfig.PortalBoxPrefab, _entitiesRoot);
                 portalView.name = $"PortalBox_{i}";
-                int targetWorld = map.GetPortalWorld(LevelMap.GetPartnerIndex(i));
-                portalView.SetTargetWorldColor(GetWorldColor(targetWorld));
+                Color targetColor = GetWorldColor(map.GetPortalWorld(LevelMap.GetPartnerIndex(i)));
+                portalView.SetTargetWorldColor(targetColor);
+
+                // 同一对的两个箱子编号相邻（2n 与 2n+1），配对编号即 i / 2
+                portalView.SetPairSymbol(_visualConfig.PairSymbols, i / 2);
                 _portalBoxViews.Add(portalView);
             }
         }
@@ -542,6 +556,7 @@ namespace Worldyssey.View
 
             _uniqueWallTiles.Clear();
             _goalTiles.Clear();
+            _pedestalGlows.Clear();
             _mappedBoxViews.Clear();
             _portalBoxViews.Clear();
             _playerView = null;

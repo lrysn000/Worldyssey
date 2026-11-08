@@ -66,6 +66,12 @@ namespace Worldyssey.Data
         [Tooltip("正文")]
         [SerializeField] private TMP_FontAsset _bodyFont;
 
+        [Tooltip("SDF 字体（非点阵）整体放大的倍数，写入字体资源的 Face Info Scale，所有用它的文字一起放大。" +
+            "当前界面字号都是 11 的倍数；Fusion Pixel（multilan_85）的一个字形像素约为 1/14.81 字号，" +
+            "取 14.81 ÷ 11 ≈ 1.347 时每个字形像素正好落在整数个屏幕像素上，笔画最整齐")]
+        [Range(0.5f, 3f)]
+        [SerializeField] private float _sdfFontScale = 1.347f;
+
         [Tooltip("把字号取整到字体设计尺寸的整数倍（像素字体只有这样笔画才粗细一致），并关闭自动缩放字号")]
         [SerializeField] private bool _isFontSizeSnapped = true;
 
@@ -108,6 +114,7 @@ namespace Worldyssey.Data
         public TMP_FontAsset BodyFont => _bodyFont;
         public bool IsFontSizeSnapped => _isFontSizeSnapped;
         public int MinTextScale => _minTextScale;
+        public float SdfFontScale => _sdfFontScale;
         public int UiPixelScale => _uiPixelScale;
         public int SmallPixelScale => _smallPixelScale;
     }

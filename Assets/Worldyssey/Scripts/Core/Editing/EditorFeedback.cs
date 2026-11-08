@@ -24,5 +24,8 @@ namespace Worldyssey.Core
         PairRejected = 5,
 
         NothingToUndo = 6,
+
+        /// <summary>配对已达上限 <see cref="LevelLimits.MaxPairCount"/>。</summary>
+        PairLimitReached = 7,
     }
 }

@@ -26,6 +26,9 @@ namespace Worldyssey.EditorTools
         private const string PortalBoxName = "P_PortalBox";
 
         private const float BoxSize = 0.85f;
+
+        // 传送箱子比底座小一圈，放上底座后四边能露出底座边缘（与 PedestalBoxSizeSetup 一致）
+        private const float PortalBoxSize = PedestalBoxSizeSetup.PortalBoxSize;
         private const float HintPlateSize = 0.6f;
         private const float HintPlateThickness = 0.04f;
 
@@ -46,9 +49,11 @@ namespace Worldyssey.EditorTools
                 UniqueWallName, PrimitiveType.Cube, "M_UniqueWall", new Vector3(0.95f, 0.8f, 0.95f), 0.4f));
             GameObject goal = GetOrCreate(GoalName, () => CreateTile(
                 GoalName, PrimitiveType.Cube, "M_Goal", new Vector3(0.8f, 0.02f, 0.8f), 0.01f));
-            // Cylinder 原始高度为 2，y 缩放 0.05 得到 0.1 高
+            // Cylinder 原始高度为 2、直径为 1，y 缩放取高度的一半
             GameObject pedestal = GetOrCreate(PedestalName, () => CreateTile(
-                PedestalName, PrimitiveType.Cylinder, "M_Pedestal", new Vector3(0.8f, 0.05f, 0.8f), 0.05f));
+                PedestalName, PrimitiveType.Cylinder, "M_Pedestal",
+                new Vector3(PedestalBoxSizeSetup.PedestalDiameter, PedestalBoxSizeSetup.PedestalHeight * 0.5f, PedestalBoxSizeSetup.PedestalDiameter),
+                PedestalBoxSizeSetup.PedestalHeight * 0.5f));
             GameObject player = GetOrCreate(PlayerName, CreatePlayer);
             GameObject mappedBox = GetOrCreate(MappedBoxName, () => CreateEntity(
                 MappedBoxName, PrimitiveType.Cube, "M_MappedBox", new Vector3(BoxSize, BoxSize, BoxSize), BoxSize * 0.5f));
@@ -101,16 +106,16 @@ namespace Worldyssey.EditorTools
         private static GameObject CreatePortalBox()
         {
             var root = new GameObject(PortalBoxName);
-            float centerY = BoxSize * 0.5f;
+            float centerY = PortalBoxSize * 0.5f;
             GameObject body = AddModel(root.transform, "Model", PrimitiveType.Cube, "M_PortalBox",
-                new Vector3(BoxSize, BoxSize, BoxSize), new Vector3(0f, centerY, 0f));
+                new Vector3(PortalBoxSize, PortalBoxSize, PortalBoxSize), new Vector3(0f, centerY, 0f));
 
             var hintRoot = new GameObject("FaceHint");
             hintRoot.transform.SetParent(root.transform, false);
             PortalFaceHint faceHint = hintRoot.AddComponent<PortalFaceHint>();
 
             // 提示板贴在箱子四个侧面外侧一点，顺序与 Direction 枚举一致：Up(+z)、Right(+x)、Down(-z)、Left(-x)
-            float offset = BoxSize * 0.5f + HintPlateThickness * 0.5f + 0.01f;
+            float offset = PortalBoxSize * 0.5f + HintPlateThickness * 0.5f + 0.01f;
             var faceScaleZ = new Vector3(HintPlateSize, HintPlateSize, HintPlateThickness);
             var faceScaleX = new Vector3(HintPlateThickness, HintPlateSize, HintPlateSize);
             Renderer[] faces =

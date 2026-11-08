@@ -4,6 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Worldyssey.Core;
+using Worldyssey.Data;
 
 namespace Worldyssey.UI
 {
@@ -14,6 +15,12 @@ namespace Worldyssey.UI
     {
         [SerializeField] private LevelButton _itemPrefab;
         [SerializeField] private Transform _listRoot;
+
+        [Tooltip("可选：列表所在的滚动区域。设置后选中项（例如刚新增的配对）会自动滚进可见范围")]
+        [SerializeField] private ScrollRect _scrollRect;
+        [Tooltip("可选：配对符号，显示在每行左侧，与箱子顶面和网格上的符号一致")]
+        [SerializeField] private PairSymbolSet _pairSymbols;
+
         [SerializeField] private Button _targetButton;
         [SerializeField] private TMP_Text _targetLabel;
         [SerializeField] private Button _addButton;
@@ -83,6 +90,8 @@ namespace Worldyssey.UI
 
             for (int i = 0; i < _items.Count; i++)
             {
+                // Destroy 要到帧末才生效，先隐藏，下面立即重排布局时旧项不再占位
+                _items[i].gameObject.SetActive(false);
                 Destroy(_items[i].gameObject);
             }
 
@@ -93,6 +102,7 @@ namespace Worldyssey.UI
                 LevelButton item = Instantiate(_itemPrefab, _listRoot);
                 string detail = string.Format(UiText.PairDetailFormat, draft.GetWorldName(pairs[i].WorldA), draft.GetWorldName(pairs[i].WorldB));
                 item.Setup(string.Format(UiText.PairTitleFormat, i), detail, i, HandleItemClicked);
+                item.SetIcon(_pairSymbols != null ? _pairSymbols.GetSymbol(i) : null);
                 item.SetHighlighted(i == selectedPair);
                 _items.Add(item);
             }
@@ -108,6 +118,41 @@ namespace Worldyssey.UI
             {
                 _removeButton.interactable = selectedPair >= 0;
             }
+
+            ScrollToItem(selectedPair);
+        }
+
+        /// <summary>把第 <paramref name="index"/> 项滚进可见范围，已经可见时不动。</summary>
+        private void ScrollToItem(int index)
+        {
+            if (_scrollRect == null || index < 0 || index >= _items.Count)
+            {
+                return;
+            }
+
+            RectTransform content = _scrollRect.content;
+            LayoutRebuilder.ForceRebuildLayoutImmediate(content);
+            float viewHeight = _scrollRect.viewport.rect.height;
+            if (content.rect.height <= viewHeight)
+            {
+                return;
+            }
+
+            // 内容区以顶边为原点向下排列，anchoredPosition.y 就是当前滚过的距离
+            var item = (RectTransform)_items[index].transform;
+            float itemTop = -(item.localPosition.y + item.rect.height * (1f - item.pivot.y));
+            float itemBottom = itemTop + item.rect.height;
+            float offset = content.anchoredPosition.y;
+            if (itemTop < offset)
+            {
+                offset = itemTop;
+            }
+            else if (itemBottom > offset + viewHeight)
+            {
+                offset = itemBottom - viewHeight;
+            }
+
+            content.anchoredPosition = new Vector2(content.anchoredPosition.x, offset);
         }
 
         private void HandleItemClicked(int pair)

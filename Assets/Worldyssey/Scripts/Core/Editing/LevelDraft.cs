@@ -376,11 +376,13 @@ namespace Worldyssey.Core
         }
 
         /// <summary>
-        /// 清除该格在 <paramref name="world"/> 的目标箱子、传送箱子和独有墙。玩家不会被删除，地形保留。
+        /// 把该格清成空地：地形（共享墙、底座、终点，所有世界共用）恢复为地面，并清除目标箱子、
+        /// <paramref name="world"/> 的独有墙和传送箱子。玩家不会被删除，关卡始终需要一个玩家，只能用玩家画笔挪走。
         /// </summary>
         public bool Erase(int world, GridPos pos)
         {
-            bool isChanged = _mappedBoxes.Remove(pos);
+            bool isChanged = SetSharedCell(pos, SharedCell.Empty);
+            isChanged |= _mappedBoxes.Remove(pos);
             int portal = FindPortal(world, pos);
             if (portal >= 0)
             {
@@ -452,11 +454,11 @@ namespace Worldyssey.Core
         }
 
         /// <summary>
-        /// 新增连接两个不同世界的配对，返回配对编号；参数非法返回 -1。
+        /// 新增连接两个不同世界的配对，返回配对编号；参数非法或已达 <see cref="LevelLimits.MaxPairCount"/> 返回 -1。
         /// </summary>
         public int AddPair(int worldA, int worldB)
         {
-            if (worldA == worldB || worldA < 0 || worldB < 0 || worldA >= WorldCount || worldB >= WorldCount)
+            if (_pairs.Count >= LevelLimits.MaxPairCount || worldA == worldB || worldA < 0 || worldB < 0 || worldA >= WorldCount || worldB >= WorldCount)
             {
                 return -1;
             }

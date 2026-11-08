@@ -18,18 +18,34 @@ namespace Worldyssey.UI
         [SerializeField] private TMP_Text _nameText;
         [SerializeField] private TMP_Text _detailText;
 
+        [Tooltip("可选：左侧的小图标，例如配对符号。不设置图标时隐藏")]
+        [SerializeField] private Image _icon;
+
         [Tooltip("可选：底图上的 ThemedGraphic。设置后高亮通过切换主题角色实现，不再写死颜色")]
         [SerializeField] private ThemedGraphic _themedImage;
 
         private int _index;
         private Action<int> _onClicked;
+        private ThemedGraphic _themedName;
+        private ThemedGraphic _themedDetail;
+        private ThemedGraphic _themedIcon;
+        private UiColorRole _nameRole;
+        private UiColorRole _detailRole;
 
         private void Awake()
         {
             if (_button == null || _nameText == null || _detailText == null)
             {
                 Debug.LogError($"[{nameof(LevelButton)}] {name} 的按钮或文本引用未设置", this);
+                return;
             }
+
+            // 记下文字原本的颜色角色：高亮时底色变深，文字要换成浅色，取消高亮再换回来
+            _themedName = _nameText.GetComponent<ThemedGraphic>();
+            _themedDetail = _detailText.GetComponent<ThemedGraphic>();
+            _themedIcon = _icon != null ? _icon.GetComponent<ThemedGraphic>() : null;
+            _nameRole = _themedName != null ? _themedName.Role : UiColorRole.Text;
+            _detailRole = _themedDetail != null ? _themedDetail.Role : UiColorRole.Text;
         }
 
         private void OnEnable()
@@ -99,6 +115,16 @@ namespace Worldyssey.UI
             }
         }
 
+        /// <summary>设置左侧小图标，null 时隐藏。没有图标层时忽略。</summary>
+        public void SetIcon(Sprite icon)
+        {
+            if (_icon != null)
+            {
+                _icon.enabled = icon != null;
+                _icon.sprite = icon;
+            }
+        }
+
         /// <summary>
         /// 高亮表示当前选中项。
         /// </summary>
@@ -107,12 +133,23 @@ namespace Worldyssey.UI
             if (_themedImage != null)
             {
                 _themedImage.SetRole(isHighlighted ? UiColorRole.Accent : UiColorRole.InnerFrame);
+                SetTextRole(_themedName, isHighlighted ? UiColorRole.HeaderText : _nameRole);
+                SetTextRole(_themedDetail, isHighlighted ? UiColorRole.HeaderText : _detailRole);
+                SetTextRole(_themedIcon, isHighlighted ? UiColorRole.HeaderText : _nameRole);
                 return;
             }
 
             if (_button != null && _button.image != null)
             {
                 _button.image.color = isHighlighted ? HighlightedColor : NormalColor;
+            }
+        }
+
+        private static void SetTextRole(ThemedGraphic text, UiColorRole role)
+        {
+            if (text != null)
+            {
+                text.SetRole(role);
             }
         }
 

@@ -38,6 +38,7 @@ namespace Worldyssey.EditorTools
             }
 
             UiThemeSceneSetup.SetReferenceArray(grid, "_toolIcons", toolIcons);
+            GameUiBuilder.SetReference(grid, "_pairSymbols", GameUiBuilder.FindAsset<PairSymbolSet>(null));
         }
 
         /// <summary>关卡编辑器的网格（非只读）：确保网格所在区块左下角有坐标文字，并接到网格上。</summary>

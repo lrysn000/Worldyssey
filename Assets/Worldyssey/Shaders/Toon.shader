@@ -10,6 +10,8 @@ Shader "Worldyssey/Toon"
         _Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
         [HDR] _EmissionColor ("Emission", Color) = (0, 0, 0, 1)
         [Enum(UnityEngine.Rendering.CullMode)] _Cull ("Cull", Float) = 2
+        // 冬季朝上的面积雪；0 为这个材质不积雪（单个物体用 SnowExclusion 组件关掉）
+        _SnowMask ("Snow Mask", Range(0, 1)) = 1
     }
 
     SubShader
@@ -28,6 +30,7 @@ Shader "Worldyssey/Toon"
             half4 _BaseColor;
             half _Cutoff;
             half4 _EmissionColor;
+            half _SnowMask;
         CBUFFER_END
 
         half4 SampleBase(float2 uv)
@@ -96,7 +99,9 @@ Shader "Worldyssey/Toon"
                 half3 normalWS = normalize(input.normalWS);
                 Light mainLight = GetMainLight(TransformWorldToShadowCoord(input.positionWS));
                 half lightAmount = saturate(dot(normalWS, mainLight.direction)) * mainLight.shadowAttenuation;
-                half3 color = ToonShade(baseColor.rgb, lightAmount, mainLight.color, SampleSH(normalWS));
+                half3 ambient = SampleSH(normalWS);
+                half3 color = ToonShade(baseColor.rgb, lightAmount, mainLight.color, ambient);
+                color = lerp(color, SnowShade(lightAmount, ambient), SnowCover(normalWS, _SnowMask));
                 color += _EmissionColor.rgb;
                 return half4(MixFog(color, input.fogFactor), 1.0);
             }

@@ -156,20 +156,27 @@ namespace Worldyssey.UI
 
         private string BuildControlsText()
         {
+            var text = new StringBuilder(UiText.ControlsHeader).Append('\n');
+
+            // 游戏操作的按键从输入资源读取，改键后这里自动跟着变
             InputActionMap map = _inputActions != null ? _inputActions.FindActionMap(InputActionNames.GameplayMap) : null;
-            if (map == null)
+            if (map != null)
             {
-                return string.Empty;
+                foreach ((string label, string actionName) in ControlEntries)
+                {
+                    InputAction action = map.FindAction(actionName);
+                    if (action != null)
+                    {
+                        text.Append('\n').AppendFormat(UiText.ControlLineFormat, label, action.GetBindingDisplayString());
+                    }
+                }
             }
 
-            var text = new StringBuilder(UiText.ControlsHeader).Append('\n');
-            foreach ((string label, string actionName) in ControlEntries)
+            text.Append('\n').AppendFormat(UiText.ControlLineFormat, UiText.ControlPanCamera, UiText.ControlPanCameraBinding);
+            text.Append("\n\n").Append(UiText.EditorControlsHeader).Append('\n');
+            foreach ((string label, string binding) in UiText.EditorControlEntries)
             {
-                InputAction action = map.FindAction(actionName);
-                if (action != null)
-                {
-                    text.Append('\n').AppendFormat(UiText.ControlLineFormat, label, action.GetBindingDisplayString());
-                }
+                text.Append('\n').AppendFormat(UiText.ControlLineFormat, label, binding);
             }
 
             return text.ToString();

@@ -12,6 +12,9 @@ namespace Worldyssey.View
     /// </remarks>
     public class EntityView : MonoBehaviour
     {
+        // 补间起点和终点距离小于此值时视为原地转身
+        private const float MinMoveSqrDistance = 0.0001f;
+
         private Vector3 _position;
         private float _yaw;
         private Vector3 _targetPosition;
@@ -27,8 +30,12 @@ namespace Worldyssey.View
         private Coroutine _pop;
         private Coroutine _squash;
         private Coroutine _appear;
+        private bool _isTweenMoving;
 
         public bool IsTweening => _tween != null;
+
+        /// <summary>正在补间到另一个格子（只转身的补间不算），角色动画据此播放走路。</summary>
+        public bool IsWalking => _tween != null && _isTweenMoving;
 
         protected virtual void Awake()
         {
@@ -67,6 +74,7 @@ namespace Worldyssey.View
             }
 
             StopRoutine(ref _tween);
+            _isTweenMoving = (localPosition - _position).sqrMagnitude > MinMoveSqrDistance;
             _targetPosition = localPosition;
             _targetYaw = localRotation.eulerAngles.y;
             _tween = StartCoroutine(TweenRoutine(duration, curve));

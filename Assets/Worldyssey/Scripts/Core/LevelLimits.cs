@@ -10,6 +10,9 @@ namespace Worldyssey.Core
         // 上限来自设计决定：再多世界玩家难以在脑中追踪映射关系，选关和编辑器界面也按 4 个来排版
         public const int MaxWorldCount = 4;
 
+        // 每对传送箱子用一个符号区分（顶面印的配对符号）。只保留 6 种一眼能分清的形状，菱形与圆形太像已去掉
+        public const int MaxPairCount = 6;
+
         public const int MinWidth = 3;
         public const int MinHeight = 3;
 

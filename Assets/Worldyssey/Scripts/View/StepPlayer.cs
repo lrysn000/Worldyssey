@@ -26,12 +26,17 @@ namespace Worldyssey.View
         [Tooltip("可选：截图缩放转场。留空时用颜色遮罩转场")]
         [SerializeField] private SnapshotTeleportTransition _snapshotTransition;
 
+        [Tooltip("可选：传送后回程箱子在底座上合成的动画")]
+        [SerializeField] private PartnerPullEffect _partnerPullEffect;
+
         private readonly List<EntityView> _animatingViews = new List<EntityView>(4);
         private readonly List<EntityView> _pendingPops = new List<EntityView>(2);
         private Coroutine _playRoutine;
         private Coroutine _cameraRoutine;
         private LevelRules _pendingRules;
         private LevelState _pendingTeleportState;
+        private StepResult _pendingPullResult;
+        private float _pendingPullDelay;
 
         /// <summary>是否正在播放。播放期间新的命令会被缓存。撞墙回弹不算在内，不会挡住下一个输入。</summary>
         public bool IsPlaying => _playRoutine != null;
@@ -54,7 +59,8 @@ namespace Worldyssey.View
         /// </summary>
         public void Play(StepResult result, LevelRules rules, bool allowBump)
         {
-            CompleteImmediately();
+            // 上一步的拉过来效果只是表现，接着走下一步时让它播完，不打断
+            FinishStep();
             if (_levelView == null || _gameplayConfig == null || _levelView.PlayerView == null)
             {
                 return;
@@ -65,9 +71,13 @@ namespace Worldyssey.View
                 _pendingRules = rules;
                 _pendingTeleportState = result.State;
                 int targetWorld = FindTargetWorld(result);
-                _playRoutine = StartCoroutine(_snapshotTransition != null && _snapshotTransition.IsAvailable
-                    ? SnapshotTeleportRoutine(targetWorld)
-                    : TeleportRoutine(targetWorld));
+                bool isSnapshot = _snapshotTransition != null && _snapshotTransition.IsAvailable;
+
+                // 世界切换后，等相机基本拉回、原位置进入画面时再播伙伴被拉过来的效果
+                _pendingPullResult = result;
+                _pendingPullDelay = (isSnapshot ? _gameplayConfig.TeleportPullBackDuration : _gameplayConfig.TeleportExitDuration)
+                    * _gameplayConfig.PartnerPullStart;
+                _playRoutine = StartCoroutine(isSnapshot ? SnapshotTeleportRoutine(targetWorld) : TeleportRoutine(targetWorld));
                 return;
             }
 
@@ -88,6 +98,17 @@ namespace Worldyssey.View
         /// </summary>
         public void CompleteImmediately()
         {
+            FinishStep();
+            if (_partnerPullEffect != null)
+            {
+                _partnerPullEffect.Cancel();
+            }
+        }
+
+        /// <summary>让当前一步落到终点。被打断的传送不播拉过来的效果。</summary>
+        private void FinishStep()
+        {
+            _pendingPullResult = null;
             if (_playRoutine != null)
             {
                 StopCoroutine(_playRoutine);
@@ -268,7 +289,9 @@ namespace Worldyssey.View
         {
             Direction towardBox = TowardPedestal(_pendingTeleportState);
             GridPos pedestal = _pendingTeleportState.PlayerPosition + towardBox;
-            yield return _snapshotTransition.Play(pedestal, towardBox, targetWorld, ApplyTeleportedState);
+            // 回程箱子要播合成时由合成动画在最后压一下箱子，截图转场就不再压，避免压两次
+            bool isAssembling = _partnerPullEffect != null && PartnerPullEffect.HasPartnerArrival(_pendingPullResult);
+            yield return _snapshotTransition.Play(pedestal, towardBox, targetWorld, ApplyTeleportedState, !isAssembling);
             _playRoutine = null;
         }
 
@@ -353,6 +376,12 @@ namespace Worldyssey.View
             _pendingRules = null;
             _levelView.Sync(state);
             _levelView.UpdateFaceHints(rules, state);
+            if (_partnerPullEffect != null && _pendingPullResult != null)
+            {
+                _partnerPullEffect.TryPlay(_pendingPullResult, _pendingPullDelay);
+            }
+
+            _pendingPullResult = null;
         }
 
         private void CheckReference(Object reference, string fieldName)

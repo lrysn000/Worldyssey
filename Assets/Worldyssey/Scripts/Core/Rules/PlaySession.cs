@@ -21,8 +21,8 @@ namespace Worldyssey.Core
         public LevelRules Rules => _rules;
         public LevelState State { get; private set; }
 
-        /// <summary>当前步数，即撤销历史长度。</summary>
-        public int StepCount => _history.Count;
+        /// <summary>当前步数：移动和推箱各算一步，传送不算（但传送仍可撤销）。</summary>
+        public int StepCount => _history.StepCount;
 
         /// <summary>当前状态是否已通关。通关后不能再移动，但可以撤销和重开。</summary>
         public bool IsSolved { get; private set; }
@@ -47,7 +47,7 @@ namespace Worldyssey.Core
                 return false;
             }
 
-            return Apply(_rules.TryMove(State, direction));
+            return Apply(_rules.TryMove(State, direction), true);
         }
 
         /// <summary>
@@ -61,7 +61,8 @@ namespace Worldyssey.Core
                 return false;
             }
 
-            return Apply(_rules.TryTeleport(State));
+            // 传送是在世界之间切换视角，不是在网格上走动，不计入步数
+            return Apply(_rules.TryTeleport(State), false);
         }
 
         /// <summary>
@@ -91,11 +92,11 @@ namespace Worldyssey.Core
             StateRestored?.Invoke();
         }
 
-        private bool Apply(StepResult result)
+        private bool Apply(StepResult result, bool isCountedStep)
         {
             if (result.IsStepTaken)
             {
-                _history.Push(State);
+                _history.Push(State, isCountedStep);
             }
 
             // 失败时也要采用新状态：玩家可能已经转向

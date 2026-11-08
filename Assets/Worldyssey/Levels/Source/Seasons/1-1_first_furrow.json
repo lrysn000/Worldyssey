@@ -1,0 +1,42 @@
+{
+    "formatVersion": 1,
+    "id": "season-1-1",
+    "displayName": "First Furrow",
+    "width": 6,
+    "height": 6,
+    "startWorld": 0,
+    "sharedRows": [
+        "######",
+        "#  . #",
+        "#    #",
+        "#    #",
+        "# #  #",
+        "######"
+    ],
+    "worlds": [
+        {
+            "name": "Spring",
+            "wallRows": [
+                "      ",
+                "      ",
+                "      ",
+                "      ",
+                "      ",
+                "      "
+            ]
+        }
+    ],
+    "player": {
+        "x": 1,
+        "y": 2,
+        "facing": 0
+    },
+    "mappedBoxes": [
+        {
+            "x": 2,
+            "y": 2
+        }
+    ],
+    "portalPairs": [],
+    "portalBoxes": []
+}

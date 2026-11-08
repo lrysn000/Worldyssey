@@ -64,6 +64,7 @@ namespace Worldyssey.View
             }
 
             grassBatch.Build();
+            FloorGridBuilder.Build(config, map, floor, config.FloorGridMaterial, root);
         }
 
         /// <summary>

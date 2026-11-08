@@ -1,0 +1,119 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc383bc32fd471a469ab2b752488d5aa, type: 3}
+  m_Name: AudioLibrary
+  m_EditorClassIdentifier: 
+  _footsteps:
+  - _clips:
+    - {fileID: 8300000, guid: 5de8b4641bd47004487aa23cf9ff94fe, type: 3}
+    - {fileID: 8300000, guid: bfb272b22162b4f42bc20f626362177c, type: 3}
+    - {fileID: 8300000, guid: 4f668b3da217a6f49a9334ad3a4728be, type: 3}
+    - {fileID: 8300000, guid: 5dfda45f4c455f441a95d92da596215c, type: 3}
+    - {fileID: 8300000, guid: 65fe883e9020cb74f87b85f75aa3feed, type: 3}
+    _volume: 0.5
+    _pitchRange: {x: 0.9, y: 1.1}
+    _minInterval: 0.05
+  - _clips:
+    - {fileID: 8300000, guid: 5de8b4641bd47004487aa23cf9ff94fe, type: 3}
+    - {fileID: 8300000, guid: bfb272b22162b4f42bc20f626362177c, type: 3}
+    - {fileID: 8300000, guid: 4f668b3da217a6f49a9334ad3a4728be, type: 3}
+    - {fileID: 8300000, guid: 5dfda45f4c455f441a95d92da596215c, type: 3}
+    - {fileID: 8300000, guid: 65fe883e9020cb74f87b85f75aa3feed, type: 3}
+    _volume: 0.5
+    _pitchRange: {x: 0.9, y: 1.1}
+    _minInterval: 0.05
+  - _clips:
+    - {fileID: 8300000, guid: 5de8b4641bd47004487aa23cf9ff94fe, type: 3}
+    - {fileID: 8300000, guid: bfb272b22162b4f42bc20f626362177c, type: 3}
+    - {fileID: 8300000, guid: 4f668b3da217a6f49a9334ad3a4728be, type: 3}
+    - {fileID: 8300000, guid: 5dfda45f4c455f441a95d92da596215c, type: 3}
+    - {fileID: 8300000, guid: 65fe883e9020cb74f87b85f75aa3feed, type: 3}
+    _volume: 0.5
+    _pitchRange: {x: 0.9, y: 1.1}
+    _minInterval: 0.05
+  - _clips:
+    - {fileID: 8300000, guid: db1b1d065896c694996f4297ffb8111c, type: 3}
+    - {fileID: 8300000, guid: 115d7e53427bf0749ab7025b63cb0499, type: 3}
+    _volume: 0.5
+    _pitchRange: {x: 0.9, y: 1.1}
+    _minInterval: 0.05
+  _boxPush:
+    _clips:
+    - {fileID: 8300000, guid: 59d884eea2bcf8a43a2470f2f3cff12f, type: 3}
+    _volume: 0.5
+    _pitchRange: {x: 0.94, y: 1.06}
+    _minInterval: 0.05
+  _boxOnGoal:
+    _clips:
+    - {fileID: 8300000, guid: 1e292e49dca8b0f439a707f2fb3df765, type: 3}
+    _volume: 0.9
+    _pitchRange: {x: 1, y: 1}
+    _minInterval: 0.05
+  _boxOnPedestal:
+    _clips:
+    - {fileID: 8300000, guid: 73e5a96f28c3e8d449c306654bbc29fd, type: 3}
+    _volume: 0.9
+    _pitchRange: {x: 1, y: 1}
+    _minInterval: 0.05
+  _blocked:
+    _clips:
+    - {fileID: 8300000, guid: 514b6e6b2042df64085f8edf2353cde9, type: 3}
+    _volume: 0.7
+    _pitchRange: {x: 0.95, y: 1.05}
+    _minInterval: 0.05
+  _blockedHoldGap: 0.15
+  _teleport:
+    _clips:
+    - {fileID: 8300000, guid: c061f859c66cc744e8eec5af6eea1c3b, type: 3}
+    _volume: 1
+    _pitchRange: {x: 1, y: 1}
+    _minInterval: 0.05
+  _undo:
+    _clips:
+    - {fileID: 8300000, guid: 7ad045559d46b6f42996825115e5cb83, type: 3}
+    _volume: 0.8
+    _pitchRange: {x: 1, y: 1}
+    _minInterval: 0.05
+  _restart:
+    _clips:
+    - {fileID: 8300000, guid: af18717ba188a9b45b7f9b56b4debaaa, type: 3}
+    _volume: 0.8
+    _pitchRange: {x: 1, y: 1}
+    _minInterval: 0.05
+  _levelComplete:
+    _clips:
+    - {fileID: 8300000, guid: 64ea0b366a0009e49841844a61fe8473, type: 3}
+    _volume: 1
+    _pitchRange: {x: 1, y: 1}
+    _minInterval: 0.05
+  _uiClick:
+    _clips:
+    - {fileID: 8300000, guid: e9aea8c6666903a4683726694cf56619, type: 3}
+    _volume: 0.8
+    _pitchRange: {x: 1, y: 1}
+    _minInterval: 0.05
+  _uiBack:
+    _clips:
+    - {fileID: 8300000, guid: 5928e967ac4a8024c8ab7f4c6efe6f68, type: 3}
+    _volume: 0.8
+    _pitchRange: {x: 1, y: 1}
+    _minInterval: 0.05
+  _menuMusic: {fileID: 8300000, guid: c93e99f4419ff844685cae8b1c73e3d1, type: 3}
+  _levelMusic: {fileID: 8300000, guid: f6d36f9dd1f29b14287722f37c0e9a62, type: 3}
+  _ambience:
+  - {fileID: 8300000, guid: 3ba7c2d4bcb444a42ba9c9d95a67318a, type: 3}
+  - {fileID: 8300000, guid: db22cf3fcc265634b931b68d0c255f77, type: 3}
+  - {fileID: 8300000, guid: a54a64277dde3b940b0628555c08ebf5, type: 3}
+  - {fileID: 8300000, guid: ba6bca4d5090a13428bc54770b6ecf17, type: 3}
+  _musicVolume: 0.3
+  _ambienceVolume: 0.15
+  _crossfadeDuration: 1.5

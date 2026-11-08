@@ -4,7 +4,7 @@ using Worldyssey.Core;
 namespace Worldyssey.Tests
 {
     /// <summary>
-    /// 按 LevelSession 将来的用法组合规则和撤销历史：成功一步才压快照，步数等于历史长度。
+    /// 按 PlaySession 的用法组合规则和撤销历史：成功一步才压快照；移动计入步数，传送这类不计步的快照可撤销但不改变步数。
     /// </summary>
     public class UndoHistoryTests
     {
@@ -44,6 +44,34 @@ namespace Worldyssey.Tests
             Step(Direction.Right);
 
             Assert.AreEqual(2, _history.Count);
+            Assert.AreEqual(2, _history.StepCount);
+        }
+
+        [Test]
+        public void UncountedSnapshot_CanBeUndoneWithoutChangingStepCount()
+        {
+            _history.Push(_state, true);
+            _history.Push(_state, false);
+
+            Assert.AreEqual(2, _history.Count);
+            Assert.AreEqual(1, _history.StepCount);
+
+            Assert.IsTrue(_history.TryUndo(out _));
+            Assert.AreEqual(1, _history.StepCount, "撤销不计步的快照，步数不变");
+            Assert.IsTrue(_history.TryUndo(out _));
+            Assert.AreEqual(0, _history.StepCount);
+        }
+
+        [Test]
+        public void Clear_ResetsStepCount()
+        {
+            _history.Push(_state, true);
+            _history.Push(_state, false);
+
+            _history.Clear();
+
+            Assert.AreEqual(0, _history.Count);
+            Assert.AreEqual(0, _history.StepCount);
         }
 
         [Test]
@@ -95,7 +123,7 @@ namespace Worldyssey.Tests
         [Test]
         public void Push_Null_Throws()
         {
-            Assert.Throws<System.ArgumentNullException>(() => _history.Push(null));
+            Assert.Throws<System.ArgumentNullException>(() => _history.Push(null, true));
         }
 
         private void Step(Direction direction)
@@ -103,7 +131,7 @@ namespace Worldyssey.Tests
             StepResult result = _rules.TryMove(_state, direction);
             if (result.IsStepTaken)
             {
-                _history.Push(_state);
+                _history.Push(_state, true);
             }
 
             _state = result.State;

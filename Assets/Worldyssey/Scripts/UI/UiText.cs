@@ -37,6 +37,21 @@ namespace Worldyssey.UI
         public const string ControlRotateLeft = "Rotate View Left";
         public const string ControlRotateRight = "Rotate View Right";
         public const string ControlPause = "Pause";
+        public const string ControlPanCamera = "Pan Camera";
+        public const string ControlPanCameraBinding = "Drag Mouse";
+
+        // 关卡编辑器的操作写在代码里（不走输入资源），按键文字直接列出
+        public const string EditorControlsHeader = "Level Editor";
+        public static readonly (string Label, string Binding)[] EditorControlEntries =
+        {
+            ("Paint", "Left Click / Drag"),
+            ("Erase", "Right Click / Drag"),
+            ("Straight Line", "Shift + Drag"),
+            ("Next World", "Tab"),
+            ("Previous World", "Shift + Tab"),
+            ("Previous / Next Pair", "Up / Down"),
+            ("Save", "Ctrl + S"),
+        };
 
         // 选关
         public const string SelectLevelTitle = "Select Level";
@@ -46,7 +61,7 @@ namespace Worldyssey.UI
         public const string Back = "Back";
         public const string Locked = "Locked";
         public const string NotCleared = "Not cleared";
-        public const string BestStepsFormat = "Best: {0}";
+        public const string BestStepsFormat = "Personal Best: {0}";
         public const string NextLevelTag = "NEW";
         public const string NoLevels = "No levels";
         public const string LockedHint = "Clear the previous level to unlock";
@@ -74,8 +89,8 @@ namespace Worldyssey.UI
         // 结算
         public const string LevelCompleteTitle = "Level Complete";
         public const string ResultStepsFormat = "Steps: {0}";
-        public const string ResultBestFormat = "Best: {0}";
-        public const string NewBest = "New best!";
+        public const string ResultBestFormat = "Personal Best: {0}";
+        public const string NewBest = "New Personal Best!";
         public const string NextLevel = "Next Level";
         public const string Replay = "Replay";
 
@@ -116,6 +131,7 @@ namespace Worldyssey.UI
         public const string StatusSelectPair = "Select a pair first";
         public const string StatusPortalRejected = "This world is not in the pair, or the cell is taken";
         public const string StatusPairRejected = "Need two different worlds";
+        public const string StatusPairLimitFormat = "At most {0} pairs";
         public const string StatusOpenFailed = "Could not open level, see console";
         public const string StatusNothingToUndo = "Nothing to undo";
         public const string StatusNewLevel = "New level";

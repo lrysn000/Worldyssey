@@ -1,0 +1,66 @@
+{
+    "formatVersion": 1,
+    "id": "season-2-1",
+    "displayName": "Over the Hedge",
+    "width": 7,
+    "height": 6,
+    "startWorld": 0,
+    "sharedRows": [
+        "#######",
+        "# P  .#",
+        "#     #",
+        "#     #",
+        "#     #",
+        "#######"
+    ],
+    "worlds": [
+        {
+            "name": "Spring",
+            "wallRows": [
+                "       ",
+                "   x   ",
+                "   x   ",
+                "   x   ",
+                "   x   ",
+                "       "
+            ]
+        },
+        {
+            "name": "Summer",
+            "wallRows": [
+                "       ",
+                "       ",
+                "       ",
+                "       ",
+                "       ",
+                "       "
+            ]
+        }
+    ],
+    "player": {
+        "x": 1,
+        "y": 1,
+        "facing": 0
+    },
+    "mappedBoxes": [
+        {
+            "x": 4,
+            "y": 2
+        }
+    ],
+    "portalPairs": [
+        {
+            "id": 0,
+            "worldA": 0,
+            "worldB": 1
+        }
+    ],
+    "portalBoxes": [
+        {
+            "pair": 0,
+            "world": 0,
+            "x": 2,
+            "y": 3
+        }
+    ]
+}

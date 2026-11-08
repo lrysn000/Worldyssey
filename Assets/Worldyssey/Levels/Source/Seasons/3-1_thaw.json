@@ -1,0 +1,69 @@
+{
+    "formatVersion": 1,
+    "id": "season-3-1",
+    "displayName": "Thaw",
+    "width": 7,
+    "height": 7,
+    "startWorld": 0,
+    "sharedRows": [
+        "#######",
+        "# #.# #",
+        "##    #",
+        "##    #",
+        "#     #",
+        "#    P#",
+        "#######"
+    ],
+    "worlds": [
+        {
+            "name": "Spring",
+            "wallRows": [
+                "       ",
+                "       ",
+                "       ",
+                "       ",
+                " x     ",
+                "       ",
+                "       "
+            ]
+        },
+        {
+            "name": "Summer",
+            "wallRows": [
+                "       ",
+                "       ",
+                "       ",
+                "  xxxx ",
+                "       ",
+                "       ",
+                "       "
+            ]
+        }
+    ],
+    "player": {
+        "x": 1,
+        "y": 1,
+        "facing": 0
+    },
+    "mappedBoxes": [
+        {
+            "x": 2,
+            "y": 3
+        }
+    ],
+    "portalPairs": [
+        {
+            "id": 0,
+            "worldA": 0,
+            "worldB": 1
+        }
+    ],
+    "portalBoxes": [
+        {
+            "pair": 0,
+            "world": 0,
+            "x": 5,
+            "y": 1
+        }
+    ]
+}

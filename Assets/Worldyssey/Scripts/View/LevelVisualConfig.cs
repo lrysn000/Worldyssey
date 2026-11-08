@@ -27,6 +27,9 @@ namespace Worldyssey.View
         [SerializeField] private EntityView _mappedBoxPrefab;
         [SerializeField] private PortalBoxView _portalBoxPrefab;
 
+        [Tooltip("可选：区分传送箱子配对的符号，印在箱子顶面。留空时不印")]
+        [SerializeField] private PairSymbolSet _pairSymbols;
+
         [Header("世界")]
         [Tooltip("各世界的代表色，与 UI 强调色共用。传送箱子按它指向的世界着色，传送遮罩用目标世界的颜色")]
         [SerializeField] private WorldPalette _worldPalette;
@@ -38,6 +41,9 @@ namespace Worldyssey.View
         [Tooltip("网格外围装饰地带的圈数，0 为不要外围。外围只是装饰，玩家走不上去")]
         [Range(0, 4)]
         [SerializeField] private int _rimWidth = 2;
+
+        [Tooltip("可选：地面格子衬线的材质（Worldyssey/FloorGrid 着色器），线的深浅和粗细在材质上调。留空时不画衬线")]
+        [SerializeField] private Material _floorGridMaterial;
 
         [Header("草的互动")]
         [Tooltip("玩家压草的半径（米）")]
@@ -64,6 +70,11 @@ namespace Worldyssey.View
         [ColorUsage(false, true)]
         [SerializeField] private Color _goalFlashColor = new Color(1f, 0.85f, 0.3f) * 3f;
 
+        [Header("底座")]
+        [Tooltip("底座上停着传送箱子时，按箱子通往的世界颜色发光的强度；0 为不发光。底座材质需支持 _EmissionColor（Toon 着色器支持）")]
+        [Range(0f, 3f)]
+        [SerializeField] private float _pedestalGlowIntensity = 0.8f;
+
         [Header("布局")]
         [Tooltip("一格在世界空间中的边长")]
         [Min(0.1f)]
@@ -80,12 +91,15 @@ namespace Worldyssey.View
         public float CellSize => _cellSize;
         public IReadOnlyList<GameObject> SharedWallVariants => _sharedWallVariants;
         public int RimWidth => _rimWidth;
+        public Material FloorGridMaterial => _floorGridMaterial;
+        public PairSymbolSet PairSymbols => _pairSymbols;
         public float GrassPlayerRadius => _grassPlayerRadius;
         public float GrassBoxRadius => _grassBoxRadius;
         public float GrassRecoverDuration => _grassRecoverDuration;
         public float GrassTrailSpacing => _grassTrailSpacing;
         public ParticleSystem CelebrationBurstPrefab => _celebrationBurstPrefab;
         public Color GoalFlashColor => _goalFlashColor;
+        public float PedestalGlowIntensity => _pedestalGlowIntensity;
 
         /// <summary>
         /// 网格坐标转换为关卡根节点下的局部坐标。网格 y 对应世界 z。

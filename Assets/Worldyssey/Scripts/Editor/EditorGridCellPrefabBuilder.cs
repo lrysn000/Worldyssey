@@ -74,6 +74,24 @@ namespace Worldyssey.EditorTools
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
 
+            // 配对符号：右下角（叠影在左下角），替代原来的配对编号文字
+            if (UiThemeSceneSetup.GetReference<Image>(serialized, "_pairMark") == null)
+            {
+                RectTransform markRect = GameUiBuilder.CreateRect("PairMark", contents.transform);
+                markRect.anchorMin = new Vector2(0.58f, 0.04f);
+                markRect.anchorMax = new Vector2(0.96f, 0.42f);
+                markRect.offsetMin = Vector2.zero;
+                markRect.offsetMax = Vector2.zero;
+                var markLabel = UiThemeSceneSetup.GetReference<TMP_Text>(serialized, "_label");
+                markRect.SetSiblingIndex(markLabel != null ? markLabel.transform.GetSiblingIndex() : contents.transform.childCount - 1);
+                Image mark = markRect.gameObject.AddComponent<Image>();
+                mark.preserveAspect = true;
+                mark.raycastTarget = false;
+                mark.enabled = false;
+                serialized.FindProperty("_pairMark").objectReferenceValue = mark;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
             var entity = UiThemeSceneSetup.GetReference<Image>(serialized, "_entity");
             if (entity != null)
             {

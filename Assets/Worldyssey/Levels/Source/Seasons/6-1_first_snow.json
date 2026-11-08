@@ -1,0 +1,110 @@
+{
+    "formatVersion": 1,
+    "id": "season-6-1",
+    "displayName": "First Snow",
+    "width": 9,
+    "height": 6,
+    "startWorld": 0,
+    "sharedRows": [
+        "#########",
+        "#  P  P #",
+        "#       #",
+        "# # # ###",
+        "#      .#",
+        "#########"
+    ],
+    "worlds": [
+        {
+            "name": "Spring",
+            "wallRows": [
+                "         ",
+                "         ",
+                "         ",
+                " x x     ",
+                " x       ",
+                "         "
+            ]
+        },
+        {
+            "name": "Summer",
+            "wallRows": [
+                "         ",
+                "         ",
+                "         ",
+                "   x x   ",
+                "     x   ",
+                "         "
+            ]
+        },
+        {
+            "name": "Autumn",
+            "wallRows": [
+                "         ",
+                "         ",
+                "         ",
+                " x   x   ",
+                " x       ",
+                "         "
+            ]
+        },
+        {
+            "name": "Winter",
+            "wallRows": [
+                "         ",
+                "         ",
+                "         ",
+                " x x x   ",
+                " x       ",
+                "         "
+            ]
+        }
+    ],
+    "player": {
+        "x": 1,
+        "y": 4,
+        "facing": 0
+    },
+    "mappedBoxes": [
+        {
+            "x": 2,
+            "y": 1
+        }
+    ],
+    "portalPairs": [
+        {
+            "id": 0,
+            "worldA": 0,
+            "worldB": 3
+        },
+        {
+            "id": 1,
+            "worldA": 1,
+            "worldB": 3
+        },
+        {
+            "id": 2,
+            "worldA": 2,
+            "worldB": 3
+        }
+    ],
+    "portalBoxes": [
+        {
+            "pair": 0,
+            "world": 0,
+            "x": 3,
+            "y": 4
+        },
+        {
+            "pair": 2,
+            "world": 3,
+            "x": 2,
+            "y": 4
+        },
+        {
+            "pair": 1,
+            "world": 3,
+            "x": 5,
+            "y": 4
+        }
+    ]
+}

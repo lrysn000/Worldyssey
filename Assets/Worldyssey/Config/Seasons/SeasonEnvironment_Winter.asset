@@ -26,5 +26,9 @@ MonoBehaviour:
   _fogRange: 14
   _skyTint: {r: 0.88, g: 0.93, b: 1, a: 1}
   _cloudTint: {r: 0.92, g: 0.95, b: 1, a: 1}
+  _snowAmount: 1
+  _snowColor: {r: 0.8, g: 0.84, b: 0.9, a: 1}
+  _snowThreshold: 0.6
+  _snowSoftness: 0.047
   _colorProfile: {fileID: 11400000, guid: 6b64cd2b412960b4185595c197241524, type: 2}
   _particlesPrefab: {fileID: 19813558, guid: a4709f3bf0c933e4a8d6902e0b9fc137, type: 3}

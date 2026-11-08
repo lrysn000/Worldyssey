@@ -34,8 +34,9 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 3cfb5d02161df85428b4d365f27a111e, type: 3}
   - {fileID: 21300000, guid: c835e3cada1e7a64e85216b8a30dc735, type: 3}
   _neutralOrnament: {fileID: 21300000, guid: 11408ddf2b3fc7a49a6eec3bbc20cf2d, type: 3}
-  _titleFont: {fileID: 11400000, guid: 6ecc8457da1652a4eb067d84514d3a70, type: 2}
-  _bodyFont: {fileID: 11400000, guid: 6c0a3e1f59093114f997d0bbac48af1e, type: 2}
+  _titleFont: {fileID: 11400000, guid: 0175d0ff4a92bbe46b0c84082817f9f8, type: 2}
+  _bodyFont: {fileID: 11400000, guid: 0175d0ff4a92bbe46b0c84082817f9f8, type: 2}
+  _sdfFontScale: 1.347
   _isFontSizeSnapped: 1
   _minTextScale: 2
   _uiPixelScale: 4

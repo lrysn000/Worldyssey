@@ -1,4 +1,5 @@
 using UnityEngine;
+using Worldyssey.Data;
 
 namespace Worldyssey.View
 {
@@ -16,6 +17,9 @@ namespace Worldyssey.View
         [SerializeField] private Renderer _bodyRenderer;
         [SerializeField] private PortalFaceHint _faceHint;
 
+        [Tooltip("可选：平贴在箱子顶面的配对符号")]
+        [SerializeField] private SpriteRenderer _pairSymbol;
+
         [Tooltip("箱体按目标世界颜色自发光的强度；材质需开启 Emission 才生效")]
         [Min(0f)]
         [SerializeField] private float _glowIntensity = 0.6f;
@@ -23,6 +27,9 @@ namespace Worldyssey.View
         private MaterialPropertyBlock _propertyBlock;
 
         public PortalFaceHint FaceHint => _faceHint;
+
+        /// <summary>箱体渲染器，回程箱子合成时用它的网格和材质画碎块。</summary>
+        public Renderer BodyRenderer => _bodyRenderer;
 
         protected override void Awake()
         {
@@ -54,6 +61,41 @@ namespace Worldyssey.View
             _propertyBlock.SetColor(BuiltInColorId, color);
             _propertyBlock.SetColor(EmissionColorId, color * _glowIntensity);
             _bodyRenderer.SetPropertyBlock(_propertyBlock);
+        }
+
+        /// <summary>
+        /// 显示或隐藏箱体和顶面符号（只开关渲染器，位置、面提示和逻辑不受影响）。合成动画期间隐藏，合成完再显示。
+        /// </summary>
+        public void SetBodyVisible(bool isVisible)
+        {
+            if (_bodyRenderer != null)
+            {
+                _bodyRenderer.enabled = isVisible;
+            }
+
+            if (_pairSymbol != null)
+            {
+                _pairSymbol.enabled = isVisible && _pairSymbol.sprite != null;
+            }
+        }
+
+        /// <summary>
+        /// 在顶面印上配对 <paramref name="pairIndex"/> 的符号。没有符号层或符号配置时隐藏。
+        /// </summary>
+        public void SetPairSymbol(PairSymbolSet symbols, int pairIndex)
+        {
+            if (_pairSymbol == null)
+            {
+                return;
+            }
+
+            Sprite symbol = symbols != null ? symbols.GetSymbol(pairIndex) : null;
+            _pairSymbol.enabled = symbol != null;
+            _pairSymbol.sprite = symbol;
+            if (symbol != null)
+            {
+                _pairSymbol.color = symbols.BoxSymbolColor;
+            }
         }
     }
 }

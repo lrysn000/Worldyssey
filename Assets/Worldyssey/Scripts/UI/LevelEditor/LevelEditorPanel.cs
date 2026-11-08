@@ -130,7 +130,7 @@ namespace Worldyssey.UI
 
         private void Update()
         {
-            // 快捷键：Tab / Shift+Tab 切换世界，Ctrl+S 保存。在输入框里打字或打开对话框时不响应
+            // 快捷键：Tab / Shift+Tab 切换世界，上下方向键切换配对，Ctrl+S 保存。在输入框里打字或打开对话框时不响应
             Keyboard keyboard = Keyboard.current;
             if (!_hasReferences || _model == null || keyboard == null || _openDialog.IsVisible || IsTypingInInputField())
             {
@@ -142,6 +142,18 @@ namespace Worldyssey.UI
                 int count = _model.Draft.WorldCount;
                 int step = keyboard.shiftKey.isPressed ? -1 : 1;
                 Present(_model.SelectWorld((_model.CurrentWorld + step + count) % count));
+            }
+
+            int pairStep = keyboard.upArrowKey.wasPressedThisFrame ? -1 : keyboard.downArrowKey.wasPressedThisFrame ? 1 : 0;
+            if (pairStep != 0)
+            {
+                // 方向键同时会驱动界面导航，清掉当前选中的按钮，免得焦点在按钮之间跳
+                if (EventSystem.current != null)
+                {
+                    EventSystem.current.SetSelectedGameObject(null);
+                }
+
+                Present(_model.SelectAdjacentPair(pairStep));
             }
 
             if (keyboard.ctrlKey.isPressed && keyboard.sKey.wasPressedThisFrame)
@@ -392,6 +404,9 @@ namespace Worldyssey.UI
                     break;
                 case EditorFeedback.PairRejected:
                     _actionBar.SetStatus(UiText.StatusPairRejected);
+                    break;
+                case EditorFeedback.PairLimitReached:
+                    _actionBar.SetStatus(string.Format(UiText.StatusPairLimitFormat, LevelLimits.MaxPairCount));
                     break;
                 case EditorFeedback.NothingToUndo:
                     _actionBar.SetStatus(UiText.StatusNothingToUndo);

@@ -1,0 +1,125 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98ad449a25b24bb4e99066fe5d33dfc1, type: 3}
+  m_Name: TutorialLibrary
+  m_EditorClassIdentifier: 
+  _tutorials:
+  - _levelId: season-1-1
+    _steps:
+    - _text: Use [W][A][S][D] or the arrow keys to move.
+      _startOn: 0
+      _completeOn: 3
+      _seconds: 4
+      _target:
+        _kind: 1
+        _index: 0
+        _cell: {x: 0, y: 0}
+    - _text: Walk into the box to push it. If you aren't facing it, the first press
+        only turns you around.
+      _startOn: 0
+      _completeOn: 5
+      _seconds: 4
+      _target:
+        _kind: 2
+        _index: 0
+        _cell: {x: 0, y: 0}
+    - _text: Push the box onto the goal to clear the level.
+      _startOn: 0
+      _completeOn: 6
+      _seconds: 4
+      _target:
+        _kind: 4
+        _index: 0
+        _cell: {x: 0, y: 0}
+  - _levelId: season-2-1
+    _steps:
+    - _text: This glowing box is a portal. Push it onto the pedestal.
+      _startOn: 0
+      _completeOn: 8
+      _seconds: 4
+      _target:
+        _kind: 3
+        _index: 0
+        _cell: {x: 0, y: 0}
+    - _text: Face the portal and press [F] to travel to the world of its color.
+      _startOn: 0
+      _completeOn: 9
+      _seconds: 4
+      _target:
+        _kind: 3
+        _index: 0
+        _cell: {x: 0, y: 0}
+    - _text: You are in Summer now. The panel at the top shows which world you are
+        in.
+      _startOn: 0
+      _completeOn: 15
+      _seconds: 5
+      _target:
+        _kind: 6
+        _index: 1
+        _cell: {x: 0, y: 0}
+    - _text: Each world might its own walls. The hedge only grows in Spring, so the
+        way is clear here.
+      _startOn: 0
+      _completeOn: 6
+      _seconds: 4
+      _target:
+        _kind: 4
+        _index: 0
+        _cell: {x: 0, y: 0}
+  - _levelId: season-2-2
+    _steps:
+    - _text: Every world shares the same wooden box.
+      _startOn: 9
+      _completeOn: 5
+      _seconds: 4
+      _target:
+        _kind: 2
+        _index: 0
+        _cell: {x: 0, y: 0}
+  - _levelId: season-3-1
+    _steps:
+    - _text: 'Summer is locked: a box is sitting where Summer has a wall, so its
+        portal won''t let you in.'
+      _startOn: 0
+      _completeOn: 15
+      _seconds: 6
+      _target:
+        _kind: 6
+        _index: 1
+        _cell: {x: 0, y: 0}
+    - _text: Push the box off that spot to unlock Summer.
+      _startOn: 0
+      _completeOn: 12
+      _seconds: 4
+      _target:
+        _kind: 2
+        _index: 0
+        _cell: {x: 0, y: 0}
+    - _text: Boxes can pass through other worlds' walls, but that world stays locked
+        while a box is inside one.
+      _startOn: 11
+      _completeOn: 15
+      _seconds: 6
+      _target:
+        _kind: 0
+        _index: 0
+        _cell: {x: 0, y: 0}
+  _stepGapSeconds: 0.6
+  _stuckHintSeconds: 5
+  _lockedWorldFormat: '{0} is locked: a box is sitting on one of its walls or portals.
+    Move it away first.'
+  _cornerText: That box is stuck in a corner. Press [Z] to undo.
+  _undoBurstText: Stuck? Press [R] to start the level over.
+  _undoBurstCount: 8
+  _undoBurstWindow: 30
+  _markerHeight: 1.3

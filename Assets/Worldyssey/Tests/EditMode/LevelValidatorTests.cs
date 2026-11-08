@@ -166,6 +166,18 @@ namespace Worldyssey.Tests
         }
 
         [Test]
+        public void TooManyPairs_IsError()
+        {
+            var builder = new LevelDataBuilder();
+            for (int i = builder.Pairs.Count; i <= LevelLimits.MaxPairCount; i++)
+            {
+                builder.Pairs.Add(new PortalPairData(i, 0, 1));
+            }
+
+            AssertHasError(builder, "portal pairs");
+        }
+
+        [Test]
         public void DuplicatePairId_IsError()
         {
             var builder = new LevelDataBuilder();

@@ -1,0 +1,87 @@
+{
+    "formatVersion": 1,
+    "id": "season-4-1",
+    "displayName": "Pull the Stopper",
+    "width": 9,
+    "height": 6,
+    "startWorld": 0,
+    "sharedRows": [
+        "#########",
+        "#      .#",
+        "# P   P #",
+        "# #######",
+        "#      .#",
+        "#########"
+    ],
+    "worlds": [
+        {
+            "name": "Spring",
+            "wallRows": [
+                "         ",
+                "         ",
+                "         ",
+                "         ",
+                " x       ",
+                "         "
+            ]
+        },
+        {
+            "name": "Summer",
+            "wallRows": [
+                "         ",
+                "     x   ",
+                "         ",
+                "         ",
+                "         ",
+                "         "
+            ]
+        }
+    ],
+    "player": {
+        "x": 1,
+        "y": 4,
+        "facing": 0
+    },
+    "mappedBoxes": [
+        {
+            "x": 6,
+            "y": 4
+        },
+        {
+            "x": 2,
+            "y": 1
+        }
+    ],
+    "portalPairs": [
+        {
+            "id": 0,
+            "worldA": 0,
+            "worldB": 1
+        },
+        {
+            "id": 1,
+            "worldA": 0,
+            "worldB": 1
+        }
+    ],
+    "portalBoxes": [
+        {
+            "pair": 0,
+            "world": 0,
+            "x": 3,
+            "y": 3
+        },
+        {
+            "pair": 1,
+            "world": 0,
+            "x": 6,
+            "y": 3
+        },
+        {
+            "pair": 0,
+            "world": 1,
+            "x": 4,
+            "y": 1
+        }
+    ]
+}

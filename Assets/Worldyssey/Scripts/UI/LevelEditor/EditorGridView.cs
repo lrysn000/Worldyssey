@@ -37,6 +37,9 @@ namespace Worldyssey.UI
         [SerializeField] private Sprite _boxIcon;
         [SerializeField] private Sprite _portalIcon;
 
+        [Tooltip("可选：配对符号，画在传送箱子格子的右下角")]
+        [SerializeField] private PairSymbolSet _pairSymbols;
+
         [Tooltip("按 EditorTool 顺序排列的画笔图标，用于悬停预览")]
         [SerializeField] private Sprite[] _toolIcons = new Sprite[0];
 
@@ -47,8 +50,7 @@ namespace Worldyssey.UI
         [SerializeField] private UiMotionConfig _motionConfig;
 
         private readonly List<EditorGridCell> _cells = new List<EditorGridCell>();
-        private readonly bool[] _errorCells = new bool[LevelLimits.MaxWidth * LevelLimits.MaxHeight];
-        private readonly bool[] _warningCells = new bool[LevelLimits.MaxWidth * LevelLimits.MaxHeight];
+        private readonly EditorIssueMarks _issueMarks = new EditorIssueMarks();
         private EditorCellPainter _painter;
         private EditorGridHover _hover;
         private EditorGridCell _hoveredCell;
@@ -58,7 +60,6 @@ namespace Worldyssey.UI
         private int _selectedPair = -1;
         private int _lineLength;
         private bool _isStroking;
-        private int _width;
 
         /// <summary>开始一笔，参数为格子坐标和是否为擦除（右键）。</summary>
         public event Action<GridPos, bool> StrokeStarted;
@@ -97,8 +98,7 @@ namespace Worldyssey.UI
             _draft = draft;
             _world = world;
             EnsureCells();
-            _width = draft.Width;
-            MarkIssues(draft, world, report);
+            _issueMarks.Mark(draft, world, report);
 
             Rect area = _gridArea.rect;
             float cellSize = Mathf.Floor(Mathf.Min(area.width / draft.Width, area.height / draft.Height));
@@ -212,42 +212,6 @@ namespace Worldyssey.UI
             }
         }
 
-        private void MarkIssues(LevelDraft draft, int world, LevelValidationReport report)
-        {
-            Array.Clear(_errorCells, 0, _errorCells.Length);
-            Array.Clear(_warningCells, 0, _warningCells.Length);
-            if (report == null)
-            {
-                return;
-            }
-
-            IReadOnlyList<LevelIssue> issues = report.Issues;
-            for (int i = 0; i < issues.Count; i++)
-            {
-                LevelIssue issue = issues[i];
-                if (!issue.Position.HasValue || !draft.IsInBounds(issue.Position.Value))
-                {
-                    continue;
-                }
-
-                // 只标出与当前世界相关的问题；不属于任何世界的问题在所有世界都标
-                if (issue.World != LevelIssue.NoWorld && issue.World != world)
-                {
-                    continue;
-                }
-
-                int index = issue.Position.Value.Y * draft.Width + issue.Position.Value.X;
-                if (issue.IsError)
-                {
-                    _errorCells[index] = true;
-                }
-                else
-                {
-                    _warningCells[index] = true;
-                }
-            }
-        }
-
         private bool EnsureHelpers()
         {
             if (_gridArea == null || _cellPrefab == null || _palette == null || _worldPalette == null)
@@ -257,7 +221,7 @@ namespace Worldyssey.UI
 
             if (_painter == null)
             {
-                var icons = new EditorGridIconSet(_wallIcon, _uniqueWallIcon, _pedestalIcon, _goalIcon, _playerIcon, _boxIcon, _portalIcon);
+                var icons = new EditorGridIconSet(_wallIcon, _uniqueWallIcon, _pedestalIcon, _goalIcon, _playerIcon, _boxIcon, _portalIcon, _pairSymbols);
                 _painter = new EditorCellPainter(_palette, _worldPalette, icons);
             }
 
@@ -271,9 +235,7 @@ namespace Worldyssey.UI
 
         private void RenderCell(EditorGridCell cell, LevelDraft draft, int world, GridPos pos)
         {
-            int index = pos.Y * _width + pos.X;
-            Color frame = _errorCells[index] ? _palette.ErrorFrame : _warningCells[index] ? _palette.WarningFrame : _palette.Frame;
-            cell.Render(_painter.Paint(draft, world, pos, frame));
+            cell.Render(_painter.Paint(draft, world, pos, _issueMarks.FrameColor(pos, _palette)));
         }
 
         private void RefreshHover()

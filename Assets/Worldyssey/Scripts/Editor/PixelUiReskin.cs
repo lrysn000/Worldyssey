@@ -48,6 +48,11 @@ namespace Worldyssey.EditorTools
             int prefabs = ReskinPrefabs(context);
             int panels = PixelUiDecorator.DecorateScene(context, themeSet);
             AddPixelCanvasScalers();
+            FontFaceScale.Apply(skin.TitleFont, skin.SdfFontScale);
+            if (skin.BodyFont != skin.TitleFont)
+            {
+                FontFaceScale.Apply(skin.BodyFont, skin.SdfFontScale);
+            }
 
             // 编辑器网格：格子预制体补上地形图标层，场景里的网格（编辑器和选关小地图）接上图标
             EditorGridCellPrefabBuilder.GetOrUpdate(context);

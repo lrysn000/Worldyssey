@@ -1,0 +1,46 @@
+{
+    "formatVersion": 1,
+    "id": "season-1-2",
+    "displayName": "Narrow Rows",
+    "width": 7,
+    "height": 6,
+    "startWorld": 0,
+    "sharedRows": [
+        "#######",
+        "#     #",
+        "#.    #",
+        "#     #",
+        "#.# ###",
+        "#######"
+    ],
+    "worlds": [
+        {
+            "name": "Spring",
+            "wallRows": [
+                "       ",
+                "       ",
+                "       ",
+                "       ",
+                "       ",
+                "       "
+            ]
+        }
+    ],
+    "player": {
+        "x": 4,
+        "y": 4,
+        "facing": 0
+    },
+    "mappedBoxes": [
+        {
+            "x": 3,
+            "y": 3
+        },
+        {
+            "x": 4,
+            "y": 2
+        }
+    ],
+    "portalPairs": [],
+    "portalBoxes": []
+}

@@ -1,0 +1,107 @@
+{
+    "formatVersion": 1,
+    "id": "season-5-2",
+    "displayName": "Turn of the Year",
+    "width": 8,
+    "height": 8,
+    "startWorld": 0,
+    "sharedRows": [
+        "########",
+        "###   .#",
+        "###  P##",
+        "#    ###",
+        "#  # ###",
+        "#  P P##",
+        "#     ##",
+        "########"
+    ],
+    "worlds": [
+        {
+            "name": "Spring",
+            "wallRows": [
+                "        ",
+                "        ",
+                "        ",
+                " x      ",
+                "    x   ",
+                "        ",
+                "        ",
+                "        "
+            ]
+        },
+        {
+            "name": "Summer",
+            "wallRows": [
+                "        ",
+                "   x    ",
+                "        ",
+                "        ",
+                "    x   ",
+                "        ",
+                "  x     ",
+                "        "
+            ]
+        },
+        {
+            "name": "Autumn",
+            "wallRows": [
+                "        ",
+                "   x    ",
+                "        ",
+                " x      ",
+                "        ",
+                "        ",
+                "  x     ",
+                "        "
+            ]
+        }
+    ],
+    "player": {
+        "x": 5,
+        "y": 1,
+        "facing": 3
+    },
+    "mappedBoxes": [
+        {
+            "x": 2,
+            "y": 2
+        }
+    ],
+    "portalPairs": [
+        {
+            "id": 0,
+            "worldA": 0,
+            "worldB": 1
+        },
+        {
+            "id": 1,
+            "worldA": 1,
+            "worldB": 2
+        },
+        {
+            "id": 2,
+            "worldA": 2,
+            "worldB": 0
+        }
+    ],
+    "portalBoxes": [
+        {
+            "pair": 0,
+            "world": 0,
+            "x": 5,
+            "y": 2
+        },
+        {
+            "pair": 1,
+            "world": 1,
+            "x": 3,
+            "y": 2
+        },
+        {
+            "pair": 2,
+            "world": 2,
+            "x": 5,
+            "y": 5
+        }
+    ]
+}

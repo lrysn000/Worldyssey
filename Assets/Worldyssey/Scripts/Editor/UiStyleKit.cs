@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.TextCore.LowLevel;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -18,7 +19,7 @@ namespace Worldyssey.EditorTools
         internal const float HeaderHeight = 96f;
 
         // 自制像素图标与两套像素素材一致：16 像素 = 1 单位
-        private const float IconPixelsPerUnit = 16f;
+        internal const float IconPixelsPerUnit = 16f;
 
         internal const string WorldIconFolder = ProjectPaths.Textures + "/UI/WorldIcons";
 
@@ -144,8 +145,10 @@ namespace Worldyssey.EditorTools
         /// </summary>
         private static void SnapFontSize(TMP_Text text, TMP_FontAsset font, int minScale)
         {
+            // 只有点阵（RASTER）像素字体需要按整数倍取字号；SDF 字体任意字号都清晰，
+            // 而且它的取样尺寸通常很大（例如 90），按倍数取整会把字号放大到几百
             float native = font.faceInfo.pointSize;
-            if (native <= 0f)
+            if (native <= 0f || !IsPixelFont(font))
             {
                 return;
             }
@@ -162,6 +165,13 @@ namespace Worldyssey.EditorTools
 
             int multiple = Mathf.Max(minScale, Mathf.RoundToInt(size / native));
             text.fontSize = multiple * native;
+        }
+
+        /// <summary>字体是否为点阵像素字体（RASTER 渲染），SDF 字体返回 false。</summary>
+        internal static bool IsPixelFont(TMP_FontAsset font)
+        {
+            return font != null
+                && (font.atlasRenderMode == GlyphRenderMode.RASTER || font.atlasRenderMode == GlyphRenderMode.RASTER_HINTED);
         }
 
         internal static void StyleButton(Button button, UiColorRole role, UiThemeScope scope, Context context)

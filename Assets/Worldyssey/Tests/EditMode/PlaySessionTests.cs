@@ -130,5 +130,31 @@ namespace Worldyssey.Tests
             Assert.IsFalse(_session.IsSolved);
             Assert.IsTrue(_session.TryMove(Direction.Down));
         }
+    
+        [Test]
+        public void Teleport_CanBeUndoneButDoesNotCountAsStep()
+        {
+            // 玩家在底座左边面朝右，世界 0 的传送箱子已在底座上，通往世界 1
+            LevelRules rules = TestLevels.RulesMultiWorld(
+                new[] { "#######", "#@P   #", "#     #", "#######" },
+                new[] { new[] { "       ", "  a    ", "       ", "       " }, null },
+                new[] { new[] { 0, 1 } });
+            var session = new PlaySession(rules);
+
+            Assert.IsTrue(session.TryTeleport());
+            Assert.AreEqual(1, session.State.PlayerWorld);
+            Assert.AreEqual(0, session.StepCount, "传送不计步");
+
+            Assert.IsTrue(session.TryMove(Direction.Down));
+            Assert.AreEqual(1, session.StepCount);
+
+            Assert.IsTrue(session.Undo());
+            Assert.AreEqual(0, session.StepCount);
+            Assert.AreEqual(1, session.State.PlayerWorld);
+
+            Assert.IsTrue(session.Undo(), "传送仍可撤销");
+            Assert.AreEqual(0, session.State.PlayerWorld);
+            Assert.AreEqual(0, session.StepCount);
+        }
     }
 }

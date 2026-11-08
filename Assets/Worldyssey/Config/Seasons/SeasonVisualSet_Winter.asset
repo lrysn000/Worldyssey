@@ -14,7 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _floorPrefab: {fileID: 1527595513100604, guid: 1e89b8912fb9356439b4f28d974e8cff, type: 3}
   _floorCornerPrefab: {fileID: 1143586474497050, guid: 33ba61de76ae6544cbe588c14100405c, type: 3}
-  _uniqueWallPrefabs: []
+  _uniqueWallPrefabs:
+  - {fileID: 3794674894203904715, guid: 2060a2e50c0031847b137b1317a46844, type: 3}
   _grassMaterial: {fileID: 2100000, guid: 62276dd37e3e6f349b46b79b8551d461, type: 2}
   _grassPrefabs: []
   _grassPerCellMin: 5

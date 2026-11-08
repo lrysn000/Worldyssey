@@ -135,6 +135,24 @@ namespace Worldyssey.Core
         }
 
         /// <summary>
+        /// 选中上一个（<paramref name="step"/> 为 -1）或下一个（1）配对，到头不循环。
+        /// 当前没有选中时，向下选第一个、向上选最后一个。没有配对或已在尽头时不处理。
+        /// </summary>
+        public EditorFeedback SelectAdjacentPair(int step)
+        {
+            int count = Draft.Pairs.Count;
+            if (count == 0 || step == 0)
+            {
+                return EditorFeedback.None;
+            }
+
+            int next = SelectedPair == NoPair
+                ? (step > 0 ? 0 : count - 1)
+                : Math.Max(0, Math.Min(count - 1, SelectedPair + step));
+            return next == SelectedPair ? EditorFeedback.None : SelectPair(next);
+        }
+
+        /// <summary>
         /// 选中一个配对，并切换到传送箱子画笔，方便紧接着摆放。
         /// </summary>
         public EditorFeedback SelectPair(int pair)
@@ -199,6 +217,11 @@ namespace Worldyssey.Core
         /// </summary>
         public EditorFeedback AddPair()
         {
+            if (Draft.Pairs.Count >= LevelLimits.MaxPairCount)
+            {
+                return EditorFeedback.PairLimitReached;
+            }
+
             if (TargetWorld == CurrentWorld || Draft.WorldCount < 2)
             {
                 return EditorFeedback.PairRejected;

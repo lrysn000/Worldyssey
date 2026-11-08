@@ -116,7 +116,7 @@ namespace Worldyssey.Tests
         }
 
         [Test]
-        public void Eraser_RemovesEntitiesAndUniqueWallButKeepsTerrainAndPlayer()
+        public void Eraser_ClearsEverythingToFloorButKeepsPlayer()
         {
             _draft.AddWorld();
             int pair = _draft.AddPair(0, 1);
@@ -131,9 +131,11 @@ namespace Worldyssey.Tests
             Assert.AreEqual(-1, _draft.FindMappedBox(pos));
             Assert.AreEqual(-1, _draft.FindPortal(1, pos));
             Assert.IsFalse(_draft.IsUniqueWall(1, pos));
-            Assert.AreEqual(SharedCell.Goal, _draft.GetSharedCell(pos));
+            Assert.AreEqual(SharedCell.Empty, _draft.GetSharedCell(pos), "地形也被清成地面");
 
-            Assert.IsFalse(_draft.Apply(EditorTool.Eraser, 0, _draft.PlayerPosition, -1), "玩家不会被擦除");
+            GridPos player = _draft.PlayerPosition;
+            _draft.Apply(EditorTool.Eraser, 0, player, -1);
+            Assert.AreEqual(player, _draft.PlayerPosition, "玩家不会被擦除");
         }
 
         [Test]
@@ -197,6 +199,19 @@ namespace Worldyssey.Tests
             Assert.AreEqual(-1, _draft.AddPair(1, 1));
             Assert.AreEqual(-1, _draft.AddPair(0, 5));
             Assert.AreEqual(0, _draft.AddPair(1, 0));
+        }
+
+        [Test]
+        public void AddPair_StopsAtLimit()
+        {
+            _draft.AddWorld();
+            for (int i = 0; i < LevelLimits.MaxPairCount; i++)
+            {
+                Assert.AreEqual(i, _draft.AddPair(0, 1));
+            }
+
+            Assert.AreEqual(-1, _draft.AddPair(0, 1));
+            Assert.AreEqual(LevelLimits.MaxPairCount, _draft.Pairs.Count);
         }
 
         [Test]

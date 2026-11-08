@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Worldyssey/Scenes/Main.unity
+    guid: b235adce3e7a31041aa31c1b21b7ef41
   m_configObjects: {}

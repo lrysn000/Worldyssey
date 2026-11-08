@@ -51,6 +51,22 @@ namespace Worldyssey.View
         [Tooltip("云的色调；白色为原样")]
         [SerializeField] private Color _cloudTint = Color.white;
 
+        [Header("积雪")]
+        [Tooltip("朝上的面盖雪的强度：0 不积雪，1 完全盖住。只对卡通着色器的材质生效，挂了 SnowExclusion 的物体不积雪")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _snowAmount;
+
+        [Tooltip("雪的颜色。受光面就是这个颜色、不乘太阳光，调暗一点就不会刺眼")]
+        [SerializeField] private Color _snowColor = new Color(0.8f, 0.84f, 0.9f, 1f);
+
+        [Tooltip("法线朝上到什么程度开始积雪（世界空间法线的 y 分量）：越大只有越平的顶面积雪")]
+        [Range(0f, 1f)]
+        [SerializeField] private float _snowThreshold = 0.6f;
+
+        [Tooltip("雪边的过渡宽度，越小边缘越硬")]
+        [Range(0.001f, 0.3f)]
+        [SerializeField] private float _snowSoftness = 0.02f;
+
         [Header("调色与粒子")]
         [Tooltip("可选：季节调色的后处理配置（色温、饱和度等）")]
         [SerializeField] private VolumeProfile _colorProfile;
@@ -71,6 +87,9 @@ namespace Worldyssey.View
         public Color CloudTint => _cloudTint;
         public float FogStartOffset => _fogStartOffset;
         public float FogRange => _fogRange;
+        public float SnowAmount => _snowAmount;
+        public Color SnowColor => _snowColor;
+        public Vector4 SnowParams => new Vector4(_snowThreshold, _snowSoftness, 0f, 0f);
         public VolumeProfile ColorProfile => _colorProfile;
         public ParticleSystem ParticlesPrefab => _particlesPrefab;
     }

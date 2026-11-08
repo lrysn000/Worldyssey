@@ -55,7 +55,11 @@ namespace Worldyssey.UI
                 int pairIndex = draft.Portals[portal].Pair;
                 visual.Entity = SeasonColor(draft, TargetWorld(draft, pairIndex, world), _palette.PortalBoxFallback);
                 visual.EntityIcon = _icons.Portal;
-                visual.Label = PortalLabelPrefix + pairIndex;
+                visual.PairIcon = _icons.PairSymbols != null ? _icons.PairSymbols.GetSymbol(pairIndex) : null;
+                visual.PairIconColor = IconColorOn(visual.Entity);
+
+                // 有符号时用符号，没有配置符号时退回编号文字
+                visual.Label = visual.PairIcon != null ? string.Empty : PortalLabelPrefix + pairIndex;
             }
 
             // 格子上有实体时隐藏地形图标，只留地形底色（如终点的黄色），避免两个图标叠在一起看不清

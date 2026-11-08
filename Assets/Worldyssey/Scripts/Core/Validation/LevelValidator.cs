@@ -344,6 +344,10 @@ namespace Worldyssey.Core
                 _pairWorldA = new int[pairs.Count];
                 _pairWorldB = new int[pairs.Count];
                 _pairIndexById = new Dictionary<int, int>(pairs.Count);
+                if (pairs.Count > LevelLimits.MaxPairCount)
+                {
+                    _issues.Add(Error($"At most {LevelLimits.MaxPairCount} portal pairs are allowed, this level has {pairs.Count}"));
+                }
 
                 for (int i = 0; i < pairs.Count; i++)
                 {

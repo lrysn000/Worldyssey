@@ -9,11 +9,11 @@ namespace Worldyssey.Data
     [CreateAssetMenu(fileName = "WorldPalette", menuName = "Worldyssey/World Palette")]
     public class WorldPalette : ScriptableObject
     {
-        [Tooltip("按世界编号排列：0 春、1 夏、2 秋、3 冬。冬季用中蓝而非冰白，保证传送箱子发光在浅色地面上看得清")]
+        [Tooltip("按世界编号排列：0 春、1 夏、2 秋、3 冬。夏季用叶绿而非青色，避免和冬季的蓝混淆；冬季用中蓝而非冰白，保证传送箱子发光在浅色地面上看得清")]
         [SerializeField] private Color[] _colors =
         {
             new Color(0.90f, 0.48f, 0.60f, 1f),
-            new Color(0.15f, 0.64f, 0.66f, 1f),
+            new Color(0.42f, 0.72f, 0.24f, 1f),
             new Color(0.86f, 0.50f, 0.16f, 1f),
             new Color(0.36f, 0.60f, 0.82f, 1f),
         };

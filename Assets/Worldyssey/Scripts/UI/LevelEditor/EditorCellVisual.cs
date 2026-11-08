@@ -22,6 +22,10 @@ namespace Worldyssey.UI
         public Sprite GhostIcon;
         public Color GhostColor;
 
+        /// <summary>传送箱子的配对符号，画在右下角。</summary>
+        public Sprite PairIcon;
+        public Color PairIconColor;
+
         public string Label;
     }
 }

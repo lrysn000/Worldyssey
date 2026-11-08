@@ -20,6 +20,13 @@ namespace Worldyssey.EditorTools
         private const float TabWidth = 176f;
         private const float SmallButtonSize = 52f;
 
+        // 顶栏尺寸文字：“12 x 14”这类两位数在原来 120 宽、30 号字下会换行，加宽并缩小字号，H 按钮跟着右移
+        internal const float SizeTextX = 784f;
+        internal const float SizeTextWidth = 180f;
+        internal const float SizeFontSize = 26f;
+        internal const float HeightMinusX = 976f;
+        internal const float HeightPlusX = 1044f;
+
         private static readonly Vector2 TopLeft = new Vector2(0f, 1f);
         private static readonly Vector2 TopRight = new Vector2(1f, 1f);
         private static readonly Vector2 Left = new Vector2(0f, 0.5f);
@@ -76,10 +83,11 @@ namespace Worldyssey.EditorTools
             parts.NameInput = CreateInputField(bar, new Vector2(180f, 0f), new Vector2(440f, 60f));
             parts.WidthMinus = CreateButton(bar, "WidthMinus", "W-", Left, new Vector2(648f, 0f), small, UiColorRole.Accent);
             parts.WidthPlus = CreateButton(bar, "WidthPlus", "W+", Left, new Vector2(716f, 0f), small, UiColorRole.Accent);
-            parts.SizeText = GameUiBuilder.CreateText(bar, "SizeText", "9 x 7", 30f, TextAlignmentOptions.Center, Left, new Vector2(784f, 0f), new Vector2(120f, 60f));
+            parts.SizeText = GameUiBuilder.CreateText(bar, "SizeText", "9 x 7", SizeFontSize, TextAlignmentOptions.Center, Left, new Vector2(SizeTextX, 0f), new Vector2(SizeTextWidth, 60f));
             UiStyleKit.StyleText(parts.SizeText, UiColorRole.HeaderText, _scope, _context, true);
-            parts.HeightMinus = CreateButton(bar, "HeightMinus", "H-", Left, new Vector2(912f, 0f), small, UiColorRole.Accent);
-            parts.HeightPlus = CreateButton(bar, "HeightPlus", "H+", Left, new Vector2(980f, 0f), small, UiColorRole.Accent);
+            parts.SizeText.enableWordWrapping = false;
+            parts.HeightMinus = CreateButton(bar, "HeightMinus", "H-", Left, new Vector2(HeightMinusX, 0f), small, UiColorRole.Accent);
+            parts.HeightPlus = CreateButton(bar, "HeightPlus", "H+", Left, new Vector2(HeightPlusX, 0f), small, UiColorRole.Accent);
 
             var action = new Vector2(150f, 60f);
             parts.TestPlay = CreateButton(bar, "TestPlayButton", UiText.TestPlay, Right, new Vector2(-20f, 0f), new Vector2(200f, 60f), UiColorRole.Confirm);
@@ -271,6 +279,7 @@ namespace Worldyssey.EditorTools
             GameUiBuilder.Place((RectTransform)go.transform, Left, position, size);
             var input = go.GetComponent<TMP_InputField>();
             input.characterLimit = 40;
+            EditorListFixes.AlignTextArea(input);
             UiStyleKit.SetSliced(input.image, _context.PanelSprite);
             UiStyleKit.Theme(input.image, UiColorRole.InnerFrame, _scope, _context);
 

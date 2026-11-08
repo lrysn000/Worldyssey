@@ -57,8 +57,9 @@ namespace Worldyssey.View
         /// <summary>
         /// 播放整段转场，由调用方的协程 yield。<paramref name="applyTeleportedState"/> 在截图之后、画面被截图盖住时调用，
         /// 用来切换到新世界。<paramref name="pedestal"/> 是传送底座，<paramref name="towardBox"/> 是从玩家指向底座的方向。
+        /// <paramref name="isBoxSquashed"/> 为 false 时截图淡出时不压箱子（回程箱子另有合成动画负责）。
         /// </summary>
-        public IEnumerator Play(GridPos pedestal, Direction towardBox, int targetWorld, Action applyTeleportedState)
+        public IEnumerator Play(GridPos pedestal, Direction towardBox, int targetWorld, Action applyTeleportedState, bool isBoxSquashed = true)
         {
             EntityView player = _levelView.PlayerView;
             Vector3 intoBox = _levelView.DirectionToLocal(towardBox);
@@ -107,7 +108,7 @@ namespace Worldyssey.View
                 // 外圈截图里已经有旧世界的描边，盖住画面时不能再按新世界的深度叠线；外圈淡出后箱子上的线正好成为箱子的轮廓
                 Shader.SetGlobalFloat(OutlineSuppressId, outerAlpha);
 
-                if (!hasSquashed && progress >= _gameplayConfig.SnapshotFadeStart)
+                if (isBoxSquashed && !hasSquashed && progress >= _gameplayConfig.SnapshotFadeStart)
                 {
                     hasSquashed = true;
                     if (partnerBox != null)

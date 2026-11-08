@@ -33,6 +33,7 @@ MonoBehaviour:
       - '    x   x    '
       - '             '
       - '             '
+      theme: 
     - name: World 2
       wallRows:
       - '             '
@@ -40,6 +41,7 @@ MonoBehaviour:
       - '        x    '
       - '             '
       - '             '
+      theme: 
     - name: World 3
       wallRows:
       - '             '
@@ -47,6 +49,7 @@ MonoBehaviour:
       - '    x        '
       - '             '
       - '             '
+      theme: 
     player:
       x: 2
       y: 1

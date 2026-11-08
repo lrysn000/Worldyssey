@@ -1,0 +1,87 @@
+{
+    "formatVersion": 1,
+    "id": "season-3-2",
+    "displayName": "Order of Seasons",
+    "width": 8,
+    "height": 8,
+    "startWorld": 0,
+    "sharedRows": [
+        "########",
+        "#   #  #",
+        "# P #. #",
+        "#      #",
+        "#   #  #",
+        "#.  #  #",
+        "#     P#",
+        "########"
+    ],
+    "worlds": [
+        {
+            "name": "Spring",
+            "wallRows": [
+                "        ",
+                "    x   ",
+                "    x   ",
+                "    x   ",
+                "    x   ",
+                "    x   ",
+                "    x   ",
+                "        "
+            ]
+        },
+        {
+            "name": "Summer",
+            "wallRows": [
+                "        ",
+                "        ",
+                "        ",
+                "        ",
+                "        ",
+                " x   x  ",
+                "        ",
+                "        "
+            ]
+        }
+    ],
+    "player": {
+        "x": 1,
+        "y": 1,
+        "facing": 0
+    },
+    "mappedBoxes": [
+        {
+            "x": 5,
+            "y": 3
+        },
+        {
+            "x": 2,
+            "y": 2
+        }
+    ],
+    "portalPairs": [
+        {
+            "id": 0,
+            "worldA": 0,
+            "worldB": 1
+        },
+        {
+            "id": 1,
+            "worldA": 0,
+            "worldB": 1
+        }
+    ],
+    "portalBoxes": [
+        {
+            "pair": 0,
+            "world": 0,
+            "x": 2,
+            "y": 5
+        },
+        {
+            "pair": 1,
+            "world": 1,
+            "x": 5,
+            "y": 5
+        }
+    ]
+}

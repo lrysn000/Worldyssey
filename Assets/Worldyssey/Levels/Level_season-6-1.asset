@@ -1,0 +1,95 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a6289e4cacfd3dc4f8c7f5eeb2db361b, type: 3}
+  m_Name: Level_season-6-1
+  m_EditorClassIdentifier: 
+  _level:
+    formatVersion: 1
+    id: season-6-1
+    displayName: First Snow
+    width: 9
+    height: 6
+    startWorld: 0
+    sharedRows:
+    - '#########'
+    - '#  P  P #'
+    - '#       #'
+    - '# # # ###'
+    - '#      .#'
+    - '#########'
+    worlds:
+    - name: Spring
+      wallRows:
+      - '         '
+      - '         '
+      - '         '
+      - ' x x     '
+      - ' x       '
+      - '         '
+      theme: 
+    - name: Summer
+      wallRows:
+      - '         '
+      - '         '
+      - '         '
+      - '   x x   '
+      - '     x   '
+      - '         '
+      theme: 
+    - name: Autumn
+      wallRows:
+      - '         '
+      - '         '
+      - '         '
+      - ' x   x   '
+      - ' x       '
+      - '         '
+      theme: 
+    - name: Winter
+      wallRows:
+      - '         '
+      - '         '
+      - '         '
+      - ' x x x   '
+      - ' x       '
+      - '         '
+      theme: 
+    player:
+      x: 1
+      y: 4
+      facing: 0
+    mappedBoxes:
+    - x: 2
+      y: 1
+    portalPairs:
+    - id: 0
+      worldA: 0
+      worldB: 3
+    - id: 1
+      worldA: 1
+      worldB: 3
+    - id: 2
+      worldA: 2
+      worldB: 3
+    portalBoxes:
+    - pair: 0
+      world: 0
+      x: 3
+      y: 4
+    - pair: 2
+      world: 3
+      x: 2
+      y: 4
+    - pair: 1
+      world: 3
+      x: 5
+      y: 4

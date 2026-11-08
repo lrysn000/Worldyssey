@@ -21,6 +21,9 @@ namespace Worldyssey.UI
 
         [Tooltip("可选：其他世界在这一格的独有墙或传送箱子，画在角上的淡色小图标")]
         [SerializeField] private Image _ghost;
+
+        [Tooltip("可选：传送箱子的配对符号，画在右下角")]
+        [SerializeField] private Image _pairMark;
         [SerializeField] private TMP_Text _label;
 
         private EditorGridView _owner;
@@ -70,6 +73,7 @@ namespace Worldyssey.UI
             _terrain.color = visual.Terrain;
             SetIcon(_terrainIcon, visual.TerrainIcon, visual.TerrainIconColor);
             SetIcon(_ghost, visual.GhostIcon, visual.GhostColor);
+            SetIcon(_pairMark, visual.PairIcon, visual.PairIconColor);
             _entity.enabled = visual.Entity.a > 0f;
             _entity.color = visual.Entity;
             if (_entity.sprite != visual.EntityIcon)

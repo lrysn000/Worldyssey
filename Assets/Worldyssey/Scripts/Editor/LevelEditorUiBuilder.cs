@@ -163,11 +163,10 @@ namespace Worldyssey.EditorTools
             // 列表项未选中时是白底，垫一块浅灰底板，免得和白色卡片混在一起
             UiStyleKit.CreateCard(card, "PairListBackground", topLeft, new Vector2(24f, -212f), new Vector2(width, 260f),
                 UiColorRole.PanelBackground, layout.Scope, layout.Context);
-            float itemWidth = (width - 16f - 16f) * 0.5f;
-            Transform items = CreateList(card, "PairItems", new Vector2(32f, -220f), new Vector2(width - 16f, 244f), new Vector2(itemWidth, 72f), 2, topLeft);
+            ScrollRect items = PairListScroll.Create(card, new Vector2(32f, -220f), new Vector2(width - 16f, 244f));
 
             GameUiBuilder.SetReference(pairList, "_itemPrefab", GameUiBuilder.GetOrCreateLevelButtonPrefab());
-            GameUiBuilder.SetReference(pairList, "_listRoot", items);
+            PairListScroll.Link(pairList, items);
             GameUiBuilder.SetReference(pairList, "_targetButton", target);
             GameUiBuilder.SetReference(pairList, "_targetLabel", target.GetComponentInChildren<TMP_Text>());
             GameUiBuilder.SetReference(pairList, "_addButton", addPair);

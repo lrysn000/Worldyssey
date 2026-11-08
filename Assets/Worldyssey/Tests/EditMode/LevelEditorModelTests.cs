@@ -108,6 +108,48 @@ namespace Worldyssey.Tests
         }
 
         [Test]
+        public void AddPair_ReportsLimit()
+        {
+            _model.AddWorld();
+            for (int i = 0; i < LevelLimits.MaxPairCount; i++)
+            {
+                Assert.AreEqual(EditorFeedback.AllChanged, _model.AddPair());
+            }
+
+            int undoCount = _model.UndoCount;
+            Assert.AreEqual(EditorFeedback.PairLimitReached, _model.AddPair());
+            Assert.AreEqual(undoCount, _model.UndoCount, "被拒绝的操作不留撤销记录");
+        }
+
+        [Test]
+        public void SelectAdjacentPair_StepsAndStopsAtEnds()
+        {
+            _model.AddWorld();
+            _model.AddPair();
+            _model.AddPair();
+            _model.AddPair();
+            Assert.AreEqual(2, _model.SelectedPair, "新增后选中最新的一对");
+
+            Assert.AreEqual(EditorFeedback.AllChanged, _model.SelectAdjacentPair(-1));
+            Assert.AreEqual(1, _model.SelectedPair);
+            _model.SelectAdjacentPair(-1);
+            Assert.AreEqual(EditorFeedback.None, _model.SelectAdjacentPair(-1), "第一项再往上不循环");
+            Assert.AreEqual(0, _model.SelectedPair);
+
+            _model.SelectAdjacentPair(1);
+            _model.SelectAdjacentPair(1);
+            Assert.AreEqual(EditorFeedback.None, _model.SelectAdjacentPair(1), "最后一项再往下不循环");
+            Assert.AreEqual(2, _model.SelectedPair);
+        }
+
+        [Test]
+        public void SelectAdjacentPair_WithoutPairs_DoesNothing()
+        {
+            Assert.AreEqual(EditorFeedback.None, _model.SelectAdjacentPair(1));
+            Assert.AreEqual(LevelEditorModel.NoPair, _model.SelectedPair);
+        }
+
+        [Test]
         public void AddPair_ConnectsCurrentAndTargetWorldAndSelectsIt()
         {
             Assert.AreEqual(EditorFeedback.PairRejected, _model.AddPair(), "只有一个世界时不能建配对");
