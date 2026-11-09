@@ -2,8 +2,7 @@
 
 > **English summary** — *Worldyssey* is a 3D grid-based Sokoban puzzle game built in Unity 2022.3 (URP). Each level spans up to four overlapping seasonal worlds: goal boxes are mirrored across every world, while walls and portal boxes belong to only one. Players hop between worlds through paired portal boxes to push every box onto its goal. The project includes 12 handcrafted levels, an in-game level editor with automatic solvability checking, a pure C# rules core covered by 250+ unit tests, and a one-click editor toolchain that builds scenes, UI and content.
 
-<!-- 首图：建议放一张 16:9 的游戏画面或 GIF，例如 Docs/Media/hero.gif -->
-![Worldyssey](Docs/Media/hero.png)
+![Worldyssey 春夏秋冬四季世界](Docs/Media/hero.png)
 
 **Worldyssey** 是一款 3D 网格推箱子解谜游戏。每一关由最多四个“季节世界”叠在一起：目标箱子在所有世界里同步存在，墙和传送箱子却只属于某一个世界。玩家要在春夏秋冬之间来回穿梭，利用每个世界不同的地形，把箱子推到终点。
 
@@ -17,7 +16,7 @@
 ## 核心玩法
 
 <!-- GIF：一次完整的传送（钻进箱子 → 截图缩放 → 新世界展开），Docs/Media/teleport.gif -->
-![传送](Docs/Media/teleport.gif)
+<!-- ![传送](Docs/Media/teleport.gif) -->
 
 | 规则 | 说明 |
 | --- | --- |
@@ -37,7 +36,6 @@
 - **四季视觉**：每个世界一套季节环境、地面图案和环境音；冬季下雪、草地随角色摆动
 - **双语界面**：设置中切换简体中文 / English
 
-<!-- 截图：选关界面、关卡编辑器、四季对比，各一张 -->
 | 选关 | 关卡编辑器 |
 | --- | --- |
 | ![选关](Docs/Media/level-select.png) | ![关卡编辑器](Docs/Media/level-editor.png) |

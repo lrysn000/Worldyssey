@@ -1,0 +1,2 @@
+# Keep documentation screenshots directly readable on GitHub.
+*.png -filter -diff -merge -text
