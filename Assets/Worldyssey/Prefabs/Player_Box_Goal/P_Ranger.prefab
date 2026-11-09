@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7447747006360604281}
   - component: {fileID: 2171733711161812496}
   - component: {fileID: 7663062020029176058}
+  - component: {fileID: 1394708323137780097}
   m_Layer: 0
   m_Name: P_Ranger
   m_TagString: Untagged
@@ -74,6 +75,20 @@ MonoBehaviour:
   _animator: {fileID: 4857341805642899751}
   _walkAnimationSpeed: 2
   _stopDelay: 0.1
+--- !u!114 &1394708323137780097
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8578479944091963874}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 941d485dc1d56a74ea10a571fb2878eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _animator: {fileID: 4857341805642899751}
+  _crossFadeDuration: 0.08
 --- !u!1001 &1297646968717139126
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -84,15 +99,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: bc6330be07b8c08489bb60ab5aeca5d8, type: 3}
       propertyPath: m_LocalScale.x
-      value: 0.57
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc6330be07b8c08489bb60ab5aeca5d8, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.57
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc6330be07b8c08489bb60ab5aeca5d8, type: 3}
       propertyPath: m_LocalScale.z
-      value: 0.57
+      value: 0.6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: bc6330be07b8c08489bb60ab5aeca5d8, type: 3}
       propertyPath: m_LocalPosition.x

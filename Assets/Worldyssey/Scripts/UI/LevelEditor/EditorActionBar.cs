@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -113,7 +113,7 @@ namespace Worldyssey.UI
             for (int i = 0; i < shown; i++)
             {
                 _issuesBuilder.Append(issues[i].IsError ? Localization.Translate(UiText.ErrorPrefix) : Localization.Translate(UiText.WarningPrefix));
-                _issuesBuilder.AppendLine(issues[i].Message);
+                _issuesBuilder.AppendLine(IssueTextFormatter.Format(issues[i].Text));
             }
 
             if (issues.Count > shown)

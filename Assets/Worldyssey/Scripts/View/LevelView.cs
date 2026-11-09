@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -212,6 +212,10 @@ namespace Worldyssey.View
             }
 
             _goalFlashRoutine = StartCoroutine(GoalFlashRoutine());
+            if (_playerView != null)
+            {
+                _playerView.PlayCelebrate();
+            }
 
             ParticleSystem burstPrefab = _visualConfig.CelebrationBurstPrefab;
             if (burstPrefab == null)

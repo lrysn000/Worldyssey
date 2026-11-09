@@ -142,3 +142,46 @@ Ctrl + S,Ctrl + S
 X {0}  Y {1},X {0}  Y {1}
 Volume,音量
 Sound,音效
+"The portal you left behind was pulled over to your pedestal. When you travel, its partner always follows you.",你留在原地的传送箱被拉到了你所在的底座上。每次传送，配对的另一半都会跟着来到你身边。
+Invalid size {0}x{1},尺寸 {0}x{1} 无效
+Size {0}x{1} is outside the allowed range {2}x{3} to {4}x{5},尺寸 {0}x{1} 超出允许范围 {2}x{3} 到 {4}x{5}
+Format version {0} is newer than supported version {1},格式版本 {0} 高于支持的版本 {1}
+Invalid format version {0},格式版本 {0} 无效
+World count {0} must be between {1} and {2},世界数量 {0} 必须在 {1} 到 {2} 之间
+Start world {0} does not exist,起始世界 {0} 不存在
+{0} is missing,缺少{0}
+{0} has no name,{0}没有名字
+{0} has unknown theme '{1}',{0}的主题“{1}”无法识别
+{0} and {1} both use theme {2},{0}和{1}使用了同一个主题 {2}
+Shared layer row count {0} does not match height {1},共享层行数 {0} 与高度 {1} 不一致
+Shared layer row {0} length {1} does not match width {2},共享层第 {0} 行长度 {1} 与宽度 {2} 不一致
+Unknown character '{0}' in shared layer,共享层中有无法识别的字符“{0}”
+{0} unique layer row count {1} does not match height {2},{0}独有层行数 {1} 与高度 {2} 不一致
+{0} unique layer row {1} length {2} does not match width {3},{0}独有层第 {1} 行长度 {2} 与宽度 {3} 不一致
+Unknown character '{0}' in {1} unique layer,{1}独有层中有无法识别的字符“{0}”
+Box count {0} does not match goal count {1},箱子数量 {0} 与目标数量 {1} 不一致
+{0} has a unique wall on a pedestal,{0}的独有墙压在了传送底座上
+"At most {0} portal pairs are allowed, this level has {1}",最多允许 {0} 组传送配对，当前关卡有 {1} 组
+Pair {0} is missing,缺少配对 {0}
+Pair id {0} is duplicated,配对编号 {0} 重复
+Pair {0} refers to a world that does not exist,配对 {0} 引用了不存在的世界
+Pair {0} connects {1} to itself,配对 {0} 把{1}连到了自身
+Portal box {0} is missing,缺少传送箱子 {0}
+Portal box {0} refers to missing or invalid pair {1},传送箱子 {0} 引用的配对 {1} 不存在或无效
+"Portal box {0} is in {1}, which is not part of pair {2}",传送箱子 {0} 位于{1}，但该世界不属于配对 {2}
+Pair {0} has more than one box in {1},配对 {0} 在{1}中有多个箱子
+Portal box {0} at {1} is out of bounds,传送箱子 {0} 的位置 {1} 超出地图范围
+Player at {0} is out of bounds,玩家位置 {0} 超出地图范围
+Box {0},箱子 {0}
+{0} at {1} is out of bounds,{0}的位置 {1} 超出地图范围
+Portal box in {0},{0}的传送箱子
+{0} overlaps another portal box,{0}与另一个传送箱子重叠
+"{0} sits on a unique wall of {1}, so that world starts in conflict",{0}压在{1}的独有墙上，该世界开局即冲突
+"{0} sits on a portal box of {1}, so that world starts in conflict",{0}压在{1}的传送箱子上，该世界开局即冲突
+{0} is on a shared wall,{0}在共享墙上
+{0} is on a unique wall of {1},{0}在{1}的独有墙上
+{0} overlaps {1},{0}与{1}重叠
+Level data is missing,缺少关卡数据
+Level id is empty,关卡编号为空
+Display name is empty,关卡显示名为空
+Level has no goal,关卡没有目标点

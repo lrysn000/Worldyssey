@@ -15,12 +15,10 @@ namespace Worldyssey.EditorTools
     public static class LevelJsonImporter
     {
         private const string ImportMenuPath = "Worldyssey/Levels/Import JSON File...";
-        private const string ReimportAllMenuPath = "Worldyssey/Levels/Reimport All Source JSON";
         private const string SourceFolder = ProjectPaths.LevelSources;
         private const string LevelFolder = ProjectPaths.Levels;
-        private const string TestCatalogPath = LevelFolder + "/LevelCatalog_Tests.asset";
 
-        // 正式的季节关卡：单独的源目录和关卡目录，不影响测试关卡
+        // 正式的季节关卡（早期的测试关卡已删除）
         private const string SeasonMenuPath = "Worldyssey/Levels/Import Season Levels";
         private const string SeasonSourceFolder = SourceFolder + "/Seasons";
         private const string SeasonCatalogPath = LevelFolder + "/LevelCatalog_Seasons.asset";
@@ -41,15 +39,6 @@ namespace Worldyssey.EditorTools
                 Selection.activeObject = asset;
                 EditorGUIUtility.PingObject(asset);
             }
-        }
-
-        /// <summary>
-        /// 重新导入 Source 目录下的全部 JSON，并按文件名顺序重建测试关卡目录。
-        /// </summary>
-        [MenuItem(ReimportAllMenuPath)]
-        public static void ReimportAllSource()
-        {
-            ImportFolder(SourceFolder, TestCatalogPath);
         }
 
         /// <summary>

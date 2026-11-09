@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using Worldyssey.Core;
 using Worldyssey.Data;
@@ -38,11 +38,11 @@ namespace Worldyssey.UI
 
         [Tooltip("当前世界图标的边长")]
         [Min(8f)]
-        [SerializeField] private float _currentIconSize = 56f;
+        [SerializeField] private float _currentIconSize = 100f;
 
         [Tooltip("其他世界图标的边长")]
         [Min(8f)]
-        [SerializeField] private float _otherIconSize = 36f;
+        [SerializeField] private float _otherIconSize = 56f;
 
         [Tooltip("图标之间的间距")]
         [Min(0f)]

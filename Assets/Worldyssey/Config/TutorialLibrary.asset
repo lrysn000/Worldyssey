@@ -67,7 +67,7 @@ MonoBehaviour:
         _kind: 6
         _index: 1
         _cell: {x: 0, y: 0}
-    - _text: Each world might its own walls. The hedge only grows in Spring, so the
+    - _text: Each world has its own walls. The hedge only grows in Spring, so the
         way is clear here.
       _startOn: 0
       _completeOn: 6
@@ -78,12 +78,42 @@ MonoBehaviour:
         _cell: {x: 0, y: 0}
   - _levelId: season-2-2
     _steps:
-    - _text: Every world shares the same wooden box.
+    - _text: Every world shares the same wooden boxes. Push one here and it moves
+        in all of them.
       _startOn: 9
       _completeOn: 5
       _seconds: 4
       _target:
         _kind: 2
+        _index: 0
+        _cell: {x: 0, y: 0}
+  - _levelId: season-2-3
+    _steps:
+    - _text: You arrive where you stand. Enter from a different side of the pedestal
+        to land somewhere else.
+      _startOn: 8
+      _completeOn: 9
+      _seconds: 4
+      _target:
+        _kind: 3
+        _index: 0
+        _cell: {x: 0, y: 0}
+    - _text: A return portal formed on your pedestal. Push it onto another pedestal
+        to travel back from there.
+      _startOn: 16
+      _completeOn: 9
+      _seconds: 4
+      _target:
+        _kind: 3
+        _index: 1
+        _cell: {x: 0, y: 0}
+    - _text: The portal you left behind was pulled over to your pedestal. When you
+        travel, its partner always follows you.
+      _startOn: 17
+      _completeOn: 15
+      _seconds: 6
+      _target:
+        _kind: 3
         _index: 0
         _cell: {x: 0, y: 0}
   - _levelId: season-3-1

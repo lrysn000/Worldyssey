@@ -22,7 +22,7 @@ namespace Worldyssey.EditorTools
         private const string MenuPath = "Worldyssey/Scene Setup/Build Game Scene (Logic + UI)";
         private const string LevelButtonPrefabFolder = ProjectPaths.UiPrefabs;
         private const string LevelButtonPrefabPath = LevelButtonPrefabFolder + "/P_LevelButton.prefab";
-        private const string PreferredCatalogName = "LevelCatalog_Tests";
+        private const string PreferredCatalogName = "LevelCatalog_Seasons";
 
         private static readonly Vector2 ReferenceResolution = new Vector2(1920f, 1080f);
         internal static readonly Vector2 Center = new Vector2(0.5f, 0.5f);

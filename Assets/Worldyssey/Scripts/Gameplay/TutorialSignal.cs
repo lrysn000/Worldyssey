@@ -98,6 +98,10 @@ namespace Worldyssey.Gameplay
                     return stepEvent is TeleportedEvent;
                 case TutorialTrigger.PartnerArrived:
                     return stepEvent is PartnerSpawnedEvent || stepEvent is PartnerMovedEvent;
+                case TutorialTrigger.PartnerSpawned:
+                    return stepEvent is PartnerSpawnedEvent;
+                case TutorialTrigger.PartnerPulled:
+                    return stepEvent is PartnerMovedEvent;
                 default:
                     return false;
             }

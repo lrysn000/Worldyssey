@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using Worldyssey.View;
@@ -7,7 +7,8 @@ namespace Worldyssey.EditorTools
 {
     /// <summary>
     /// 用带骨骼动画的角色模型生成玩家预制体：复制当前占位玩家（保留 EntityView 等组件），换上角色模型，
-    /// 生成卡通材质和动画控制器（站立 / 走路），挂上 <see cref="CharacterWalkAnimator"/>，再把 LevelVisualConfig 的玩家换成它。
+    /// 生成卡通材质和动画控制器（站立 / 走路 / 可选的传送和庆祝动作），挂上 <see cref="CharacterWalkAnimator"/> 和
+    /// <see cref="CharacterActionAnimator"/>，再把 LevelVisualConfig 的玩家换成它。
     /// 每次调用都重新生成预制体、材质和控制器。
     /// </summary>
     internal static class CharacterPrefabBuilder
@@ -16,6 +17,10 @@ namespace Worldyssey.EditorTools
         private const string ModelChildName = "Model";
         private const string IsWalkingParameter = "IsWalking";
         private const string WalkSpeedParameter = "WalkSpeed";
+
+        // 动作播到这个比例开始淡回站立
+        private const float ActionExitTime = 0.9f;
+        private const float ActionExitDuration = 0.15f;
         private const string PlaceholderPrefabPath = ProjectPaths.PlaceholderPrefabs + "/P_Player.prefab";
 
         // 占位玩家里要换掉的子物体：胶囊身体和鼻子
@@ -40,6 +45,20 @@ namespace Worldyssey.EditorTools
             /// <summary>模型绕竖直轴的旋转。模型应面朝 +Z（网格的 Up），否则在这里补正。</summary>
             public float ModelYaw;
             public float WalkAnimationSpeed;
+
+            /// <summary>钻进传送箱子时的动作，可为 null。</summary>
+            public AnimationClip EnterClip;
+
+            /// <summary>从伙伴箱子走出时的动作，可为 null。</summary>
+            public AnimationClip ArriveClip;
+
+            /// <summary>过关庆祝动作，可为 null。</summary>
+            public AnimationClip CelebrateClip;
+
+            /// <summary>动作动画的播放倍速：传送前后的表现只有零点几秒，动作要加快才能播完。</summary>
+            public float EnterSpeed = 1f;
+            public float ArriveSpeed = 1f;
+            public float CelebrateSpeed = 1f;
         }
 
         /// <summary>生成并启用玩家预制体，失败时返回 null（原因已写入日志）。</summary>
@@ -131,7 +150,33 @@ namespace Worldyssey.EditorTools
 
             AddTransition(idle, walk, AnimatorConditionMode.If, 0.08f);
             AddTransition(walk, idle, AnimatorConditionMode.IfNot, 0.15f);
+            AddAction(machine, CharacterActionAnimator.EnterStateName, spec.EnterClip, spec.EnterSpeed, idle, walk);
+            AddAction(machine, CharacterActionAnimator.ArriveStateName, spec.ArriveClip, spec.ArriveSpeed, idle, walk);
+            AddAction(machine, CharacterActionAnimator.CelebrateStateName, spec.CelebrateClip, spec.CelebrateSpeed, idle, walk);
             return controller;
+        }
+
+        /// <summary>
+        /// 加一个由代码直接切入的动作状态（<see cref="CharacterActionAnimator"/> 用 CrossFade 播放）：
+        /// 播完淡回站立；中途开始走路就立刻切到走路，不让动作拖住移动。
+        /// </summary>
+        private static void AddAction(AnimatorStateMachine machine, string stateName, AnimationClip clip, float speed, AnimatorState idle, AnimatorState walk)
+        {
+            if (clip == null)
+            {
+                return;
+            }
+
+            AnimatorState state = machine.AddState(stateName);
+            state.motion = clip;
+            state.speed = speed > 0f ? speed : 1f;
+
+            AnimatorStateTransition toIdle = state.AddTransition(idle);
+            toIdle.hasExitTime = true;
+            toIdle.exitTime = ActionExitTime;
+            toIdle.duration = ActionExitDuration;
+
+            AddTransition(state, walk, AnimatorConditionMode.If, 0.08f);
         }
 
         private static void AddTransition(AnimatorState from, AnimatorState to, AnimatorConditionMode mode, float duration)
@@ -169,6 +214,16 @@ namespace Worldyssey.EditorTools
                 serialized.FindProperty("_animator").objectReferenceValue = animator;
                 serialized.FindProperty("_walkAnimationSpeed").floatValue = spec.WalkAnimationSpeed;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
+
+                var actionAnimator = root.GetComponent<CharacterActionAnimator>();
+                if (actionAnimator == null)
+                {
+                    actionAnimator = root.AddComponent<CharacterActionAnimator>();
+                }
+
+                var actionSerialized = new SerializedObject(actionAnimator);
+                actionSerialized.FindProperty("_animator").objectReferenceValue = animator;
+                actionSerialized.ApplyModifiedPropertiesWithoutUndo();
                 PrefabUtility.SaveAsPrefabAsset(root, spec.PrefabPath);
             }
             finally

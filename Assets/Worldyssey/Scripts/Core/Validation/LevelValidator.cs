@@ -4,7 +4,7 @@ namespace Worldyssey.Core
 {
     /// <summary>
     /// 关卡合法性检查（需求文档 6.3 节）。一次返回全部问题，不抛异常，供关卡编辑器、导入工具和加载流程使用。
-    /// 提示文字为英文，因为游戏内编辑器会直接显示它们，而当前 UI 字体只支持英文。
+    /// 提示文字以英文模板 + 参数（<see cref="IssueText"/>）记录：英文原文供日志和测试使用，游戏内编辑器显示时再按当前语言翻译模板。
     /// </summary>
     /// <remarks>
     /// 不依赖 <see cref="LevelMap"/>：LevelMap 遇到第一个结构问题就抛出，而这里要尽量继续检查，把问题列全。
@@ -17,7 +17,7 @@ namespace Worldyssey.Core
             var issues = new List<LevelIssue>();
             if (data == null)
             {
-                issues.Add(Error("Level data is missing"));
+                issues.Add(Error(IssueText.Of("Level data is missing")));
                 return new LevelValidationReport(issues);
             }
 
@@ -26,12 +26,12 @@ namespace Worldyssey.Core
             return new LevelValidationReport(issues);
         }
 
-        private static LevelIssue Error(string message, GridPos? position = null, int world = LevelIssue.NoWorld)
+        private static LevelIssue Error(IssueText message, GridPos? position = null, int world = LevelIssue.NoWorld)
         {
             return new LevelIssue(LevelIssueSeverity.Error, message, position, world);
         }
 
-        private static LevelIssue Warning(string message, GridPos? position = null, int world = LevelIssue.NoWorld)
+        private static LevelIssue Warning(IssueText message, GridPos? position = null, int world = LevelIssue.NoWorld)
         {
             return new LevelIssue(LevelIssueSeverity.Warning, message, position, world);
         }
@@ -70,14 +70,14 @@ namespace Worldyssey.Core
                 CheckHeader();
                 if (_width <= 0 || _height <= 0)
                 {
-                    _issues.Add(Error($"Invalid size {_width}x{_height}"));
+                    _issues.Add(Error(IssueText.Of("Invalid size {0}x{1}", _width, _height)));
                     return;
                 }
 
                 if (!LevelLimits.IsValidSize(_width, _height))
                 {
                     // 超出范围不影响其余检查，继续往下查，把问题列全
-                    _issues.Add(Error($"Size {_width}x{_height} is outside the allowed range {LevelLimits.MinWidth}x{LevelLimits.MinHeight} to {LevelLimits.MaxWidth}x{LevelLimits.MaxHeight}"));
+                    _issues.Add(Error(IssueText.Of("Size {0}x{1} is outside the allowed range {2}x{3} to {4}x{5}", _width, _height, LevelLimits.MinWidth, LevelLimits.MinHeight, LevelLimits.MaxWidth, LevelLimits.MaxHeight)));
                 }
 
                 CheckWorlds();
@@ -94,21 +94,21 @@ namespace Worldyssey.Core
             {
                 if (string.IsNullOrWhiteSpace(_data.Id))
                 {
-                    _issues.Add(Error("Level id is empty"));
+                    _issues.Add(Error(IssueText.Of("Level id is empty")));
                 }
 
                 if (string.IsNullOrWhiteSpace(_data.DisplayName))
                 {
-                    _issues.Add(Warning("Display name is empty"));
+                    _issues.Add(Warning(IssueText.Of("Display name is empty")));
                 }
 
                 if (_data.FormatVersion > LevelData.CurrentFormatVersion)
                 {
-                    _issues.Add(Error($"Format version {_data.FormatVersion} is newer than supported version {LevelData.CurrentFormatVersion}"));
+                    _issues.Add(Error(IssueText.Of("Format version {0} is newer than supported version {1}", _data.FormatVersion, LevelData.CurrentFormatVersion)));
                 }
                 else if (_data.FormatVersion < 1)
                 {
-                    _issues.Add(Error($"Invalid format version {_data.FormatVersion}"));
+                    _issues.Add(Error(IssueText.Of("Invalid format version {0}", _data.FormatVersion)));
                 }
             }
 
@@ -116,12 +116,12 @@ namespace Worldyssey.Core
             {
                 if (!LevelLimits.IsValidWorldCount(_worldCount))
                 {
-                    _issues.Add(Error($"World count {_worldCount} must be between {LevelLimits.MinWorldCount} and {LevelLimits.MaxWorldCount}"));
+                    _issues.Add(Error(IssueText.Of("World count {0} must be between {1} and {2}", _worldCount, LevelLimits.MinWorldCount, LevelLimits.MaxWorldCount)));
                 }
 
                 if (_data.StartWorld < 0 || _data.StartWorld >= _worldCount)
                 {
-                    _issues.Add(Error($"Start world {WorldLabel(_data.StartWorld)} does not exist"));
+                    _issues.Add(Error(IssueText.Of("Start world {0} does not exist", WorldLabel(_data.StartWorld))));
                 }
 
                 for (int world = 0; world < _worldCount; world++)
@@ -129,11 +129,11 @@ namespace Worldyssey.Core
                     WorldData worldData = _data.Worlds[world];
                     if (worldData == null)
                     {
-                        _issues.Add(Error($"{WorldLabel(world)} is missing", null, world));
+                        _issues.Add(Error(IssueText.Of("{0} is missing", WorldLabel(world)), null, world));
                     }
                     else if (string.IsNullOrWhiteSpace(worldData.Name))
                     {
-                        _issues.Add(Warning($"{WorldLabel(world)} has no name", null, world));
+                        _issues.Add(Warning(IssueText.Of("{0} has no name", WorldLabel(world)), null, world));
                     }
                 }
 
@@ -165,7 +165,7 @@ namespace Worldyssey.Core
 
                     if (!WorldThemes.TryParse(worldData.ThemeText, out WorldTheme theme))
                     {
-                        _issues.Add(Error($"{WorldLabel(world)} has unknown theme '{worldData.ThemeText}'", null, world));
+                        _issues.Add(Error(IssueText.Of("{0} has unknown theme '{1}'", WorldLabel(world), worldData.ThemeText), null, world));
                         continue;
                     }
 
@@ -173,7 +173,7 @@ namespace Worldyssey.Core
                     int owner = owners[(int)theme];
                     if (owner >= 0)
                     {
-                        _issues.Add(Error($"{WorldLabel(owner)} and {WorldLabel(world)} both use theme {theme}", null, world));
+                        _issues.Add(Error(IssueText.Of("{0} and {1} both use theme {2}", WorldLabel(owner), WorldLabel(world), theme), null, world));
                         continue;
                     }
 
@@ -186,7 +186,7 @@ namespace Worldyssey.Core
                 IReadOnlyList<string> rows = _data.SharedRows;
                 if (rows.Count != _height)
                 {
-                    _issues.Add(Error($"Shared layer row count {rows.Count} does not match height {_height}"));
+                    _issues.Add(Error(IssueText.Of("Shared layer row count {0} does not match height {1}", rows.Count, _height)));
                     return;
                 }
 
@@ -198,7 +198,7 @@ namespace Worldyssey.Core
                     string row = rows[rowIndex] ?? string.Empty;
                     if (row.Length != _width)
                     {
-                        _issues.Add(Error($"Shared layer row {rowIndex} length {row.Length} does not match width {_width}"));
+                        _issues.Add(Error(IssueText.Of("Shared layer row {0} length {1} does not match width {2}", rowIndex, row.Length, _width)));
                         isValid = false;
                         continue;
                     }
@@ -220,7 +220,7 @@ namespace Worldyssey.Core
                             case LevelMap.EmptyChar:
                                 break;
                             default:
-                                _issues.Add(Error($"Unknown character '{row[x]}' in shared layer", pos));
+                                _issues.Add(Error(IssueText.Of("Unknown character '{0}' in shared layer", row[x]), pos));
                                 isValid = false;
                                 break;
                         }
@@ -257,7 +257,7 @@ namespace Worldyssey.Core
 
                     if (rows.Count != _height)
                     {
-                        _issues.Add(Error($"{WorldLabel(world)} unique layer row count {rows.Count} does not match height {_height}", null, world));
+                        _issues.Add(Error(IssueText.Of("{0} unique layer row count {1} does not match height {2}", WorldLabel(world), rows.Count, _height), null, world));
                         continue;
                     }
 
@@ -267,7 +267,7 @@ namespace Worldyssey.Core
                         string row = rows[rowIndex] ?? string.Empty;
                         if (row.Length != _width)
                         {
-                            _issues.Add(Error($"{WorldLabel(world)} unique layer row {rowIndex} length {row.Length} does not match width {_width}", null, world));
+                            _issues.Add(Error(IssueText.Of("{0} unique layer row {1} length {2} does not match width {3}", WorldLabel(world), rowIndex, row.Length, _width), null, world));
                             isValid = false;
                             continue;
                         }
@@ -281,7 +281,7 @@ namespace Worldyssey.Core
                             }
                             else if (row[x] != LevelMap.EmptyChar)
                             {
-                                _issues.Add(Error($"Unknown character '{row[x]}' in {WorldLabel(world)} unique layer", pos, world));
+                                _issues.Add(Error(IssueText.Of("Unknown character '{0}' in {1} unique layer", row[x], WorldLabel(world)), pos, world));
                                 isValid = false;
                             }
                         }
@@ -304,12 +304,12 @@ namespace Worldyssey.Core
                 int boxCount = _data.MappedBoxes.Count;
                 if (_goalCount == 0)
                 {
-                    _issues.Add(Error("Level has no goal"));
+                    _issues.Add(Error(IssueText.Of("Level has no goal")));
                 }
 
                 if (boxCount != _goalCount)
                 {
-                    _issues.Add(Error($"Box count {boxCount} does not match goal count {_goalCount}"));
+                    _issues.Add(Error(IssueText.Of("Box count {0} does not match goal count {1}", boxCount, _goalCount)));
                 }
             }
 
@@ -332,7 +332,7 @@ namespace Worldyssey.Core
                     {
                         if (walls[i] && _pedestals[i])
                         {
-                            _issues.Add(Error($"{WorldLabel(world)} has a unique wall on a pedestal", FromIndex(i), world));
+                            _issues.Add(Error(IssueText.Of("{0} has a unique wall on a pedestal", WorldLabel(world)), FromIndex(i), world));
                         }
                     }
                 }
@@ -346,7 +346,7 @@ namespace Worldyssey.Core
                 _pairIndexById = new Dictionary<int, int>(pairs.Count);
                 if (pairs.Count > LevelLimits.MaxPairCount)
                 {
-                    _issues.Add(Error($"At most {LevelLimits.MaxPairCount} portal pairs are allowed, this level has {pairs.Count}"));
+                    _issues.Add(Error(IssueText.Of("At most {0} portal pairs are allowed, this level has {1}", LevelLimits.MaxPairCount, pairs.Count)));
                 }
 
                 for (int i = 0; i < pairs.Count; i++)
@@ -354,13 +354,13 @@ namespace Worldyssey.Core
                     PortalPairData pair = pairs[i];
                     if (pair == null)
                     {
-                        _issues.Add(Error($"Pair {i} is missing"));
+                        _issues.Add(Error(IssueText.Of("Pair {0} is missing", i)));
                         continue;
                     }
 
                     if (_pairIndexById.ContainsKey(pair.Id))
                     {
-                        _issues.Add(Error($"Pair id {pair.Id} is duplicated"));
+                        _issues.Add(Error(IssueText.Of("Pair id {0} is duplicated", pair.Id)));
                         continue;
                     }
 
@@ -368,13 +368,13 @@ namespace Worldyssey.Core
                     bool isWorldBValid = IsWorldIndex(pair.WorldB);
                     if (!isWorldAValid || !isWorldBValid)
                     {
-                        _issues.Add(Error($"Pair {pair.Id} refers to a world that does not exist"));
+                        _issues.Add(Error(IssueText.Of("Pair {0} refers to a world that does not exist", pair.Id)));
                         continue;
                     }
 
                     if (pair.WorldA == pair.WorldB)
                     {
-                        _issues.Add(Error($"Pair {pair.Id} connects {WorldLabel(pair.WorldA)} to itself"));
+                        _issues.Add(Error(IssueText.Of("Pair {0} connects {1} to itself", pair.Id, WorldLabel(pair.WorldA))));
                         continue;
                     }
 
@@ -393,13 +393,13 @@ namespace Worldyssey.Core
                     PortalBoxData box = boxes[i];
                     if (box == null)
                     {
-                        _issues.Add(Error($"Portal box {i} is missing"));
+                        _issues.Add(Error(IssueText.Of("Portal box {0} is missing", i)));
                         continue;
                     }
 
                     if (!_pairIndexById.TryGetValue(box.Pair, out int pairIndex))
                     {
-                        _issues.Add(Error($"Portal box {i} refers to missing or invalid pair {box.Pair}", box.Position));
+                        _issues.Add(Error(IssueText.Of("Portal box {0} refers to missing or invalid pair {1}", i, box.Pair), box.Position));
                         continue;
                     }
 
@@ -414,19 +414,19 @@ namespace Worldyssey.Core
                     }
                     else
                     {
-                        _issues.Add(Error($"Portal box {i} is in {WorldLabel(box.World)}, which is not part of pair {box.Pair}", box.Position));
+                        _issues.Add(Error(IssueText.Of("Portal box {0} is in {1}, which is not part of pair {2}", i, WorldLabel(box.World), box.Pair), box.Position));
                         continue;
                     }
 
                     if (!placedSides.Add(side))
                     {
-                        _issues.Add(Error($"Pair {box.Pair} has more than one box in {WorldLabel(box.World)}", box.Position, box.World));
+                        _issues.Add(Error(IssueText.Of("Pair {0} has more than one box in {1}", box.Pair, WorldLabel(box.World)), box.Position, box.World));
                         continue;
                     }
 
                     if (!IsInBounds(box.Position))
                     {
-                        _issues.Add(Error($"Portal box {i} at {box.Position} is out of bounds", null, box.World));
+                        _issues.Add(Error(IssueText.Of("Portal box {0} at {1} is out of bounds", i, box.Position), null, box.World));
                         continue;
                     }
 
@@ -440,27 +440,27 @@ namespace Worldyssey.Core
                 bool canCheckStartWorld = _sharedWalls != null && IsWorldIndex(startWorld) && _uniqueWalls[startWorld] != null;
 
                 // 起始世界里每格最多一个物体：玩家、目标箱子、本世界的传送箱子
-                var startWorldOccupants = new Dictionary<GridPos, string>();
+                var startWorldOccupants = new Dictionary<GridPos, IssueText>();
 
                 GridPos player = _data.Player.Position;
                 if (!IsInBounds(player))
                 {
-                    _issues.Add(Error($"Player at {player} is out of bounds"));
+                    _issues.Add(Error(IssueText.Of("Player at {0} is out of bounds", player)));
                 }
                 else if (canCheckStartWorld)
                 {
-                    CheckNotOnWall(player, startWorld, "Player");
-                    startWorldOccupants[player] = "Player";
+                    CheckNotOnWall(player, startWorld, IssueText.Of("Player"));
+                    startWorldOccupants[player] = IssueText.Of("Player");
                 }
 
                 IReadOnlyList<GridPos> mappedBoxes = _data.MappedBoxes;
                 for (int i = 0; i < mappedBoxes.Count; i++)
                 {
                     GridPos pos = mappedBoxes[i];
-                    string label = $"Box {i}";
+                    IssueText label = IssueText.Of("Box {0}", i);
                     if (!IsInBounds(pos))
                     {
-                        _issues.Add(Error($"{label} at {pos} is out of bounds"));
+                        _issues.Add(Error(IssueText.Of("{0} at {1} is out of bounds", label, pos)));
                         continue;
                     }
 
@@ -477,7 +477,7 @@ namespace Worldyssey.Core
                 CheckPortalPlacement(startWorld, canCheckStartWorld, startWorldOccupants);
             }
 
-            private void CheckPortalPlacement(int startWorld, bool canCheckStartWorld, Dictionary<GridPos, string> startWorldOccupants)
+            private void CheckPortalPlacement(int startWorld, bool canCheckStartWorld, Dictionary<GridPos, IssueText> startWorldOccupants)
             {
                 var otherWorldOccupants = new HashSet<(int, GridPos)>();
                 for (int i = 0; i < _portals.Count; i++)
@@ -488,7 +488,7 @@ namespace Worldyssey.Core
                         continue;
                     }
 
-                    string label = $"Portal box in {WorldLabel(portal.World)}";
+                    IssueText label = IssueText.Of("Portal box in {0}", WorldLabel(portal.World));
                     CheckNotOnWall(portal.Position, portal.World, label);
 
                     if (portal.World == startWorld)
@@ -500,7 +500,7 @@ namespace Worldyssey.Core
                     }
                     else if (!otherWorldOccupants.Add((portal.World, portal.Position)))
                     {
-                        _issues.Add(Error($"{label} overlaps another portal box", portal.Position, portal.World));
+                        _issues.Add(Error(IssueText.Of("{0} overlaps another portal box", label), portal.Position, portal.World));
                     }
                 }
             }
@@ -508,7 +508,7 @@ namespace Worldyssey.Core
             /// <summary>
             /// 目标箱子在其他世界压着独有墙或传送箱子是允许的（玩法上叫初始冲突），只提醒。
             /// </summary>
-            private void CheckInitialConflicts(GridPos pos, string label, int startWorld)
+            private void CheckInitialConflicts(GridPos pos, IssueText label, int startWorld)
             {
                 for (int world = 0; world < _worldCount; world++)
                 {
@@ -519,36 +519,36 @@ namespace Worldyssey.Core
 
                     if (_uniqueWalls[world][ToIndex(pos)])
                     {
-                        _issues.Add(Warning($"{label} sits on a unique wall of {WorldLabel(world)}, so that world starts in conflict", pos, world));
+                        _issues.Add(Warning(IssueText.Of("{0} sits on a unique wall of {1}, so that world starts in conflict", label, WorldLabel(world)), pos, world));
                     }
 
                     for (int i = 0; i < _portals.Count; i++)
                     {
                         if (_portals[i].World == world && _portals[i].Position == pos)
                         {
-                            _issues.Add(Warning($"{label} sits on a portal box of {WorldLabel(world)}, so that world starts in conflict", pos, world));
+                            _issues.Add(Warning(IssueText.Of("{0} sits on a portal box of {1}, so that world starts in conflict", label, WorldLabel(world)), pos, world));
                         }
                     }
                 }
             }
 
-            private void CheckNotOnWall(GridPos pos, int world, string label)
+            private void CheckNotOnWall(GridPos pos, int world, IssueText label)
             {
                 if (_sharedWalls[ToIndex(pos)])
                 {
-                    _issues.Add(Error($"{label} is on a shared wall", pos, world));
+                    _issues.Add(Error(IssueText.Of("{0} is on a shared wall", label), pos, world));
                 }
                 else if (_uniqueWalls[world][ToIndex(pos)])
                 {
-                    _issues.Add(Error($"{label} is on a unique wall of {WorldLabel(world)}", pos, world));
+                    _issues.Add(Error(IssueText.Of("{0} is on a unique wall of {1}", label, WorldLabel(world)), pos, world));
                 }
             }
 
-            private void AddOccupant(Dictionary<GridPos, string> occupants, GridPos pos, string label, int world)
+            private void AddOccupant(Dictionary<GridPos, IssueText> occupants, GridPos pos, IssueText label, int world)
             {
-                if (occupants.TryGetValue(pos, out string existing))
+                if (occupants.TryGetValue(pos, out IssueText existing))
                 {
-                    _issues.Add(Error($"{label} overlaps {existing}", pos, world));
+                    _issues.Add(Error(IssueText.Of("{0} overlaps {1}", label, existing), pos, world));
                     return;
                 }
 
@@ -558,9 +558,9 @@ namespace Worldyssey.Core
             /// <summary>
             /// 提示中的世界编号从 1 开始，与默认世界名称 World 1、World 2 一致。
             /// </summary>
-            private static string WorldLabel(int world)
+            private static IssueText WorldLabel(int world)
             {
-                return $"World {world + 1}";
+                return IssueText.Of("World {0}", world + 1);
             }
 
             private bool IsWorldIndex(int world)

@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -36,6 +37,9 @@ namespace Worldyssey.View
 
         /// <summary>正在补间到另一个格子（只转身的补间不算），角色动画据此播放走路。</summary>
         public bool IsWalking => _tween != null && _isTweenMoving;
+
+        /// <summary>开始一个表现动作时触发，参数为动作和开始前的等待时间（秒）。只有表现层订阅，不影响逻辑。</summary>
+        public event Action<EntityAction, float> ActionStarted;
 
         protected virtual void Awake()
         {
@@ -144,6 +148,7 @@ namespace Worldyssey.View
         public void PlayVanish(Vector3 localOffset, float duration)
         {
             StartAppearRoutine(Vector3.zero, localOffset, 1f, 0f, 0f, duration);
+            ActionStarted?.Invoke(EntityAction.Vanish, 0f);
         }
 
         /// <summary>
@@ -160,6 +165,7 @@ namespace Worldyssey.View
         public void PlayEmerge(Vector3 localOffset, float duration, float delay)
         {
             StartAppearRoutine(localOffset, Vector3.zero, 0f, 1f, delay, duration);
+            ActionStarted?.Invoke(EntityAction.Emerge, delay);
         }
 
         /// <summary>
@@ -168,6 +174,14 @@ namespace Worldyssey.View
         public void PlayAppear(float delay, float duration)
         {
             StartAppearRoutine(Vector3.zero, Vector3.zero, 0f, 1f, delay, duration);
+        }
+
+        /// <summary>
+        /// 过关庆祝。实体本身没有位移效果，只通知角色模型播放庆祝动画。
+        /// </summary>
+        public void PlayCelebrate()
+        {
+            ActionStarted?.Invoke(EntityAction.Celebrate, 0f);
         }
 
         /// <summary>
@@ -185,6 +199,7 @@ namespace Worldyssey.View
             _appearOffset = Vector3.zero;
             _appearScale = 1f;
             Apply();
+            ActionStarted?.Invoke(EntityAction.Reset, 0f);
         }
 
         private void StartAppearRoutine(Vector3 fromOffset, Vector3 toOffset, float fromScale, float toScale, float delay, float duration)

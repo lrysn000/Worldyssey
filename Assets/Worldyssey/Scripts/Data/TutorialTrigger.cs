@@ -31,5 +31,11 @@ namespace Worldyssey.Data
         Restarted = 14,
         /// <summary>只用作完成条件：显示满 <see cref="TutorialStep.Seconds"/> 秒后完成。</summary>
         AfterSeconds = 15,
+
+        /// <summary>传送后目标世界里原本没有回程箱子，在底座上新生成了一个。</summary>
+        PartnerSpawned = 16,
+
+        /// <summary>传送后目标世界里已有的回程箱子被拉到了玩家所在的底座。</summary>
+        PartnerPulled = 17,
     }
 }

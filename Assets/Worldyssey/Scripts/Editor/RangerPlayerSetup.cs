@@ -1,4 +1,4 @@
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using Worldyssey.View;
 
@@ -17,6 +17,10 @@ namespace Worldyssey.EditorTools
         private const string MovementAnimationPath = Folder + "/Animations/Rig_Medium_MovementBasic.fbx";
         private const string IdleClipName = "Idle_A";
         private const string WalkClipName = "Walking_A";
+
+        // KayKit 动画包里没有欢呼动作：从箱子走出用"从地面起身"，过关用原地短跳
+        private const string ArriveClipName = "Spawn_Ground";
+        private const string CelebrateClipName = "Jump_Full_Short";
 
         // 需要循环播放的片段名前缀
         private static readonly string[] LoopingPrefixes = { "Idle", "Walking", "Running", "Jump_Idle" };
@@ -45,6 +49,10 @@ namespace Worldyssey.EditorTools
 
                 // 走路一个循环约 1.1 秒，走一格只要零点几秒，加快一些脚才不打滑
                 WalkAnimationSpeed = 2f,
+                ArriveClip = CharacterPrefabBuilder.LoadClip(GeneralAnimationPath, ArriveClipName),
+                ArriveSpeed = 1.3f,
+                CelebrateClip = CharacterPrefabBuilder.LoadClip(MovementAnimationPath, CelebrateClipName),
+                CelebrateSpeed = 1f,
             };
 
             EntityView player = CharacterPrefabBuilder.Build(spec);

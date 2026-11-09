@@ -32,7 +32,10 @@ namespace Worldyssey.EditorTools
 
                 Level("season-2-3",
                     Step("You arrive where you stand. Enter from a different side of the pedestal to land somewhere else.", TutorialTrigger.PortalOnPedestal, TutorialTrigger.Teleported, Target(TutorialTargetKind.PortalBox)),
-                    Step("A return portal formed on your pedestal. Push it onto another pedestal to travel back from there.", TutorialTrigger.PartnerArrived, TutorialTrigger.Teleported, Target(TutorialTargetKind.PortalBox, 1))),
+                    Step("A return portal formed on your pedestal. Push it onto another pedestal to travel back from there.", TutorialTrigger.PartnerSpawned, TutorialTrigger.Teleported, Target(TutorialTargetKind.PortalBox, 1)),
+
+                    // 拉回在 2-3 的标准解法里必然发生（第二次传送），在这里作为规则讲清楚；4-1 起把它当解谜手段用，不再提示
+                    Step("The portal you left behind was pulled over to your pedestal. When you travel, its partner always follows you.", TutorialTrigger.PartnerPulled, TutorialTrigger.AfterSeconds, Target(TutorialTargetKind.PortalBox), 6f)),
 
                 Level("season-3-1",
                     Step("Summer is locked: a box is sitting where Summer has a wall, so its portal won't let you in.", TutorialTrigger.None, TutorialTrigger.AfterSeconds, Target(TutorialTargetKind.WorldIcon, Summer), 6f),

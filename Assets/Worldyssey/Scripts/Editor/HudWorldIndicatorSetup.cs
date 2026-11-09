@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -24,18 +24,22 @@ namespace Worldyssey.EditorTools
 
         private const float InfoWidth = 560f;
         private const float InfoHeight = 132f;
-        private const float IndicatorWidth = 360f;
-        private const float IndicatorHeight = 144f;
 
-        // 图标行顶部留出像素边框和季节装饰的位置；当前图标切换时会放大弹回（UiMotionConfig.WorldPopScale），
-        // 尺寸按放大后的大小留余量，免得弹出时顶出卡片上沿
-        private const float IconRowTop = 28f;
-        private const float IconRowHeight = 64f;
-        private const float CurrentIconSize = 56f;
-        private const float OtherIconSize = 36f;
-        private const float WorldNameTop = 98f;
-        private const float WorldNameHeight = 32f;
-        private const float WorldNameFontSize = 22f;
+        // 四个世界同时显示时：80 + 3×40 + 3×16 间距 = 248，再加当前图标弹出放大的余量
+        private const float IndicatorWidth = 340f;
+
+        // 与关卡信息卡同高，两张卡顶边、底边对齐
+        private const float IndicatorHeight = InfoHeight;
+
+        // 当前图标切换时会放大弹回（UiMotionConfig.WorldPopScale，约 1.3 倍），80 的图标上下各多出约 12；
+        // 卡片只有 132 高，底部像素边框约占 16，世界名要整体落在边框以内（88 + 24 = 112），图标行相应上移到 12
+        private const float IconRowTop = 12f;
+        private const float IconRowHeight = 80f;
+        private const float CurrentIconSize = 80f;
+        private const float OtherIconSize = 40f;
+        private const float WorldNameTop = 88f;
+        private const float WorldNameHeight = 24f;
+        private const float WorldNameFontSize = 20f;
 
         // 旧 HUD 留下的物体：世界名、冲突、通关文字和通关底板
         private static readonly string[] ObsoleteNames = { "WorldName", "Conflict", "Status", "statusTextBackground" };
