@@ -1,15 +1,18 @@
 # Worldyssey
 
-> **English summary** — *Worldyssey* is a 3D grid-based Sokoban puzzle game built in Unity 2022.3 (URP). Each level spans up to four overlapping seasonal worlds: goal boxes are mirrored across every world, while walls and portal boxes belong to only one. Players hop between worlds through paired portal boxes to push every box onto its goal. The project includes 12 handcrafted levels, an in-game level editor with automatic solvability checking, a pure C# rules core covered by 250+ unit tests, and a one-click editor toolchain that builds scenes, UI and content.
-
-![Worldyssey 春夏秋冬四季世界](Docs/Media/hero.png)
 
 **Worldyssey** 是一款 3D 网格推箱子解谜游戏。每一关由最多四个“季节世界”叠在一起：目标箱子在所有世界里同步存在，墙和传送箱子却只属于某一个世界。玩家要在春夏秋冬之间来回穿梭，利用每个世界不同的地形，把箱子推到终点。
+
 
 - **引擎**：Unity 2022.3.51f1 · URP · Input System
 - **平台**：PC（键盘操作，鼠标操作界面和关卡编辑器）
 - **语言**：简体中文 / English
 - **详细设计与实现**：见 [Wiki](https://github.com/lrysn000/Worldyssey/wiki)
+
+
+![Worldyssey 春夏秋冬四季世界](Docs/Media/hero.png)
+
+> **English summary** — *Worldyssey* is a 3D grid-based Sokoban puzzle game built in Unity 2022.3 (URP). Each level spans up to four overlapping seasonal worlds: goal boxes are mirrored across every world, while walls and portal boxes belong to only one. Players hop between worlds through paired portal boxes to push every box onto its goal. The project includes 12 handcrafted levels, an in-game level editor with automatic solvability checking, a pure C# rules core covered by 250+ unit tests, and a one-click editor toolchain that builds scenes, UI and content.
 
 ---
 
@@ -40,7 +43,7 @@
 | --- | --- |
 | ![选关](Docs/Media/level-select.png) | ![关卡编辑器](Docs/Media/level-editor.png) |
 
-## 操作
+## 基础操作（更多见游戏内设定）
 
 | 操作 | 按键 |
 | --- | --- |
@@ -95,8 +98,8 @@ Assets/Worldyssey/
 
 - 角色：[KayKit Adventurers](https://kaylousberg.com)（Kay Lousberg，CC0）
 - 植物与环境：CS Stylized Plant Pack、LowPolyTerrain - Mesa、SimpleSky
-- 界面：Honeti Pixel Art GUI / Ultimate Flat GUI、Pixel UI
-- 音效与音乐：<!-- 填写来源 -->
+- 界面：Honeti Pixel Art GUI 、Pixel UI
+- 音效与音乐：[Kenney](https://kenney.nl/assets/ui-audio)
 
 第三方素材版权归原作者所有，仅用于本作品展示。
 
