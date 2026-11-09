@@ -185,3 +185,5 @@ Level data is missing,缺少关卡数据
 Level id is empty,关卡编号为空
 Display name is empty,关卡显示名为空
 Level has no goal,关卡没有目标点
+"This level can't be solved, so it wasn't saved",这个关卡无解，未保存
+Saved: {0} (too complex to check if it can be solved),已保存：{0}（关卡太复杂，未能确认是否可解）

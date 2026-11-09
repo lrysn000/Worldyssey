@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using TMPro;
@@ -16,6 +16,9 @@ namespace Worldyssey.UI
     /// </summary>
     public class LevelEditorPanel : UiPanel
     {
+        // 保存前检查可解性的局面数上限。编辑器尺寸有限，正式关卡最多也只有几万个局面；超过上限只说明没能确认，不阻止保存
+        private const int SaveCheckMaxStates = 200000;
+
         [SerializeField] private EditorGridView _grid;
         [SerializeField] private EditorToolbar _toolbar;
         [SerializeField] private EditorHeaderBar _header;
@@ -348,11 +351,21 @@ namespace Worldyssey.UI
                 return;
             }
 
+            // 确认无解的关卡不允许保存；局面太多、没有结论时照常保存，只在状态栏说明没能确认
+            LevelData level = _model.Draft.ToLevelData();
+            SolveResult solvability = LevelSolver.Solve(new LevelRules(new LevelMap(level)), SaveCheckMaxStates);
+            if (solvability.IsUnsolvable)
+            {
+                _actionBar.SetStatus(Localization.Translate(UiText.StatusUnsolvable));
+                return;
+            }
+
             try
             {
-                string path = _saveService.SaveCustomLevel(_model.Draft.ToLevelData());
-                Debug.Log($"[{nameof(LevelEditorPanel)}] 已保存：{path}", this);
-                _actionBar.SetStatus(string.Format(Localization.Translate(UiText.StatusSavedFormat), _model.Draft.DisplayName));
+                string path = _saveService.SaveCustomLevel(level);
+                Debug.Log($"[{nameof(LevelEditorPanel)}] 已保存：{path}（可解性：{solvability.Status}，搜索 {solvability.ExploredStates} 个局面）", this);
+                string savedFormat = solvability.IsSolvable ? UiText.StatusSavedFormat : UiText.StatusSavedUncheckedFormat;
+                _actionBar.SetStatus(string.Format(Localization.Translate(savedFormat), _model.Draft.DisplayName));
             }
             catch (IOException exception)
             {
